@@ -135,11 +135,11 @@ const INIT_CONTENT = {
     ],
   },
   contact: {
-    email:    "pgworkshop@cs.ug.edu.gh",
+    email:    "dcsworkshop@ug.edu.gh",
     website:  "www.cs.ug.edu.gh",
-    location: "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana",
+    location: "Department of Computer Science\nUniversity of Ghana, Legon\nP.O. Box LG 25, Accra, Ghana",
     hours:    "Mon–Fri · 8:00 AM – 5:00 PM GMT",
-    whatsapp: "233000000000",
+    whatsapp: "233536909471",
   },
   footer: {
     tagline:     "2nd Annual Postgraduate Students Workshop",
@@ -247,7 +247,7 @@ export default function App() {
 
       {/* WhatsApp floating button — hidden in admin */}
       {!isAdmin && (
-        <a href="https://wa.me/233000000000?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
+        <a href="https://wa.me/233536909471?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
           target="_blank" rel="noreferrer"
           title="Chat on WhatsApp"
           style={{

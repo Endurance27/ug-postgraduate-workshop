@@ -124,7 +124,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 {activeFeed.map(f => (
                   <span key={f.id} style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", flexShrink: 0 }}>
                     {f.text}
-                    {f.time && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginLeft: 10 }}>{f.time}</span>}
+                    {f.time && <span style={{ fontSize: 11, color: "rgba(255, 254, 254, 0.6)", marginLeft: 10 }}>{f.time}</span>}
                   </span>
                 ))}
               </div>
@@ -190,7 +190,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               fontSize: 17, color: "rgba(255,255,255,0.8)",
               maxWidth: 520, lineHeight: 1.75, marginBottom: 10,
             }}>
-              Department of Computer Science · University of Ghana · SPMS
+              Department of Computer Science · SPMS · University of Ghana
             </p>
             <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
               fontSize: 15, color: "rgba(255,255,255,0.6)",
@@ -585,7 +585,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
             {[
               { quote: "Presenting my thesis research here was a turning point. The feedback from the judges helped me refine my work before my final defence.", name: "Ama Boateng", prog: "MPhil Computer Science", photo: img.research },
-              { quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Data Science", photo: img.students },
+              { quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Computer Science", photo: img.students },
               { quote: "I wasn't sure if my work was ready to present, but the committee was very encouraging. The experience gave me real academic confidence.", name: "Efua Mensah", prog: "MSc Computer Science", photo: img.workshop },
             ].map((t, i) => (
               <div key={i} className="card" style={{ position: "relative" }}>

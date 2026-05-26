@@ -3,11 +3,11 @@ import { useState } from "react";
 const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sponsorship / Partnership", "General Enquiry"];
 
 export default function ContactPage({ contact = {}, images = {} }) {
-  const email    = contact.email    || "pgworkshop@cs.ug.edu.gh";
+  const email    = contact.email    || "dcsworkshop@ug.edu.gh";
   const website  = contact.website  || "www.cs.ug.edu.gh";
-  const location = contact.location || "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana";
+  const location = contact.location || "Department of Computer Science\nUniversity of Ghana, Legon\nP.O. Box LG 25, Accra, Ghana";
   const hours    = contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT";
-  const whatsapp = contact.whatsapp || "233000000000";
+  const whatsapp = contact.whatsapp || "233536909471";
   const [form, setForm]     = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});

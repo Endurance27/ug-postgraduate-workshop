@@ -1,5 +1,5 @@
 export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {} }) {
-  const contactEmail = contact.email || "pgworkshop@cs.ug.edu.gh";
+  const contactEmail = contact.email || "dcsworkshop@ug.edu.gh";
   const publication  = footer.publication || "CBAS Journal";
   return (
     <main>

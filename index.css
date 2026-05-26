@@ -344,8 +344,11 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
 .dark-mode .btn-gold { background: #b8922a !important; color: #fff !important; }
 .dark-mode .btn-gold:hover { background: #9e7a1e !important; }
 
-.dark-mode .btn-outline { color: #fff !important; border-color: rgba(255,255,255,0.5) !important; }
-.dark-mode .btn-outline:hover { background: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.7) !important; }
+.dark-mode .btn-outline {
+  background: #fff !important; color: #0d1117 !important;
+  border-color: #fff !important;
+}
+.dark-mode .btn-outline:hover { background: rgba(255,255,255,0.88) !important; }
 
 /* ── Buttons — inline-styled (ordered: generic first, specific last) */
 /* White / light-grey → elevated dark */
@@ -360,7 +363,9 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
 .dark-mode button[style*="background: #fafafa"] {
   background: #21262d !important; color: #79c0ff !important; border-color: #30363d !important;
 }
-.dark-mode button[style*="background: transparent"] { background: #161b22 !important; color: #79c0ff !important; }
+.dark-mode button[style*="background: transparent"] {
+  background: #fff !important; color: #0d1117 !important; border-color: #fff !important;
+}
 /* Status-tinted buttons */
 .dark-mode button[style*="background: #E5EAF3"],
 .dark-mode button[style*="background: #e5eaf3"],
@@ -382,14 +387,16 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
 /* Dashed add/upload buttons */
 .dark-mode button[style*="dashed #ddd"]    { background: #161b22 !important; color: #7ab0e0 !important; border-color: #30363d !important; }
 .dark-mode button[style*="dashed #C9A84C"] { background: #161b22 !important; color: #C9A84C !important; border-color: #C9A84C !important; }
-/* Filter/category/day-tab pills (inactive — border-based match) */
+/* Filter/category/day-tab pills (inactive — border-based match) → white frame */
 .dark-mode button[style*="border: 2px solid #ddd"],
 .dark-mode button[style*="border: 1.5px solid #ddd"],
 .dark-mode button[style*="border: 1.5px solid #e0e0e0"],
 .dark-mode button[style*="border: 1px solid #ddd"],
 .dark-mode button[style*="border: 1px solid #eee"],
-.dark-mode button[style*="border: 1.5px solid #eee"] {
-  background: #21262d !important; color: #79c0ff !important; border-color: #30363d !important;
+.dark-mode button[style*="border: 1.5px solid #eee"],
+.dark-mode button[style*="border: 1px solid #e8e8e8"],
+.dark-mode button[style*="border: 1px solid #e0e0e0"] {
+  background: #fff !important; color: #0d1117 !important; border-color: #fff !important;
 }
 /* Sticky tab — inactive state */
 .dark-mode button[style*="border-bottom: 2px solid transparent"] {
@@ -567,6 +574,13 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
 .dark-mode span[style*="background: #ff4444"]   { background: #ff4444 !important; }
 /* Muted offline dot */
 .dark-mode span[style*="background: #555"][style*="border-radius: 50%"] { background: #484f58 !important; }
+/* Hero outline button (rgba white tint background) → white frame */
+.dark-mode button[style*="background: rgba(255,255,255,0.06)"],
+.dark-mode button[style*="background: rgba(255,255,255,0.08)"],
+.dark-mode button[style*="background: rgba(255,255,255,0.1)"],
+.dark-mode button[style*="background: rgba(255,255,255,0.12)"] {
+  background: #fff !important; color: #0d1117 !important; border-color: #fff !important;
+}
 /* rgba tinted chips — just slightly adjust opacity for readability */
 .dark-mode *[style*="background: rgba(201,168,76"]  { opacity: 0.9; }
 .dark-mode *[style*="background: rgba(220,50,50"]   { opacity: 0.9; }

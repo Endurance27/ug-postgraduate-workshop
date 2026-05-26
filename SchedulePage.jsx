@@ -102,16 +102,35 @@ export default function SchedulePage({ schedule: days, images = {} }) {
 
       <div className="container section">
         {/* TRACK LEGEND */}
-        <div style={{ marginBottom: 48 }}>
-          <h3 style={{ marginBottom: 16 }}>Parallel Tracks</h3>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            {tracks.map((t, i) => (
+        <div style={{ marginBottom: 52 }}>
+          <div style={{ marginBottom: 20 }}>
+            <span className="badge badge-blue" style={{ marginBottom: 8, display: "inline-block" }}>Parallel Tracks</span>
+            <h3 style={{ margin: 0, fontSize: "1.2rem", color: "#1B3A6B" }}>Presentation Tracks</h3>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            {[
+              { name: "CS Track",              color: "#1B3A6B", bg: "#E5EAF3", icon: "💻", desc: "MSc & MPhil Computer Science presentations" },
+              { name: "Data Science Track",    color: "#0F2347", bg: "#e8edf6", icon: "📊", desc: "MSc & MPhil Data Science presentations" },
+              { name: "Technical Track",       color: "#b5700a", bg: "#fdf3e0", icon: "⚙️", desc: "Applied & technical paper presentations" },
+              { name: "IT for Business Track", color: "#7b1fa2", bg: "#f5e8fa", icon: "💼", desc: "IT for Business observation & optional presentations" },
+              { name: "Poster Track",          color: "#c62828", bg: "#fdecea", icon: "🗂️", desc: "Poster display and Q&A sessions" },
+            ].map((t, i) => (
               <div key={i} style={{
-                background: t.bg, borderLeft: `3px solid ${t.color}`,
-                borderRadius: 8, padding: "10px 16px", minWidth: 200
-              }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: t.color }}>{t.name}</div>
-                <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>{t.desc}</div>
+                background: t.bg,
+                borderLeft: `4px solid ${t.color}`,
+                borderRadius: 12, padding: "18px 20px",
+                display: "flex", alignItems: "flex-start", gap: 14,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+                transition: "box-shadow 0.2s, transform 0.2s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${t.color}22`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "none"; }}
+              >
+                <span style={{ fontSize: 26, flexShrink: 0, marginTop: 2 }}>{t.icon}</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: t.color, marginBottom: 5 }}>{t.name}</div>
+                  <div style={{ fontSize: 13, color: "#555", lineHeight: 1.55 }}>{t.desc}</div>
+                </div>
               </div>
             ))}
           </div>

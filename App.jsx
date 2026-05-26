@@ -192,9 +192,10 @@ export default function App() {
         return {
           ...INIT_CONTENT,
           ...parsed,
-          event:       { ...INIT_CONTENT.event,       ...(parsed.event  || {}) },
+          event:       { ...INIT_CONTENT.event,       ...(parsed.event   || {}) },
           about:       parsed.about       || INIT_CONTENT.about,
           pastWinners: parsed.pastWinners || INIT_CONTENT.pastWinners,
+          contact:     { ...(parsed.contact || {}), ...INIT_CONTENT.contact },
         };
       }
       return INIT_CONTENT;

@@ -412,13 +412,17 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               {/* overlay info card */}
               <div style={{
                 position: "absolute", bottom: -24, left: -24,
-                background: "#1B3A6B", borderRadius: 14,
-                padding: "20px 24px", boxShadow: "0 12px 32px rgba(0,0,0,0.2)",
-                minWidth: 220,
+                background: "linear-gradient(135deg, #1B3A6B, #0F2347)",
+                borderRadius: 14, borderTop: "3px solid #C9A84C",
+                padding: "20px 24px", boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+                minWidth: 230,
               }}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>PUBLICATION OPPORTUNITY</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#C9A84C" }}>CBAS Journal</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 4 }}>Top papers considered for publication</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 18 }}>📖</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#C9A84C", textTransform: "uppercase", letterSpacing: "0.08em" }}>Publication Opportunity</span>
+                </div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 6 }}>CBAS Journal</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", lineHeight: 1.5 }}>Top papers considered for publication</div>
               </div>
             </div>
           </div>
@@ -478,34 +482,39 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           position: "absolute", inset: 0,
           backgroundImage: `url('${img.students}')`,
           backgroundSize: "cover", backgroundPosition: "center",
-          opacity: 0.08,
+          opacity: 0.12,
         }} />
+        {/* gradient overlay for depth */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(15,35,71,0.85) 0%, rgba(27,58,107,0.7) 100%)" }} />
         <div className="section container" style={{ position: "relative", textAlign: "center" }}>
-          <span className="badge" style={{ background: "rgba(201,168,76,0.2)", color: "#C9A84C", marginBottom: 16 }}>Recognition</span>
+          <span className="badge" style={{ background: "rgba(201,168,76,0.3)", color: "#C9A84C", marginBottom: 16, border: "1px solid rgba(201,168,76,0.4)" }}>Recognition</span>
           <h2 style={{ color: "#fff", fontSize: "clamp(1.5rem, 3vw, 2rem)", marginBottom: 12 }}>Awards &amp; Recognition</h2>
-          <p style={{ color: "rgba(255,255,255,0.65)", maxWidth: 500, margin: "0 auto 48px", fontSize: 15 }}>
+          <p style={{ color: "rgba(255,255,255,0.8)", maxWidth: 500, margin: "0 auto 48px", fontSize: 15 }}>
             A panel of academic judges evaluates all presentations and rewards the top performers.
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {[
-              { pos: "🥇", label: "First Place",  desc: "Best overall presentation", delay: "delay-1" },
-              { pos: "🥈", label: "Second Place", desc: "Runner-up recognition",     delay: "delay-2" },
-              { pos: "🥉", label: "Third Place",  desc: "Honourable mention",        delay: "delay-3" },
+              { pos: "🥇", label: "First Place",  desc: "Best overall presentation", border: "#C9A84C" },
+              { pos: "🥈", label: "Second Place", desc: "Runner-up recognition",     border: "#b0b8c8" },
+              { pos: "🥉", label: "Third Place",  desc: "Honourable mention",        border: "#c87941" },
             ].map((a, i) => (
               <div key={i}
-                className={awardsVisible ? `animate-fade-up ${a.delay}` : "pre-anim"}
+                className={awardsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
                 style={{
-                  background: "rgba(255,255,255,0.07)", backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  borderRadius: 16, padding: "32px 40px", minWidth: 200,
-                  transition: "transform 0.25s, background 0.25s",
+                  background: "rgba(255,255,255,0.13)",
+                  backdropFilter: "blur(12px)",
+                  border: `2px solid ${a.border}60`,
+                  borderTop: `3px solid ${a.border}`,
+                  borderRadius: 18, padding: "36px 44px", minWidth: 210,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                  transition: "transform 0.25s, background 0.25s, box-shadow 0.25s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.background = "rgba(255,255,255,0.12)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,0.35)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.25)"; }}
               >
-                <div style={{ fontSize: 44, marginBottom: 12 }}>{a.pos}</div>
-                <div style={{ fontWeight: 600, fontSize: 17, color: "#C9A84C" }}>{a.label}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 5 }}>{a.desc}</div>
+                <div style={{ fontSize: 52, marginBottom: 14 }}>{a.pos}</div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: "#fff", marginBottom: 6 }}>{a.label}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{a.desc}</div>
               </div>
             ))}
           </div>
@@ -526,28 +535,28 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
             {[
               {
+                icon: "🎤",
                 role: "TBA — Keynote Speaker",
                 session: "Opening Keynote",
                 status: "Announcement Coming Soon",
-                affil: "",
                 topic: "Technology, Research & the Future of Computing in Africa",
                 accent: "#1B3A6B",
                 tag: "Keynote",
               },
               {
+                icon: "💡",
                 role: "TBA — Invited Speaker",
                 session: "Industry Insights Session",
                 status: "Industry / Academic Partner",
-                affil: "",
                 topic: "AI, Machine Learning & Applied Computer Science",
                 accent: "#C9A84C",
                 tag: "Industry",
               },
               {
+                icon: "📚",
                 role: "TBA — Panel Chair",
                 session: "Research Methods Panel",
                 status: "University of Ghana, DCS Faculty",
-                affil: "",
                 topic: "Publishing Research: From Submission to Acceptance",
                 accent: "#0F2347",
                 tag: "Panel",
@@ -560,13 +569,13 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(27,58,107,0.13)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
-                {/* placeholder avatar */}
+                {/* session icon */}
                 <div style={{
                   width: 64, height: 64, borderRadius: "50%",
-                  background: "#f0f0f0", border: `2px dashed ${s.accent}40`,
+                  background: `${s.accent}15`, border: `2px solid ${s.accent}30`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 28, marginBottom: 16, color: "#bbb",
-                }}>?</div>
+                  fontSize: 28, marginBottom: 16,
+                }}>{s.icon}</div>
 
                 <div style={{
                   display: "inline-block", fontSize: 10, fontWeight: 700,

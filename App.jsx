@@ -138,9 +138,10 @@ const INIT_CONTENT = {
   contact: {
     email:    "dcsworkshop@ug.edu.gh",
     website:  "www.cs.ug.edu.gh",
-    location: "Department of Computer Science\nUniversity of Ghana, Legon\nP.O. Box LG 25, Accra, Ghana",
+    location: "Department of Computer Science, University of Ghana, Legon, P.O. Box LG 25, Accra, Ghana",
     hours:    "Mon–Fri · 8:00 AM – 5:00 PM GMT",
     whatsapp: "233536909471",
+    phone:    "+233 (0) 536 909 471",
   },
   footer: {
     tagline:     "2nd Annual Postgraduate Students Workshop",

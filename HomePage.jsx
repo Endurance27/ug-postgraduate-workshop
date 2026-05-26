@@ -332,30 +332,43 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── IMPORTANT DATES ──────────────────────────────────────────── */}
-      <section style={{ background: "#0F2347", padding: "36px 0", borderTop: "3px solid #C9A84C" }}>
+      <section style={{ background: "#0F2347", padding: "52px 0", borderTop: "4px solid #C9A84C" }}>
         <div className="container">
-          <div style={{ display: "flex", gap: 0, alignItems: "stretch", flexWrap: "wrap" }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <span style={{
+              display: "inline-block", fontSize: 11, fontWeight: 800,
+              background: "rgba(201,168,76,0.2)", color: "#C9A84C",
+              padding: "4px 14px", borderRadius: 20, letterSpacing: "0.12em",
+              textTransform: "uppercase", border: "1px solid rgba(201,168,76,0.4)",
+              marginBottom: 12,
+            }}>Key Dates</span>
+            <h2 style={{ color: "#fff", fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", margin: 0, fontFamily: "Playfair Display, serif" }}>
+              Important Deadlines
+            </h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
             {[
-              { label: "Registration Opens",       date: "Now Open",      icon: "✅", done: true  },
+              { label: "Registration Opens",           date: "Now Open",    icon: "✅", done: true  },
               { label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: "📄", done: false },
-              { label: "Acceptance Notification",  date: "8 Aug 2026",    icon: "📬", done: false },
-              { label: "Workshop Begins",          date: "27 Aug 2026",   icon: "🎓", done: false },
-            ].map((d, i, arr) => (
+              { label: "Acceptance Notification",      date: "8 Aug 2026",  icon: "📬", done: false },
+              { label: "Workshop Begins",              date: "27 Aug 2026", icon: "🎓", done: false },
+            ].map((d, i) => (
               <div key={i} style={{
-                flex: 1, minWidth: 180,
-                padding: "16px 24px",
-                borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.1)" : "none",
-                display: "flex", gap: 14, alignItems: "center",
+                background: d.done ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.07)",
+                border: `1px solid ${d.done ? "rgba(74,222,128,0.3)" : "rgba(201,168,76,0.25)"}`,
+                borderTop: `3px solid ${d.done ? "#4ade80" : "#C9A84C"}`,
+                borderRadius: 14, padding: "24px 22px",
+                display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
               }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{d.icon}</span>
+                <span style={{ fontSize: 30 }}>{d.icon}</span>
                 <div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", letterSpacing: "0.04em", marginBottom: 6, lineHeight: 1.4 }}>
                     {d.label}
                   </div>
                   <div style={{
-                    fontSize: 15, fontWeight: 700,
+                    fontSize: 18, fontWeight: 800,
                     color: d.done ? "#4ade80" : "#C9A84C",
-                    fontFamily: "DM Sans, sans-serif",
+                    fontFamily: "DM Sans, sans-serif", letterSpacing: "-0.01em",
                   }}>{d.date}</div>
                 </div>
               </div>

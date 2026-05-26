@@ -5,7 +5,8 @@ const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sp
 export default function ContactPage({ contact = {}, images = {} }) {
   const email    = contact.email    || "dcsworkshop@ug.edu.gh";
   const website  = contact.website  || "www.cs.ug.edu.gh";
-  const location = contact.location || "Department of Computer Science\nUniversity of Ghana, Legon\nP.O. Box LG 25, Accra, Ghana";
+  const location = contact.location || "Department of Computer Science, University of Ghana, Legon, P.O. Box LG 25, Accra, Ghana";
+  const phone    = contact.phone    || "+233 (0) 536 909 471";
   const hours    = contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT";
   const whatsapp = contact.whatsapp || "233536909471";
   const [form, setForm]     = useState({ name: "", email: "", subject: "", message: "" });
@@ -128,11 +129,12 @@ export default function ContactPage({ contact = {}, images = {} }) {
                 <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Contact Details</h4>
                 {[
                   { icon: "✉️", label: "Email",    value: email    },
+                  { icon: "📞", label: "Phone",    value: phone    },
                   { icon: "🌐", label: "Website",  value: website  },
                   { icon: "📍", label: "Location", value: location },
                   { icon: "⏰", label: "Hours",    value: hours    },
                 ].map((c, i) => (
-                  <div key={i} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: i < 3 ? "1px solid #f5f5f5" : "none" }}>
+                  <div key={i} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: i < 4 ? "1px solid #f5f5f5" : "none" }}>
                     <span style={{ fontSize: 18, flexShrink: 0, marginTop: 2 }}>{c.icon}</span>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{c.label}</div>

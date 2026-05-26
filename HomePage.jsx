@@ -512,6 +512,90 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
         </div>
       </section>
 
+      {/* ── FEATURED SESSIONS ────────────────────────────────────────── */}
+      <section className="section" style={{ background: "#fff" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: 12 }}>
+            <span className="badge badge-blue" style={{ marginBottom: 12 }}>Programme Highlights</span>
+            <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", marginBottom: 10 }}>Featured Sessions</h2>
+            <p style={{ fontWeight: 600, fontSize: 16, color: "#1B3A6B", marginBottom: 8 }}>Keynote &amp; Invited Speakers</p>
+            <p style={{ color: "#666", fontSize: 14, maxWidth: 560, margin: "0 auto 44px", lineHeight: 1.75 }}>
+              Speaker announcements will be made progressively. Check back for updates as confirmed invitations are received.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+            {[
+              {
+                role: "TBA — Keynote Speaker",
+                session: "Opening Keynote",
+                status: "Announcement Coming Soon",
+                affil: "",
+                topic: "Technology, Research & the Future of Computing in Africa",
+                accent: "#1B3A6B",
+                tag: "Keynote",
+              },
+              {
+                role: "TBA — Invited Speaker",
+                session: "Industry Insights Session",
+                status: "Industry / Academic Partner",
+                affil: "",
+                topic: "AI, Machine Learning & Applied Computer Science",
+                accent: "#C9A84C",
+                tag: "Industry",
+              },
+              {
+                role: "TBA — Panel Chair",
+                session: "Research Methods Panel",
+                status: "University of Ghana, DCS Faculty",
+                affil: "",
+                topic: "Publishing Research: From Submission to Acceptance",
+                accent: "#0F2347",
+                tag: "Panel",
+              },
+            ].map((s, i) => (
+              <div key={i} className="card" style={{
+                borderTop: `4px solid ${s.accent}`,
+                transition: "box-shadow 0.2s, transform 0.2s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(27,58,107,0.13)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
+              >
+                {/* placeholder avatar */}
+                <div style={{
+                  width: 64, height: 64, borderRadius: "50%",
+                  background: "#f0f0f0", border: `2px dashed ${s.accent}40`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 28, marginBottom: 16, color: "#bbb",
+                }}>?</div>
+
+                <div style={{
+                  display: "inline-block", fontSize: 10, fontWeight: 700,
+                  background: s.accent, color: "#fff",
+                  padding: "3px 10px", borderRadius: 12,
+                  textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12,
+                }}>{s.tag}</div>
+
+                <h3 style={{ fontSize: "1rem", fontFamily: "Playfair Display, serif", marginBottom: 4, color: "#1a1a1a" }}>
+                  {s.session}
+                </h3>
+                <p style={{ fontSize: 13, color: s.accent, fontWeight: 600, marginBottom: 4 }}>{s.role}</p>
+                {s.status && (
+                  <p style={{ fontSize: 12, color: "#888", marginBottom: 12 }}>{s.status}</p>
+                )}
+                <div style={{
+                  background: "#f8f9fa", borderRadius: 8, padding: "10px 14px",
+                  borderLeft: `3px solid ${s.accent}`,
+                }}>
+                  <p style={{ fontSize: 12, color: "#555", lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>
+                    <strong style={{ color: "#1B3A6B", fontStyle: "normal" }}>Theme: </strong>{s.topic}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── ORGANIZERS ───────────────────────────────────────────────── */}
       <section ref={orgRef} className="section">
         <div className="container">

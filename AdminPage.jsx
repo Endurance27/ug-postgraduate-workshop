@@ -38,7 +38,7 @@ const TYPE_OPTIONS  = ["plenary", "parallel", "track", "break"];
 let _nextId = 9000;
 const uid = () => ++_nextId;
 
-export default function AdminPage({ siteContent, updateContent, navigate, darkMode, setDarkMode }) {
+export default function AdminPage({ siteContent, updateContent, navigate }) {
   const [authed, setAuthed] = useState(false);
   const [creds, setCreds]   = useState({ email: "", password: "" });
   const [tab, setTab]       = useState("home");
@@ -183,11 +183,6 @@ export default function AdminPage({ siteContent, updateContent, navigate, darkMo
           <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 13 }}>{event.edition}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={() => setDarkMode && setDarkMode(d => !d)} style={{
-            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: 8, padding: "6px 14px", color: "rgba(255,255,255,0.7)",
-            fontSize: 13, cursor: "pointer",
-          }}>{darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}</button>
           <button onClick={() => navigate && navigate("home")} style={{
             background: "#C9A84C", color: "#0F2347", border: "none",
             borderRadius: 8, padding: "7px 18px", fontSize: 13, fontWeight: 700,

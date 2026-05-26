@@ -183,7 +183,6 @@ const INIT_CONTENT = {
 export default function App() {
   const [page, setPage] = useState("home");
   const [registrant, setRegistrant] = useState(null);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("dcs-dark-mode") === "1");
   const [siteContent, setSiteContent] = useState(() => {
     try {
       const saved = localStorage.getItem("dcs-workshop-content");
@@ -206,9 +205,6 @@ export default function App() {
     localStorage.setItem("dcs-workshop-content", JSON.stringify(siteContent));
   }, [siteContent]);
 
-  useEffect(() => {
-    localStorage.setItem("dcs-dark-mode", darkMode ? "1" : "0");
-  }, [darkMode]);
 
   const navigate = (p) => { setPage(p); window.scrollTo(0, 0); };
   const updateContent = (section, value) =>
@@ -218,10 +214,10 @@ export default function App() {
   const isAdmin = page === "admin";
 
   return (
-    <div className={`app${darkMode ? " dark-mode" : ""}`}>
+    <div className="app">
 
       {/* Main Navbar — hidden in admin so no accidental navigation */}
-      {!isAdmin && <Navbar page={page} navigate={navigate} registrant={registrant} darkMode={darkMode} setDarkMode={setDarkMode} />}
+      {!isAdmin && <Navbar page={page} navigate={navigate} registrant={registrant} />}
 
       {page === "home"       && <HomePage navigate={navigate} event={siteContent.event} announcements={siteContent.announcements} feed={siteContent.feed} images={siteContent.images} />}
       {page === "about"      && <AboutPage navigate={navigate} images={siteContent.images} about={siteContent.about} event={siteContent.event} />}
@@ -240,8 +236,6 @@ export default function App() {
           siteContent={siteContent}
           updateContent={updateContent}
           navigate={navigate}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
         />
       )}
 

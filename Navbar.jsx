@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Navbar({ page, navigate, registrant, darkMode, setDarkMode }) {
+export default function Navbar({ page, navigate, registrant }) {
   const [open, setOpen] = useState(false);
   const links = [
     { key: "home",     label: "Home"       },
@@ -55,13 +55,6 @@ export default function Navbar({ page, navigate, registrant, darkMode, setDarkMo
               transition: "all 0.15s", cursor: "pointer", whiteSpace: "nowrap",
             }}>{l.label}</button>
           ))}
-          <button onClick={() => setDarkMode(d => !d)} title={darkMode ? "Light mode" : "Dark mode"} style={{
-            background: darkMode ? "#30363d" : "#f0f0f0",
-            border: "none", borderRadius: "50%", width: 34, height: 34,
-            fontSize: 16, cursor: "pointer", marginLeft: 6,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>{darkMode ? "☀️" : "🌙"}</button>
         </div>
 
         {/* Hamburger */}

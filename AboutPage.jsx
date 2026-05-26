@@ -289,7 +289,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
               ].map((g, i) => (
                 <div key={i} style={{ display: "flex", gap: 10, marginBottom: 11, alignItems: "flex-start" }}>
                   <span style={{ color: "#C9A84C", flexShrink: 0, fontSize: 14, marginTop: 1 }}>✓</span>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>{g}</span>
+                  <span style={{ fontSize: 13, color: "#fff", lineHeight: 1.6 }}>{g}</span>
                 </div>
               ))}
             </div>

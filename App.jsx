@@ -14,6 +14,7 @@ import SponsorsPage from "./SponsorsPage";
 import ContactPage from "./ContactPage";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import ChatBot from "./ChatBot";
 import "./index.css";
 
 const INIT_SCHEDULE = [
@@ -245,22 +246,25 @@ export default function App() {
       {/* Main Footer — hidden in admin */}
       {!isAdmin && <Footer navigate={navigate} footer={siteContent.footer} />}
 
-      {/* WhatsApp floating button — hidden in admin */}
+      {/* Floating action buttons — hidden in admin */}
       {!isAdmin && (
-        <a href="https://wa.me/233536909471?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
-          target="_blank" rel="noreferrer"
-          title="Chat on WhatsApp"
-          style={{
-            position: "fixed", bottom: 28, right: 28, zIndex: 999,
-            width: 56, height: 56, borderRadius: "50%",
-            background: "#25D366", color: "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 28, boxShadow: "0 4px 20px rgba(37,211,102,0.45)",
-            textDecoration: "none", transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-        >💬</a>
+        <>
+          <ChatBot />
+          <a href="https://wa.me/233536909471?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
+            target="_blank" rel="noreferrer"
+            title="Chat on WhatsApp"
+            style={{
+              position: "fixed", bottom: 28, right: 28, zIndex: 999,
+              width: 56, height: 56, borderRadius: "50%",
+              background: "#25D366", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 28, boxShadow: "0 4px 20px rgba(37,211,102,0.45)",
+              textDecoration: "none", transition: "transform 0.2s, box-shadow 0.2s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+          >💬</a>
+        </>
       )}
     </div>
   );

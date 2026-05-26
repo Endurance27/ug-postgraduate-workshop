@@ -1252,7 +1252,7 @@ function ContactPanel({ contact = {}, onChange }) {
 
       <div className="card">
         <div className="form-row">
-          <div className="form-group"><label>Email Address</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="pgworkshop@cs.ug.edu.gh" /></div>
+          <div className="form-group"><label>Email Address</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="dcsworkshop@ug.edu.gh" /></div>
           <div className="form-group"><label>Website</label><input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} placeholder="www.cs.ug.edu.gh" /></div>
         </div>
         <div className="form-row">
@@ -1816,7 +1816,7 @@ function SupportAdminPanel({ contact = {}, onChange }) {
 
       <div className="card">
         <div className="form-row">
-          <div className="form-group"><label>Email Address</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="pgworkshop@cs.ug.edu.gh" /></div>
+          <div className="form-group"><label>Email Address</label><input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="dcsworkshop@ug.edu.gh" /></div>
           <div className="form-group"><label>Website</label><input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} placeholder="www.cs.ug.edu.gh" /></div>
         </div>
         <div className="form-row">

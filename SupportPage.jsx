@@ -235,7 +235,7 @@ export default function SupportPage({ contact = {} }) {
                 <div className="card">
                   <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Contact Details</h4>
                   {[
-                    { icon: "✉️", label: "Email",    value: contact.email    || "pgworkshop@cs.ug.edu.gh" },
+                    { icon: "✉️", label: "Email",    value: contact.email    || "dcsworkshop@ug.edu.gh" },
                     { icon: "🌐", label: "Website",  value: contact.website  || "www.cs.ug.edu.gh" },
                     { icon: "📍", label: "Location", value: contact.location || "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana" },
                     { icon: "⏰", label: "Hours",    value: contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT" },

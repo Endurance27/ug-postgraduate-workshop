@@ -173,7 +173,7 @@ const INIT_CONTENT = {
     { src: "/images/dcs-research.jpg",              caption: "Individual Research Work",   year: "2025" },
   ],
   recordings: [
-    { day: "Day 1", label: "Opening Ceremony & Keynote Address",        color: "#1B3A6B", youtubeId: "",             start: 0,    highlights: ["Welcome Address by HOD", "Keynote by Distinguished Speaker", "Morning Parallel Track Sessions"] },
+    { day: "Day 1", label: "Opening Ceremony & Keynote Address",        color: "#1B3A6B", youtubeId: "BWErDrKoRS4",   start: 0,    highlights: ["Welcome Address by HOD", "Keynote by Distinguished Speaker", "Morning Parallel Track Sessions"] },
     { day: "Day 2", label: "Research Presentations & Panel Discussion", color: "#C9A84C", youtubeId: "1KWiyZnJFmw", start: 9624, highlights: ["Poster & Technical Paper Sessions", "Faculty Panel Discussion", "Short Paper Presentations"] },
     { day: "Day 3", label: "Final Presentations & Awards Ceremony",     color: "#7b1fa2", youtubeId: "NUAZDcQ_lJs", start: 6,    highlights: ["Regular Paper Final Session", "Judges' Deliberation", "Awards Ceremony & Closing"] },
   ],

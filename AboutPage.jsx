@@ -108,7 +108,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="video-grid">
             {[
-              { day: "DAY 1", label: "Opening Ceremony & First Day Sessions",       color: "#1B3A6B", id: null,           start: 0    },
+              { day: "DAY 1", label: "Opening Ceremony & First Day Sessions",       color: "#1B3A6B", id: "BWErDrKoRS4", start: 0    },
               { day: "DAY 2", label: "Technical Presentations & Panel Discussions",  color: "#C9A84C", id: "1KWiyZnJFmw", start: 9624 },
               { day: "DAY 3", label: "Closing Ceremony & Awards Announcement",       color: "#7b1fa2", id: "NUAZDcQ_lJs", start: 6    },
             ].map((v, i) => (

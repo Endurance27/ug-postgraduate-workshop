@@ -1,3 +1,4 @@
+import { Calendar, Laptop, BarChart2, Settings, Briefcase, Layers, Printer } from "lucide-react";
 
 const tracks = [
   { name: "CS Track", color: "#1B3A6B", bg: "#E5EAF3", desc: "MSc & MPhil Computer Science presentations" },
@@ -109,11 +110,11 @@ export default function SchedulePage({ schedule: days, images = {} }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
             {[
-              { name: "CS Track",              color: "#1B3A6B", bg: "#E5EAF3", icon: "💻", desc: "MSc & MPhil Computer Science presentations" },
-              { name: "Data Science Track",    color: "#0F2347", bg: "#e8edf6", icon: "📊", desc: "MSc & MPhil Data Science presentations" },
-              { name: "Technical Track",       color: "#b5700a", bg: "#fdf3e0", icon: "⚙️", desc: "Applied & technical paper presentations" },
-              { name: "IT for Business Track", color: "#7b1fa2", bg: "#f5e8fa", icon: "💼", desc: "IT for Business observation & optional presentations" },
-              { name: "Poster Track",          color: "#c62828", bg: "#fdecea", icon: "🗂️", desc: "Poster display and Q&A sessions" },
+              { name: "CS Track",              color: "#1B3A6B", bg: "#E5EAF3", icon: <Laptop size={22} />, desc: "MSc & MPhil Computer Science presentations" },
+              { name: "Data Science Track",    color: "#0F2347", bg: "#e8edf6", icon: <BarChart2 size={22} />, desc: "MSc & MPhil Data Science presentations" },
+              { name: "Technical Track",       color: "#b5700a", bg: "#fdf3e0", icon: <Settings size={22} />, desc: "Applied & technical paper presentations" },
+              { name: "IT for Business Track", color: "#7b1fa2", bg: "#f5e8fa", icon: <Briefcase size={22} />, desc: "IT for Business observation & optional presentations" },
+              { name: "Poster Track",          color: "#c62828", bg: "#fdecea", icon: <Layers size={22} />, desc: "Poster display and Q&A sessions" },
             ].map((t, i) => (
               <div key={i} style={{
                 background: t.bg,
@@ -126,7 +127,7 @@ export default function SchedulePage({ schedule: days, images = {} }) {
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${t.color}22`; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "none"; }}
               >
-                <span style={{ fontSize: 26, flexShrink: 0, marginTop: 2 }}>{t.icon}</span>
+                <span style={{ color: t.color, flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center" }}>{t.icon}</span>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: t.color, marginBottom: 5 }}>{t.name}</div>
                   <div style={{ fontSize: 13, color: "#555", lineHeight: 1.55 }}>{t.desc}</div>
@@ -161,14 +162,14 @@ export default function SchedulePage({ schedule: days, images = {} }) {
                 padding: "7px 14px", fontSize: 13, fontWeight: 600,
                 textDecoration: "none", transition: "background 0.15s",
               }}
-            >📅 Add to Calendar</a>
+            ><Calendar size={14} /> Add to Calendar</a>
             <button onClick={() => window.print()} style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               background: "#fff", color: "#555",
               border: "1.5px solid #ddd", borderRadius: 8,
               padding: "7px 14px", fontSize: 13, fontWeight: 600,
               cursor: "pointer", transition: "background 0.15s",
-            }}>🖨 Print Programme</button>
+            }}><Printer size={14} /> Print Programme</button>
           </div>
         </div>
 

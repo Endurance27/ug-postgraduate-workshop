@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Mail, Phone, Globe, MapPin, Clock, MessageCircle, ArrowRight } from "lucide-react";
 
 const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sponsorship / Partnership", "General Enquiry"];
 
@@ -59,7 +60,7 @@ export default function ContactPage({ contact = {}, images = {} }) {
       <div className="container section">
         {submitted ? (
           <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-            <div style={{ fontSize: 64, marginBottom: 20 }}>✉️</div>
+            <div style={{ fontSize: 64, marginBottom: 20, display: "flex", justifyContent: "center" }}><Mail size={64} color="#1B3A6B" /></div>
             <h2 style={{ marginBottom: 12 }}>Thank you, {form.name.split(" ")[0]}!</h2>
             <p style={{ color: "#555", lineHeight: 1.75, marginBottom: 24 }}>
               Your message has been received. The Workshop Planning Committee will respond to{" "}
@@ -107,7 +108,7 @@ export default function ContactPage({ contact = {}, images = {} }) {
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "13px" }}>
-                  Send Message →
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Send Message <ArrowRight size={14} /></span>
                 </button>
               </div>
             </form>
@@ -128,14 +129,14 @@ export default function ContactPage({ contact = {}, images = {} }) {
               <div className="card">
                 <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Contact Details</h4>
                 {[
-                  { icon: "✉️", label: "Email",    value: email    },
-                  { icon: "📞", label: "Phone",    value: phone    },
-                  { icon: "🌐", label: "Website",  value: website  },
-                  { icon: "📍", label: "Location", value: location },
-                  { icon: "⏰", label: "Hours",    value: hours    },
+                  { icon: <Mail size={18} />,    label: "Email",    value: email    },
+                  { icon: <Phone size={18} />,   label: "Phone",    value: phone    },
+                  { icon: <Globe size={18} />,   label: "Website",  value: website  },
+                  { icon: <MapPin size={18} />,  label: "Location", value: location },
+                  { icon: <Clock size={18} />,   label: "Hours",    value: hours    },
                 ].map((c, i) => (
                   <div key={i} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: i < 4 ? "1px solid #f5f5f5" : "none" }}>
-                    <span style={{ fontSize: 18, flexShrink: 0, marginTop: 2 }}>{c.icon}</span>
+                    <span style={{ flexShrink: 0, marginTop: 2, color: "#1B3A6B" }}>{c.icon}</span>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{c.label}</div>
                       <div style={{ fontSize: 13, color: "#333", lineHeight: 1.6, whiteSpace: "pre-line" }}>{c.value}</div>
@@ -153,7 +154,7 @@ export default function ContactPage({ contact = {}, images = {} }) {
                     background: "#25D366", color: "#fff", borderRadius: 8,
                     padding: "10px 16px", textDecoration: "none", fontSize: 13, fontWeight: 600,
                   }}>
-                  <span style={{ fontSize: 18 }}>💬</span> Chat on WhatsApp
+                  <MessageCircle size={18} /> Chat on WhatsApp
                 </a>
               </div>
             </div>

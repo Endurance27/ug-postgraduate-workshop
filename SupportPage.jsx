@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Mail, Globe, MapPin, Clock, CreditCard, Trophy, ArrowRight } from "lucide-react";
 
 const FAQS = [
   {
     category: "Registration & Payment",
-    icon: "💳",
+    icon: <CreditCard size={20} color="#1B3A6B" />,
     items: [
       { q: "Who can register for the workshop?", a: "All postgraduate students at the University of Ghana are welcome. MSc, MPhil, and PhD students in Computer Science and Data Science are expected to present. MSc IT for Business students and other PG students may register as observers or optional presenters." },
       { q: "How much is the registration fee?", a: "The registration fee is GHS 100. This covers snacks, water, and all workshop materials across all three days." },
@@ -14,7 +15,7 @@ const FAQS = [
   },
   {
     category: "Attendance & Logistics",
-    icon: "📍",
+    icon: <MapPin size={20} color="#1B3A6B" />,
     items: [
       { q: "Is the workshop in-person, virtual, or hybrid?", a: "The workshop is hybrid. You can attend physically at the University of Ghana, Legon campus, or join virtually. Virtual participants will receive a link via email before the event." },
       { q: "Where exactly is the physical venue?", a: "The workshop is held at the Department of Computer Science, School of Physical & Mathematical Sciences (SPMS), University of Ghana, Legon. Specific room details will be shared with registered participants closer to the date." },
@@ -24,7 +25,7 @@ const FAQS = [
   },
   {
     category: "Awards & Judging",
-    icon: "🏆",
+    icon: <Trophy size={20} color="#1B3A6B" />,
     items: [
       { q: "How are presentations judged?", a: "A panel of academic judges evaluates presentations across five criteria: Research Quality (30%), Presentation Skills (25%), Content & Structure (20%), Q&A Performance (15%), and Practical Impact (10%)." },
       { q: "When are award winners announced?", a: "Winners are announced during the Awards Ceremony on Day 3 (Saturday, 29 August 2026) and published on the Awards page immediately after." },
@@ -145,7 +146,7 @@ export default function SupportPage({ contact = {} }) {
             {visibleFAQs.map((section, si) => (
               <div key={si} style={{ marginBottom: 32 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <span style={{ fontSize: 20 }}>{section.icon}</span>
+                  <span>{section.icon}</span>
                   <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: "1.1rem", color: "#1B3A6B" }}>{section.category}</h3>
                 </div>
                 <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
@@ -156,7 +157,7 @@ export default function SupportPage({ contact = {} }) {
 
             <div style={{ textAlign: "center", marginTop: 40, background: "#E5EAF3", borderRadius: 14, padding: "28px 24px" }}>
               <p style={{ fontSize: 15, color: "#333", marginBottom: 14 }}>Still have questions?</p>
-              <button onClick={() => setTab("contact")} className="btn-primary">Contact the Committee →</button>
+              <button onClick={() => setTab("contact")} className="btn-primary"><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Contact the Committee <ArrowRight size={14} /></span></button>
             </div>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function SupportPage({ contact = {} }) {
         <div className="container section">
           {submitted ? (
             <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-              <div style={{ fontSize: 64, marginBottom: 20 }}>✉️</div>
+              <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Mail size={64} color="#1B3A6B" /></div>
               <h2 style={{ marginBottom: 12 }}>Thank you, {form.name.split(" ")[0]}!</h2>
               <p style={{ color: "#555", lineHeight: 1.75, marginBottom: 24 }}>
                 Your message has been received. The Workshop Planning Committee will respond to <strong>{form.email}</strong> within 2–3 working days.
@@ -214,7 +215,7 @@ export default function SupportPage({ contact = {} }) {
                   </div>
 
                   <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "13px" }}>
-                    Send Message →
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Send Message <ArrowRight size={14} /></span>
                   </button>
                 </div>
               </form>
@@ -235,13 +236,13 @@ export default function SupportPage({ contact = {} }) {
                 <div className="card">
                   <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Contact Details</h4>
                   {[
-                    { icon: "✉️", label: "Email",    value: contact.email    || "dcsworkshop@ug.edu.gh" },
-                    { icon: "🌐", label: "Website",  value: contact.website  || "www.cs.ug.edu.gh" },
-                    { icon: "📍", label: "Location", value: contact.location || "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana" },
-                    { icon: "⏰", label: "Hours",    value: contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT" },
+                    { icon: <Mail size={18} />,   label: "Email",    value: contact.email    || "dcsworkshop@ug.edu.gh" },
+                    { icon: <Globe size={18} />,  label: "Website",  value: contact.website  || "www.cs.ug.edu.gh" },
+                    { icon: <MapPin size={18} />, label: "Location", value: contact.location || "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana" },
+                    { icon: <Clock size={18} />,  label: "Hours",    value: contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT" },
                   ].map((c, i) => (
                     <div key={i} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: i < 3 ? "1px solid #f5f5f5" : "none" }}>
-                      <span style={{ fontSize: 18, flexShrink: 0, marginTop: 2 }}>{c.icon}</span>
+                      <span style={{ flexShrink: 0, marginTop: 2, color: "#1B3A6B" }}>{c.icon}</span>
                       <div>
                         <div style={{ fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{c.label}</div>
                         <div style={{ fontSize: 13, color: "#333", lineHeight: 1.6, whiteSpace: "pre-line" }}>{c.value}</div>

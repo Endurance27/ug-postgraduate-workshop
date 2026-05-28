@@ -1,3 +1,5 @@
+import { ArrowRight, Play, Video, Calendar, Globe, BookOpen, Trophy, FolderOpen, FileText, ClipboardList, Settings, Check, Sparkles } from "lucide-react";
+
 export default function AboutPage({ navigate, images = {}, about = {}, event = {} }) {
   const a = {
     badge:         about.badge         || "2nd Annual Edition",
@@ -58,7 +60,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 background: "#C9A84C", color: "#0F2347", border: "none",
                 borderRadius: 8, padding: "10px 22px", fontSize: 13,
                 fontWeight: 700, cursor: "pointer",
-              }}>Watch Highlights →</button>
+              }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Watch Highlights<ArrowRight size={14} /></span></button>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -130,7 +132,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                   </div>
                 ) : (
                   <div style={{ aspectRatio: "16/9", background: "#111", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 32, opacity: 0.4 }}>📹</span>
+                    <Video size={32} color="rgba(255,255,255,0.4)" />
                   </div>
                 )}
                 <div style={{ padding: "12px 16px" }}>
@@ -138,7 +140,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                   {v.id ? (
                     <a href={`https://www.youtube.com/watch?v=${v.id}&t=${v.start}s`} target="_blank" rel="noreferrer"
                       style={{ fontSize: 12, color: "#1B3A6B", fontWeight: 700, textDecoration: "none" }}>
-                      ▶ Watch on YouTube →
+                      <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Play size={12} /> Watch on YouTube <ArrowRight size={12} /></span>
                     </a>
                   ) : (
                     <span style={{ fontSize: 12, color: "#aaa" }}>Recording coming soon</span>
@@ -153,7 +155,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
             borderRadius: 10, padding: "12px 20px", textAlign: "center",
             fontSize: 13, color: "#1B6B3A", fontWeight: 500,
           }}>
-            🎉 Complete coverage from all 3 days of the maiden 2025 workshop is now available!
+            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Sparkles size={14} /> Complete coverage from all 3 days of the maiden 2025 workshop is now available!</span>
           </div>
         </div>
       </section>
@@ -163,10 +165,10 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
         <div className="container">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }} className="highlights-grid">
             {[
-              { icon: "📅", title: "3-Day Event",          body: "27–29 August 2026 — three full days of research presentations, panel discussions, and academic networking." },
-              { icon: "🌐", title: "Hybrid Format",         body: "Attend physically on the UG campus or join virtually. Parallel tracks run across CS, Data Science, and IT for Business." },
-              { icon: "📚", title: "CBAS Publication",      body: "Accepted papers may be considered for publication in the College of Basic and Applied Sciences (CBAS) Journal." },
-              { icon: "🏆", title: "Awards & Recognition",  body: "1st, 2nd, and 3rd place awards per presentation track, evaluated by an academic faculty review panel." },
+              { icon: <Calendar size={28} color="#1B3A6B" />, title: "3-Day Event",          body: "27–29 August 2026 — three full days of research presentations, panel discussions, and academic networking." },
+              { icon: <Globe size={28} color="#1B3A6B" />,    title: "Hybrid Format",         body: "Attend physically on the UG campus or join virtually. Parallel tracks run across CS, Data Science, and IT for Business." },
+              { icon: <BookOpen size={28} color="#1B3A6B" />, title: "CBAS Publication",      body: "Accepted papers may be considered for publication in the College of Basic and Applied Sciences (CBAS) Journal." },
+              { icon: <Trophy size={28} color="#1B3A6B" />,   title: "Awards & Recognition",  body: "1st, 2nd, and 3rd place awards per presentation track, evaluated by an academic faculty review panel." },
             ].map((h, i) => (
               <div key={i} style={{
                 background: "#f7f9fc", borderRadius: 14, padding: "28px 22px",
@@ -176,7 +178,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(27,58,107,0.1)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{ fontSize: 30, marginBottom: 14 }}>{h.icon}</div>
+                <div style={{ marginBottom: 14 }}>{h.icon}</div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: "#1B3A6B", marginBottom: 10 }}>{h.title}</div>
                 <p style={{ fontSize: 13, color: "#666", lineHeight: 1.75, margin: 0 }}>{h.body}</p>
               </div>
@@ -247,10 +249,10 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
           {/* Paper type cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 36 }} className="cfp-grid">
             {[
-              { icon: "🗂️", type: "Poster Presentation", pages: "1–2 pages", desc: "Visual display with Q&A interaction. Ideal for early-stage research.",             color: "#56d364", bg: "#eafbee" },
-              { icon: "📝", type: "Regular Paper",        pages: "3–5 pages", desc: "Full-length research with methodology, results and discussion.",                    color: "#1B3A6B", bg: "#e8eef6" },
-              { icon: "📋", type: "Short Paper",          pages: "4–6 pages", desc: "Focused presentation of work-in-progress or preliminary findings.",                color: "#79c0ff", bg: "#e8f4ff" },
-              { icon: "⚙️", type: "Technical Paper",      pages: "6–8 pages", desc: "System demonstration or technical implementation report.",                          color: "#f78166", bg: "#fff0ed" },
+              { icon: <FolderOpen size={24} color="#56d364" />,    type: "Poster Presentation", pages: "1–2 pages", desc: "Visual display with Q&A interaction. Ideal for early-stage research.",             color: "#56d364", bg: "#eafbee" },
+              { icon: <FileText size={24} color="#1B3A6B" />,      type: "Regular Paper",        pages: "3–5 pages", desc: "Full-length research with methodology, results and discussion.",                    color: "#1B3A6B", bg: "#e8eef6" },
+              { icon: <ClipboardList size={24} color="#79c0ff" />, type: "Short Paper",          pages: "4–6 pages", desc: "Focused presentation of work-in-progress or preliminary findings.",                color: "#79c0ff", bg: "#e8f4ff" },
+              { icon: <Settings size={24} color="#f78166" />,      type: "Technical Paper",      pages: "6–8 pages", desc: "System demonstration or technical implementation report.",                          color: "#f78166", bg: "#fff0ed" },
             ].map((c, i) => (
               <div key={i} style={{
                 background: c.bg, borderRadius: 14,
@@ -261,7 +263,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 onMouseEnter={e => e.currentTarget.style.boxShadow = `0 6px 20px ${c.color}25`}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
-                <div style={{ fontSize: 26, marginBottom: 10 }}>{c.icon}</div>
+                <div style={{ marginBottom: 10 }}>{c.icon}</div>
                 <div style={{ fontWeight: 700, fontSize: 13, color: c.color, marginBottom: 8 }}>{c.type}</div>
                 <div style={{
                   display: "inline-block", fontSize: 16, fontWeight: 800,
@@ -288,7 +290,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 "Accepted papers receive certificates of presentation",
               ].map((g, i) => (
                 <div key={i} style={{ display: "flex", gap: 10, marginBottom: 11, alignItems: "flex-start" }}>
-                  <span style={{ color: "#C9A84C", flexShrink: 0, fontSize: 14, marginTop: 1 }}>✓</span>
+                  <Check size={14} color="#C9A84C" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span style={{ fontSize: 13, color: "#fff", lineHeight: 1.6 }}>{g}</span>
                 </div>
               ))}
@@ -332,7 +334,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
           gap: 20, flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ fontSize: 28 }}>📄</span>
+            <FileText size={28} color="#C9A84C" />
             <div>
               <div style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>Ready to submit?</div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.88)" }}>Register first, then upload your abstract or paper via the registration portal.</div>
@@ -340,7 +342,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
           </div>
           <button className="btn-gold" onClick={() => navigate("register")}
             style={{ fontSize: 14, padding: "12px 32px", whiteSpace: "nowrap" }}>
-            Register &amp; Submit →
+            <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register &amp; Submit<ArrowRight size={14} /></span>
           </button>
         </div>
       </div>

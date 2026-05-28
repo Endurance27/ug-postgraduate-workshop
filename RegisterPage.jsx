@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Lock, Sparkles, Check, ArrowRight, ArrowLeft } from "lucide-react";
 
 const PROGRAMMES = [
   "MSc Computer Science",
@@ -27,7 +28,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
       </section>
       <div className="container section">
         <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 64, marginBottom: 20 }}>🔒</div>
+          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Lock size={64} color="#1B3A6B" /></div>
           <h2 style={{ marginBottom: 12 }}>Registration is Currently Closed</h2>
           <p style={{ color: "#555", lineHeight: 1.75, marginBottom: 28 }}>
             Registration for the {event.title || "DCS Postgraduate Research Workshop 2026"} is not yet open.
@@ -116,7 +117,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
       <div className="page-hero"><div className="container"><h1>Registration Complete!</h1></div></div>
       <div className="container section">
         <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
+          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Sparkles size={64} color="#C9A84C" /></div>
           <h2 style={{ marginBottom: 12 }}>You're registered, {form.fullName.split(" ")[0]}!</h2>
           <p style={{ color: "#555", marginBottom: 24, lineHeight: 1.7 }}>
             Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete. A confirmation email has been sent to <strong>{form.email}</strong>.
@@ -125,7 +126,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
             <strong>Next step:</strong> Submit your paper or abstract using the Paper Submission page.
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
-            <button className="btn-primary" onClick={() => navigate("submit")}>Submit Your Paper →</button>
+            <button className="btn-primary" onClick={() => navigate("submit")}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Submit Your Paper <ArrowRight size={14} /></span></button>
             <button className="btn-outline" onClick={() => navigate("home")}>Back to Home</button>
           </div>
         </div>
@@ -192,7 +193,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
               padding: "12px 18px",
               boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>✓ Snacks included</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 4 }}><Check size={14} /> Snacks included</div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>+ Water &amp; materials</div>
             </div>
           </div>
@@ -212,7 +213,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
                 fontWeight: i === step ? 600 : 400,
                 transition: "all 0.2s"
               }}>
-                <span style={{ marginRight: 6 }}>{i < step ? "✓" : i + 1}.</span>{s}
+                <span style={{ marginRight: 6, display: "inline-flex", alignItems: "center" }}>{i < step ? <Check size={14} /> : `${i + 1}.`}</span>{s}
               </div>
             ))}
           </div>
@@ -324,17 +325,17 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
                   disabled={paying}
                   style={{ width: "100%", justifyContent: "center", fontSize: 16, padding: "14px" }}
                 >
-                  {paying ? "Processing..." : `Pay GHS ${fee} via Paystack →`}
+                  {paying ? "Processing..." : <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Pay GHS {fee} via Paystack <ArrowRight size={14} /></span>}
                 </button>
               </div>
             )}
 
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 28 }}>
               {step > 0
-                ? <button className="btn-outline" onClick={back}>← Back</button>
+                ? <button className="btn-outline" onClick={back}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><ArrowLeft size={14} /> Back</span></button>
                 : <div />}
               {step < 3
-                ? <button className="btn-primary" onClick={next}>Continue →</button>
+                ? <button className="btn-primary" onClick={next}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Continue <ArrowRight size={14} /></span></button>
                 : <div />}
             </div>
           </div>

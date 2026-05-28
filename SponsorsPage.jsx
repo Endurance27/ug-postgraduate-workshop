@@ -1,3 +1,5 @@
+import { BookOpen, Handshake, Mail, ArrowRight, Check, Gem, Trophy, Medal, Landmark, FlaskConical, Laptop } from "lucide-react";
+
 export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {}, sponsors = [] }) {
   const contactEmail = contact.email || "dcsworkshop@ug.edu.gh";
   const publication  = footer.publication || "CBAS Journal";
@@ -38,15 +40,15 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
             {(sponsors.length > 0 ? sponsors : [
-              { id: 1, name: "University of Ghana",                        role: "Host Institution",      desc: "The University of Ghana, founded in 1948, is the premier research university in Ghana and one of the leading universities in Africa.", tier: "gold",    logo: "🏛️" },
-              { id: 2, name: "School of Physical & Mathematical Sciences", role: "Faculty Sponsor",        desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee.",                               tier: "gold",    logo: "🔬" },
-              { id: 3, name: "Department of Computer Science",             role: "Organising Department",  desc: "The Department of Computer Science at UG is the primary organiser of the workshop.",                                                tier: "primary", logo: "💻" },
+              { id: 1, name: "University of Ghana",                        role: "Host Institution",      desc: "The University of Ghana, founded in 1948, is the premier research university in Ghana and one of the leading universities in Africa.", tier: "gold",    logo: <Landmark size={40} style={{ color: "#C9A84C" }} /> },
+              { id: 2, name: "School of Physical & Mathematical Sciences", role: "Faculty Sponsor",        desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee.",                               tier: "gold",    logo: <FlaskConical size={40} style={{ color: "#C9A84C" }} /> },
+              { id: 3, name: "Department of Computer Science",             role: "Organising Department",  desc: "The Department of Computer Science at UG is the primary organiser of the workshop.",                                                tier: "primary", logo: <Laptop size={40} style={{ color: "#1B3A6B" }} /> },
             ]).map((s, i) => (
               <div key={i} className="card" style={{
                 borderTop: `4px solid ${s.tier === "gold" ? "#C9A84C" : "#1B3A6B"}`,
                 position: "relative", overflow: "hidden",
               }}>
-                <div style={{ fontSize: 40, marginBottom: 14 }}>{s.logo}</div>
+                <div style={{ marginBottom: 14, display: "flex" }}>{s.logo}</div>
                 <div className={s.tier === "gold" ? "badge-gold" : "badge-navy"} style={{
                   display: "inline-block", fontSize: 10, fontWeight: 700,
                   background: s.tier === "gold" ? "#C9A84C" : "#1B3A6B",
@@ -67,7 +69,7 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
           borderRadius: 18, padding: "40px 44px", marginBottom: 64,
           display: "flex", alignItems: "center", gap: 36, flexWrap: "wrap",
         }}>
-          <div style={{ fontSize: 52, flexShrink: 0 }}>📖</div>
+          <div style={{ flexShrink: 0, color: "#C9A84C" }}><BookOpen size={52} /></div>
           <div style={{ flex: 1, minWidth: 240 }}>
             <div style={{
               display: "inline-block", fontSize: 10, fontWeight: 700,
@@ -96,7 +98,7 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
             background: "#f9f9fb", border: "2px dashed #d0d8e8",
             borderRadius: 16, padding: "48px 36px", textAlign: "center",
           }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🤝</div>
+            <div style={{ marginBottom: 16, display: "flex", justifyContent: "center", color: "#1B3A6B" }}><Handshake size={48} /></div>
             <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: "1.2rem", color: "#1B3A6B", marginBottom: 8 }}>
               Partnerships Open for 2026
             </h3>
@@ -112,7 +114,7 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
                 borderRadius: 10, padding: "12px 28px",
                 fontSize: 14, fontWeight: 700, textDecoration: "none",
               }}>
-              ✉️ Express Interest in Sponsorship
+              <Mail size={16} /> Express Interest in Sponsorship
             </a>
           </div>
         </div>
@@ -126,10 +128,10 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
             {[
-              { tier: "Platinum", color: "#5b5b7a", icon: "💎", perks: ["Logo on all printed materials", "Banner at venue", "Speaking slot (5 min)", "4 complimentary registrations", "Social media mention"] },
-              { tier: "Gold",     color: "#C9A84C", icon: "🥇", perks: ["Logo on website & programme", "Exhibitor table at venue", "2 complimentary registrations", "Social media mention"] },
-              { tier: "Silver",   color: "#7a7a7a", icon: "🥈", perks: ["Logo on event programme", "1 complimentary registration", "Website acknowledgement"] },
-              { tier: "Bronze",   color: "#b56f3e", icon: "🥉", perks: ["Name on website", "Certificate of partnership"] },
+              { tier: "Platinum", color: "#5b5b7a", icon: <Gem    size={24} />, perks: ["Logo on all printed materials", "Banner at venue", "Speaking slot (5 min)", "4 complimentary registrations", "Social media mention"] },
+              { tier: "Gold",     color: "#C9A84C", icon: <Trophy size={24} />, perks: ["Logo on website & programme", "Exhibitor table at venue", "2 complimentary registrations", "Social media mention"] },
+              { tier: "Silver",   color: "#7a7a7a", icon: <Medal  size={24} />, perks: ["Logo on event programme", "1 complimentary registration", "Website acknowledgement"] },
+              { tier: "Bronze",   color: "#b56f3e", icon: <Medal  size={24} />, perks: ["Name on website", "Certificate of partnership"] },
             ].map((p, i) => (
               <div key={i} style={{
                 borderRadius: 14, overflow: "hidden",
@@ -137,13 +139,13 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
                 border: "1px solid #eee",
               }}>
                 <div style={{ background: p.color, padding: "18px 20px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 24 }}>{p.icon}</span>
+                  <span style={{ color: "#fff", display: "flex", alignItems: "center" }}>{p.icon}</span>
                   <span style={{ fontFamily: "Playfair Display, serif", fontWeight: 700, fontSize: 16, color: "#fff" }}>{p.tier}</span>
                 </div>
                 <div style={{ padding: "18px 20px", background: "#fff" }}>
                   {p.perks.map((perk, pi) => (
                     <div key={pi} style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "flex-start" }}>
-                      <span style={{ color: p.color, flexShrink: 0, fontSize: 13, marginTop: 1 }}>✓</span>
+                      <span style={{ color: p.color, flexShrink: 0, marginTop: 1, display: "flex", alignItems: "center" }}><Check size={13} /></span>
                       <span style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.5 }}>{perk}</span>
                     </div>
                   ))}
@@ -165,11 +167,11 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
             <a href={`mailto:${contactEmail}?subject=Sponsorship%20Enquiry`}
               className="btn-primary"
               style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
-              ✉️ {contactEmail}
+              <Mail size={16} /> {contactEmail}
             </a>
             {navigate && (
-              <button onClick={() => navigate("contact")} className="btn-outline">
-                Contact Form →
+              <button onClick={() => navigate("contact")} className="btn-outline" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                Contact Form <ArrowRight size={14} />
               </button>
             )}
           </div>

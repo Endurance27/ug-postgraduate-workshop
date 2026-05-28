@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import {
+  Home, Info, Calendar, Tv, Mic, Trophy, Handshake, Phone, FileText,
+  Image, Link, Shield, LayoutDashboard, Users, Megaphone, Radio,
+  Film, HelpCircle, BarChart2, Eye, EyeOff, Lock, Mail, ArrowRight,
+  ArrowLeft, Check, X, Upload, Download, Plus, Trash2, LogOut,
+  Settings, Star, BookOpen, Globe, MapPin, Clock, ChevronRight,
+  AlertCircle, Save, RefreshCw, User, ClipboardList, Layers, Cpu,
+} from "lucide-react";
+import {
   auth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -39,29 +47,29 @@ const SLIDE_IMAGES = [
 ];
 
 const SIDEBAR_PAGES = [
-  { key: "home",       icon: "🏠", label: "Home"        },
-  { key: "about",      icon: "ℹ️",  label: "About"       },
-  { key: "schedule",   icon: "🗓️", label: "Schedule"    },
-  { key: "stream",     icon: "📺", label: "Livestream"  },
-  { key: "speakers",   icon: "🎤", label: "Speakers"    },
-  { key: "awards",     icon: "🏆", label: "Awards"      },
-  { key: "sponsors",   icon: "🤝", label: "Sponsors"    },
-  { key: "contact",    icon: "📞", label: "Contact"     },
-  { key: "register",   icon: "📝", label: "Register"    },
-  { key: "gallery",    icon: "🖼️", label: "Gallery"     },
-  { key: "recordings", icon: "🎬", label: "Recordings"  },
-  { key: "support",    icon: "🆘", label: "Support"     },
+  { key: "home",       icon: Home,       label: "Home"        },
+  { key: "about",      icon: Info,       label: "About"       },
+  { key: "schedule",   icon: Calendar,   label: "Schedule"    },
+  { key: "stream",     icon: Tv,         label: "Livestream"  },
+  { key: "speakers",   icon: Mic,        label: "Speakers"    },
+  { key: "awards",     icon: Trophy,     label: "Awards"      },
+  { key: "sponsors",   icon: Handshake,  label: "Sponsors"    },
+  { key: "contact",    icon: Phone,      label: "Contact"     },
+  { key: "register",   icon: ClipboardList, label: "Register" },
+  { key: "gallery",    icon: Image,      label: "Gallery"     },
+  { key: "recordings", icon: Film,       label: "Recordings"  },
+  { key: "support",    icon: HelpCircle, label: "Support"     },
 ];
 
 const SIDEBAR_TOOLS = [
-  { key: "overview",      icon: "📊", label: "Dashboard"    },
-  { key: "participants",  icon: "👥", label: "Participants"  },
-  { key: "submissions",   icon: "📄", label: "Submissions"  },
-  { key: "announcements", icon: "📢", label: "Announcements"},
-  { key: "feed",          icon: "📡", label: "Live Feed"    },
-  { key: "images",        icon: "🖼️", label: "Site Images"  },
-  { key: "footer",        icon: "🔗", label: "Footer"       },
-  { key: "security",      icon: "🔐", label: "Security"     },
+  { key: "overview",      icon: LayoutDashboard, label: "Dashboard"    },
+  { key: "participants",  icon: Users,           label: "Participants"  },
+  { key: "submissions",   icon: FileText,        label: "Submissions"  },
+  { key: "announcements", icon: Megaphone,       label: "Announcements"},
+  { key: "feed",          icon: Radio,           label: "Live Feed"    },
+  { key: "images",        icon: Image,           label: "Site Images"  },
+  { key: "footer",        icon: Link,            label: "Footer"       },
+  { key: "security",      icon: Shield,          label: "Security"     },
 ];
 
 const TRACK_OPTIONS = ["", "CS Track", "Data Science Track", "Technical Track", "IT for Business Track", "Poster Track"];
@@ -156,7 +164,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
   if (!authReady) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f3f7" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 36, marginBottom: 16 }}>🔐</div>
+        <div style={{ marginBottom: 16, color: "#1B3A6B" }}><Shield size={36} /></div>
         <p style={{ color: "#555", fontSize: 15 }}>Loading admin console…</p>
       </div>
     </div>
@@ -253,12 +261,12 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
                   onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setAuthError(""); }}
                   placeholder="••••••••" style={{ paddingRight: 44 }}
                   onKeyDown={e => e.key === "Enter" && !authLoading && handleSignIn()} />
-                <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? "🙈" : "👁️"}</button>
+                <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
               </div>
             </div>
             <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, marginTop: 8, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
               onClick={handleSignIn} disabled={authLoading}>
-              {authLoading ? "Signing in…" : "Sign In →"}
+              {authLoading ? "Signing in…" : <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Sign In <ArrowRight size={14} /></span>}
             </button>
             <div style={{ textAlign: "center", marginTop: 20 }}>
               <span style={{ color: "#888", fontSize: 13 }}>Don't have an account? </span>
@@ -289,7 +297,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
                   <input type={showPass ? "text" : "password"} autoComplete="new-password" value={form.password} disabled={authLoading}
                     onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setAuthError(""); }}
                     placeholder="At least 6 characters" style={{ paddingRight: 44 }} />
-                  <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? "🙈" : "👁️"}</button>
+                  <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                 </div>
               </div>
               <div className="form-group">
@@ -299,19 +307,19 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
                     onChange={e => { setForm(f => ({ ...f, confirm: e.target.value })); setAuthError(""); }}
                     placeholder="Re-enter your password" style={{ paddingRight: 44 }}
                     onKeyDown={e => e.key === "Enter" && !authLoading && handleSignUp()} />
-                  <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showConfirm ? "🙈" : "👁️"}</button>
+                  <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                 </div>
               </div>
               {form.password && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
                   {[{ label: "6+ chars", ok: form.password.length >= 6 }, { label: "Uppercase", ok: /[A-Z]/.test(form.password) }, { label: "Number", ok: /\d/.test(form.password) }].map(({ label, ok }) => (
-                    <span key={label} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, fontWeight: 600, background: ok ? "#e8f5ee" : "#f5f5f5", color: ok ? "#27ae60" : "#aaa" }}>{ok ? "✓" : "○"} {label}</span>
+                    <span key={label} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, fontWeight: 600, background: ok ? "#e8f5ee" : "#f5f5f5", color: ok ? "#27ae60" : "#aaa" }}>{ok ? <Check size={11} /> : "○"} {label}</span>
                   ))}
                 </div>
               )}
               <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
                 onClick={handleSignUp} disabled={authLoading}>
-                {authLoading ? "Creating account…" : "Create Account →"}
+                {authLoading ? "Creating account…" : <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Create Account <ArrowRight size={14} /></span>}
               </button>
             </>}
             <div style={{ textAlign: "center", marginTop: 20 }}>
@@ -340,11 +348,11 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
               </div>
               <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
                 onClick={handleForgotPassword} disabled={authLoading}>
-                {authLoading ? "Sending…" : "Send Reset Link →"}
+                {authLoading ? "Sending…" : <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Send Reset Link <ArrowRight size={14} /></span>}
               </button>
             </>}
             <div style={{ textAlign: "center", marginTop: 20 }}>
-              <button type="button" onClick={() => { resetForm(); setAuthView("signin"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>← Back to Sign In</button>
+              <button type="button" onClick={() => { resetForm(); setAuthView("signin"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}><ArrowLeft size={14} /> Back to Sign In</span></button>
             </div>
           </>}
 
@@ -387,7 +395,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
             background: "#C9A84C", color: "#0F2347", border: "none",
             borderRadius: 8, padding: "7px 18px", fontSize: 13, fontWeight: 700,
             cursor: "pointer",
-          }}>← View Website</button>
+          }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}><ArrowLeft size={14} /> View Website</span></button>
         </div>
       </div>
 
@@ -416,7 +424,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
               fontSize: 13, fontWeight: tab === s.key ? 600 : 400,
               cursor: "pointer", textAlign: "left", transition: "all 0.15s",
             }}>
-              <span style={{ fontSize: 15 }}>{s.icon}</span>
+              <s.icon size={15} />
               {s.label}
             </button>
           ))}
@@ -432,7 +440,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
               fontSize: 13, fontWeight: tab === s.key ? 600 : 400,
               cursor: "pointer", textAlign: "left", transition: "all 0.15s",
             }}>
-              <span style={{ fontSize: 15 }}>{s.icon}</span>
+              <s.icon size={15} />
               {s.label}
             </button>
           ))}
@@ -670,13 +678,13 @@ function ImageUploadField({ value, onChange, label, placeholder }) {
         <div style={{ width: 96, height: 68, borderRadius: 8, overflow: "hidden", border: "1px solid #ddd", flexShrink: 0, background: "#f5f5f5" }}>
           {value
             ? <img src={value} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#ccc", fontSize: 22 }}>🖼️</div>}
+            : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><Image size={24} color="#ccc" /></div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           {isUpload ? (
             <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>Uploaded image</span>
-              <button type="button" onClick={() => onChange("")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+              <button type="button" onClick={() => onChange("")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
             </div>
           ) : (
             <input value={value || ""} onChange={e => onChange(e.target.value)}
@@ -685,7 +693,7 @@ function ImageUploadField({ value, onChange, label, placeholder }) {
           )}
           <button type="button" onClick={() => ref.current.click()}
             style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "5px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
-            ↑ Upload Image
+            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload Image</span>
           </button>
           <input ref={ref} type="file" accept="image/*" style={{ display: "none" }}
             onChange={e => {
@@ -713,7 +721,7 @@ function EventSettings({ event, onChange }) {
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Event Settings</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>Changes here appear immediately on the live website.</p>
 
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Settings saved and live on the site.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Settings saved and live on the site.</div>}
 
       <div className="card">
         <div className="form-row">
@@ -753,7 +761,7 @@ function EventSettings({ event, onChange }) {
             onChange={v => setForm(f => ({ ...f, submissionsOpen: v }))} />
         </div>
 
-        <button className="btn-primary" onClick={save}>Save Changes →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Changes <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -960,7 +968,7 @@ function ScheduleEditor({ schedule, onChange }) {
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button onClick={() => startEdit(s)} style={{ background: "#E5EAF3", color: "#1B3A6B", border: "none", borderRadius: 6, padding: "5px 12px", fontSize: 12, cursor: "pointer" }}>Edit</button>
-                  <button onClick={() => deleteSession(s.id)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 12, cursor: "pointer" }}>✕</button>
+                  <button onClick={() => deleteSession(s.id)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 12, cursor: "pointer" }}><X size={14} /></button>
                 </div>
               </div>
             )}
@@ -1063,7 +1071,7 @@ function ParticipantsPanel({ participants, onChange }) {
           background: "#1B3A6B", color: "#fff", border: "none",
           borderRadius: 8, padding: "9px 18px", fontSize: 13,
           fontWeight: 600, cursor: "pointer",
-        }}>⬇ Export CSV</button>
+        }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}><Download size={14} /> Export CSV</span></button>
       </div>
 
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
@@ -1158,7 +1166,7 @@ function SubmissionsPanel({ submissions, onChange }) {
                 <button onClick={() => setStatus(s.id, "Accepted")} style={{
                   background: "#e3f5eb", color: "#1B6B3A", border: "1px solid #a8d5b8",
                   borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer", fontWeight: 600,
-                }}>✓ Accept</button>
+                }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><Check size={14} /> Accept</span></button>
               )}
               {s.status !== "Under Review" && (
                 <button onClick={() => setStatus(s.id, "Under Review")} style={{
@@ -1226,7 +1234,7 @@ function FeedPanel({ feed, onChange }) {
             }}>{t}</button>
           ))}
         </div>
-        <button className="btn-primary" onClick={add}>Post Update →</button>
+        <button className="btn-primary" onClick={add}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Post Update <ArrowRight size={14} /></span></button>
       </div>
 
       {feed.length === 0 ? (
@@ -1309,7 +1317,7 @@ function AwardsPanel({ awards, onChange, pastWinners = [], onChangePastWinners }
         Winners only appear on the public Awards page when "Announced" is toggled on.
       </div>
 
-      {saved && <div className="alert alert-success" style={{ marginBottom: 16 }}>✓ Award details saved.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 16 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Award details saved.</div>}
 
       {awards.map((a, i) => (
         <div key={a.id} className="card" style={{ marginBottom: 16, borderLeft: `4px solid ${i === 0 ? "#C9A84C" : i === 1 ? "#aaa" : "#b5700a"}` }}>
@@ -1340,13 +1348,13 @@ function AwardsPanel({ awards, onChange, pastWinners = [], onChangePastWinners }
         </div>
       ))}
 
-      <button className="btn-primary" onClick={saveAll} style={{ marginTop: 4 }}>Save Award Details →</button>
+      <button className="btn-primary" onClick={saveAll} style={{ marginTop: 4 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Award Details <ArrowRight size={14} /></span></button>
 
       {/* Past Winners */}
       <div style={{ marginTop: 36, paddingTop: 28, borderTop: "2px solid #f0f0f0" }}>
         <h3 style={{ fontFamily: "Playfair Display, serif", marginBottom: 6 }}>Past Winners (Historical)</h3>
         <p style={{ color: "#666", fontSize: 14, marginBottom: 20 }}>Names displayed on the Awards page under "Maiden Workshop 2025". Leave name blank to show placeholder text.</p>
-        {pastSaved && <div className="alert alert-success" style={{ marginBottom: 16 }}>✓ Past winners saved.</div>}
+        {pastSaved && <div className="alert alert-success" style={{ marginBottom: 16 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Past winners saved.</div>}
         {pastForms.map((w, i) => (
           <div key={w.id || i} className="card" style={{ marginBottom: 14, borderLeft: `4px solid ${i === 0 ? "#C9A84C" : i === 1 ? "#aaa" : "#b5700a"}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -1375,7 +1383,7 @@ function AwardsPanel({ awards, onChange, pastWinners = [], onChangePastWinners }
             </div>
           </div>
         ))}
-        <button className="btn-outline" onClick={savePastWinners}>Save Past Winners →</button>
+        <button className="btn-outline" onClick={savePastWinners}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Past Winners <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -1407,7 +1415,7 @@ function SpeakersPanel({ speakers = {}, onChange }) {
     <div style={{ maxWidth: 760 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Speakers &amp; Committee</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Changes appear immediately on the Speakers page.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved.</div>}
 
       {/* Keynote */}
       <div className="card" style={{ marginBottom: 24 }}>
@@ -1468,12 +1476,12 @@ function SpeakersPanel({ speakers = {}, onChange }) {
             <div className="form-group" style={{ marginBottom: 0 }}><label>Name</label><input value={m.name} onChange={e => updateCommittee(i, "name", e.target.value)} /></div>
             <div className="form-group" style={{ marginBottom: 0 }}><label>Role</label><input value={m.role} onChange={e => updateCommittee(i, "role", e.target.value)} /></div>
             <div className="form-group" style={{ marginBottom: 0 }}><label>Institution</label><input value={m.institution} onChange={e => updateCommittee(i, "institution", e.target.value)} /></div>
-            <button onClick={() => removeCommittee(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 12, cursor: "pointer", marginBottom: 20 }}>✕</button>
+            <button onClick={() => removeCommittee(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 12, cursor: "pointer", marginBottom: 20 }}><X size={14} /></button>
           </div>
         ))}
       </div>
 
-      <button className="btn-primary" onClick={save}>Save Speakers →</button>
+      <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Speakers <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -1492,7 +1500,7 @@ function ContactPanel({ contact = {}, onChange }) {
       <div className="alert alert-info" style={{ marginBottom: 20, fontSize: 13 }}>
         Changes here update the <strong>Contact</strong> page, <strong>Support</strong> page, and <strong>WhatsApp</strong> button across the whole site.
       </div>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — contact details updated site-wide.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — contact details updated site-wide.</div>}
 
       <div className="card">
         <div className="form-row">
@@ -1511,7 +1519,7 @@ function ContactPanel({ contact = {}, onChange }) {
           <label>Location / Address</label>
           <textarea value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ minHeight: 80 }} />
         </div>
-        <button className="btn-primary" onClick={save}>Save Contact Info →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Contact Info <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -1543,7 +1551,7 @@ function FooterPanel({ footer = {}, onChange }) {
     <div style={{ maxWidth: 600 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Footer</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Edit the footer tagline, organizers, sponsors, and publication details.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved.</div>}
 
       <div className="card">
         <div className="form-row">
@@ -1564,7 +1572,7 @@ function FooterPanel({ footer = {}, onChange }) {
           <label>Publication Partner</label>
           <input value={form.publication} onChange={e => setForm(f => ({ ...f, publication: e.target.value }))} placeholder="CBAS Journal" />
         </div>
-        <button className="btn-primary" onClick={save}>Save Footer →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Footer <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -1608,7 +1616,7 @@ function HomePanel({ event, onChange, home = {}, onChangeHome }) {
     <div style={{ maxWidth: 760 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Home Page</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>Edit all sections shown on the Home page — hero, dates, sessions, and testimonials.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — all Home page changes are live.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — all Home page changes are live.</div>}
 
       {/* ── Hero ── */}
       <div className="card" style={{ marginBottom: 20 }}>
@@ -1682,7 +1690,7 @@ function HomePanel({ event, onChange, home = {}, onChangeHome }) {
                   <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: d.done ? 17 : 3, transition: "left 0.2s" }} />
                 </button>
               </div>
-              <button onClick={() => removeDate(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 20 }}>✕</button>
+              <button onClick={() => removeDate(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 20 }}><X size={14} /></button>
             </div>
           </div>
         ))}
@@ -1774,7 +1782,7 @@ function HomePanel({ event, onChange, home = {}, onChangeHome }) {
         <strong style={{ color: "#1B3A6B" }}>Homepage photos</strong> — change via <strong>Site Images</strong> in Admin Tools.
       </div>
 
-      <button className="btn-primary" onClick={saveAll}>Save All Home Page Changes →</button>
+      <button className="btn-primary" onClick={saveAll}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save All Home Page Changes <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -1797,7 +1805,7 @@ function AboutPanel({ about = {}, onChange }) {
     <div style={{ maxWidth: 680 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>About Page</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Edit the overview text, captions, and key messages shown on the About page.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — changes are live on the About page.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — changes are live on the About page.</div>}
 
       <div className="card" style={{ marginBottom: 20 }}>
         <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>Hero &amp; Overview</h4>
@@ -1843,7 +1851,7 @@ function AboutPanel({ about = {}, onChange }) {
         <strong style={{ color: "#1B3A6B" }}>Hero background image</strong> — change via <strong>Site Images → Research Presentations</strong> in Admin Tools.
       </div>
 
-      <button className="btn-primary" onClick={save}>Save About Page →</button>
+      <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save About Page <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -1864,7 +1872,7 @@ function StreamPanel({ stream = {}, onChange }) {
     <div style={{ maxWidth: 600 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Livestream Page</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Control the live stream status and YouTube video IDs for each day.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — changes are live on the Livestream page.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — changes are live on the Livestream page.</div>}
 
       <div className="card" style={{ marginBottom: 20 }}>
         <ToggleRow label="Stream is Live" desc="Activates the video player for visitors — turn on when streaming begins" value={form.live}
@@ -1898,7 +1906,7 @@ function StreamPanel({ stream = {}, onChange }) {
             </div>
           </div>
         ))}
-        <button className="btn-primary" onClick={save}>Save Livestream Settings →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Livestream Settings <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -1935,7 +1943,7 @@ function SponsorsAdminPanel({ sponsors = [], onChangeSponsors, footer = {}, onCh
     <div style={{ maxWidth: 760 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Sponsors Page</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage institutional sponsor cards, publication partner, and footer sponsor lists.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — Sponsors page updated.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — Sponsors page updated.</div>}
 
       {/* Institutional Sponsor Cards */}
       <div className="card" style={{ marginBottom: 20 }}>
@@ -2013,7 +2021,7 @@ function SponsorsAdminPanel({ sponsors = [], onChangeSponsors, footer = {}, onCh
         </div>
       </div>
 
-      <button className="btn-primary" onClick={saveAll}>Save Sponsors Page →</button>
+      <button className="btn-primary" onClick={saveAll}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Sponsors Page <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -2028,7 +2036,7 @@ function RegisterPanel({ event, onChange }) {
     <div style={{ maxWidth: 560 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Register Page</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>Control registration availability and fee shown on the Register page.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — changes are live on the Register page.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — changes are live on the Register page.</div>}
 
       <div className="card">
         <ToggleRow label="Registration Open" desc="Visitors can submit the registration form" value={form.registrationOpen}
@@ -2058,7 +2066,7 @@ function RegisterPanel({ event, onChange }) {
             <input value={form.venue} onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} />
           </div>
         </div>
-        <button className="btn-primary" onClick={save}>Save Register Settings →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Register Settings <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -2104,9 +2112,9 @@ function ImagesPanel({ images = {}, onChange }) {
         These 4 images appear across all pages of the site. Upload a new image or paste a URL — every page updates instantly.
       </p>
       <div className="alert alert-info" style={{ marginBottom: 24, fontSize: 13 }}>
-        <strong>Upload:</strong> click "↑ Upload" to pick a file from your device. <strong>URL:</strong> paste <code>/images/yourfile.jpg</code> for files in <code>public/images/</code>, or any direct image link.
+        <strong>Upload:</strong> click "Upload" to pick a file from your device. <strong>URL:</strong> paste <code>/images/yourfile.jpg</code> for files in <code>public/images/</code>, or any direct image link.
       </div>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Images saved and live on the site.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Images saved and live on the site.</div>}
 
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
 
@@ -2119,7 +2127,7 @@ function ImagesPanel({ images = {}, onChange }) {
               <div style={{ width: 140, height: 96, borderRadius: 10, overflow: "hidden", border: "1px solid #e0e0e0", flexShrink: 0, background: "#f5f5f5" }}>
                 {val
                   ? <img src={val} alt={def.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#bbb", fontSize: 28 }}>🖼️</div>}
+                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><Image size={28} color="#bbb" /></div>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2, color: "#1B3A6B" }}>{def.label}</div>
@@ -2128,7 +2136,7 @@ function ImagesPanel({ images = {}, onChange }) {
                   <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span>Uploaded image</span>
                     <button type="button" onClick={() => setForm(f => ({ ...f, [def.key]: "" }))}
-                      style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+                      style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
                   </div>
                 ) : (
                   <input value={val} onChange={e => setForm(f => ({ ...f, [def.key]: e.target.value }))}
@@ -2137,7 +2145,7 @@ function ImagesPanel({ images = {}, onChange }) {
                 )}
                 <button type="button" onClick={() => triggerUpload(def.key)}
                   style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "6px 16px", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
-                  ↑ Upload Image
+                  <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload Image</span>
                 </button>
               </div>
             </div>
@@ -2145,7 +2153,7 @@ function ImagesPanel({ images = {}, onChange }) {
         })}
       </div>
 
-      <button className="btn-primary" onClick={save} style={{ marginTop: 24 }}>Save All Images →</button>
+      <button className="btn-primary" onClick={save} style={{ marginTop: 24 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save All Images <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -2177,7 +2185,7 @@ function GalleryPanel({ gallery = [], onChange }) {
     <div style={{ maxWidth: 800 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Gallery</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage photos shown on the Gallery page. Upload images or paste URLs. Each photo shows with a caption and year label.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Gallery saved.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Gallery saved.</div>}
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
@@ -2188,7 +2196,7 @@ function GalleryPanel({ gallery = [], onChange }) {
               <div style={{ width: 120, height: 84, borderRadius: 8, overflow: "hidden", border: "1px solid #eee", flexShrink: 0, background: "#f5f5f5" }}>
                 {p.src
                   ? <img src={p.src} alt={p.caption} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#ccc", fontSize: 24 }}>🖼️</div>}
+                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><Image size={24} color="#ccc" /></div>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 70px", gap: 10, marginBottom: 8, alignItems: "end" }}>
@@ -2200,13 +2208,13 @@ function GalleryPanel({ gallery = [], onChange }) {
                     <label>Year</label>
                     <input value={p.year} onChange={e => update(i, "year", e.target.value)} />
                   </div>
-                  <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✕ Remove</button>
+                  <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 13, cursor: "pointer", marginBottom: 20 }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   {isUpload ? (
                     <div style={{ flex: 1, fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span>Uploaded image</span>
-                      <button type="button" onClick={() => update(i, "src", "")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+                      <button type="button" onClick={() => update(i, "src", "")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
                     </div>
                   ) : (
                     <input value={p.src} onChange={e => update(i, "src", e.target.value)}
@@ -2215,7 +2223,7 @@ function GalleryPanel({ gallery = [], onChange }) {
                   )}
                   <button type="button" onClick={() => triggerUpload(i)}
                     style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "7px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500, flexShrink: 0 }}>
-                    ↑ Upload
+                    <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload</span>
                   </button>
                 </div>
               </div>
@@ -2226,7 +2234,7 @@ function GalleryPanel({ gallery = [], onChange }) {
 
       <div style={{ display: "flex", gap: 12 }}>
         <button onClick={add} style={{ background: "#fff", border: "2px dashed #C9A84C", color: "#b5700a", borderRadius: 10, padding: "10px 20px", fontSize: 13, cursor: "pointer" }}>+ Add Photo</button>
-        <button className="btn-primary" onClick={save}>Save Gallery →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Gallery <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -2248,7 +2256,7 @@ function RecordingsPanel({ recordings = [], onChange }) {
     <div style={{ maxWidth: 700 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Recordings</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Set YouTube video IDs and highlight bullet points for each workshop day recording.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Recordings saved.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Recordings saved.</div>}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {items.map((r, i) => (
@@ -2279,7 +2287,7 @@ function RecordingsPanel({ recordings = [], onChange }) {
         ))}
       </div>
 
-      <button className="btn-primary" onClick={save} style={{ marginTop: 20 }}>Save Recordings →</button>
+      <button className="btn-primary" onClick={save} style={{ marginTop: 20 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Recordings <ArrowRight size={14} /></span></button>
     </div>
   );
 }
@@ -2297,7 +2305,7 @@ function SupportAdminPanel({ contact = {}, onChange }) {
       <div className="alert alert-info" style={{ marginBottom: 24, fontSize: 13 }}>
         FAQ questions and answers are fixed in code. Contact details here are shared with the <strong>Contact page</strong> and the <strong>WhatsApp button</strong>.
       </div>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — contact info updated on both Contact and Support pages.</div>}
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Saved — contact info updated on both Contact and Support pages.</div>}
 
       <div className="card">
         <div className="form-row">
@@ -2316,7 +2324,7 @@ function SupportAdminPanel({ contact = {}, onChange }) {
           <label>Location / Address</label>
           <textarea value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ minHeight: 70 }} />
         </div>
-        <button className="btn-primary" onClick={save}>Save Support Contact →</button>
+        <button className="btn-primary" onClick={save}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Save Support Contact <ArrowRight size={14} /></span></button>
       </div>
     </div>
   );
@@ -2372,7 +2380,7 @@ function SecurityPanel() {
           background: status.type === "success" ? "#f0faf4" : "#fff3f3",
           border: `1px solid ${status.type === "success" ? "#a8d5b5" : "#f5b8b8"}`,
           color: status.type === "success" ? "#1e7e3e" : "#c0392b",
-        }}>{status.type === "success" ? "✓ " : "⚠ "}{status.msg}</div>
+        }}>{status.type === "success" ? <Check size={13} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> : <AlertCircle size={13} style={{display:"inline",verticalAlign:"middle",marginRight:4}} />}{status.msg}</div>
       )}
 
       {/* Current account */}
@@ -2383,7 +2391,7 @@ function SecurityPanel() {
         <div>
           <div style={{ fontSize: 14, fontWeight: 600, color: "#0F2347" }}>{user?.email}</div>
           <div style={{ fontSize: 12, color: user?.emailVerified ? "#27ae60" : "#e67e22", marginTop: 2 }}>
-            {user?.emailVerified ? "✓ Email verified" : "⚠ Email not verified"}
+            {user?.emailVerified ? <><Check size={12} style={{display:"inline",verticalAlign:"middle",marginRight:3}} /> Email verified</> : <><AlertCircle size={12} style={{display:"inline",verticalAlign:"middle",marginRight:3}} /> Email not verified</>}
           </div>
         </div>
       </div>
@@ -2393,9 +2401,9 @@ function SecurityPanel() {
         <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 8 }}>Change Password</h4>
         <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>Firebase will email a secure password reset link to your account email.</p>
         {resetSent
-          ? <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#1e7e3e" }}>✓ Password reset email sent to <strong>{user?.email}</strong>. Check your inbox.</div>
+          ? <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#1e7e3e" }}><Check size={14} style={{display:"inline",verticalAlign:"middle",marginRight:4}} /> Password reset email sent to <strong>{user?.email}</strong>. Check your inbox.</div>
           : <button className="btn-primary" onClick={sendReset} disabled={resetLoading} style={{ opacity: resetLoading ? 0.65 : 1, cursor: resetLoading ? "not-allowed" : "pointer" }}>
-              {resetLoading ? "Sending…" : "Send Password Reset Email →"}
+              {resetLoading ? "Sending…" : <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Send Password Reset Email <ArrowRight size={14} /></span>}
             </button>
         }
       </div>
@@ -2437,7 +2445,7 @@ function SecurityPanel() {
           <div>Email verification is required before accessing the admin console.</div>
           <div>Firebase automatically rate-limits repeated failed login attempts.</div>
           <div style={{ marginTop: 8 }}>
-            <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" style={{ color: "#1B3A6B", fontWeight: 600 }}>Open Firebase Console →</a>
+            <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" style={{ color: "#1B3A6B", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>Open Firebase Console <ArrowRight size={13} /></a>
           </div>
         </div>
       </div>

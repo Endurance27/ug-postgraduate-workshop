@@ -1,3 +1,5 @@
+import { Trophy, Medal } from "lucide-react";
+
 const criteria = [
   { label: "Research Quality", weight: "30%", desc: "Originality, depth, and rigour of the research." },
   { label: "Presentation Skills", weight: "25%", desc: "Clarity, confidence, and delivery of the presentation." },
@@ -7,9 +9,9 @@ const criteria = [
 ];
 
 const FALLBACK_PAST_WINNERS = [
-  { id: 1, pos: "🥇", place: "1st Place Award", desc: "Best Presenter",          edition: "Maiden Workshop 2025", field: "Computer Science", name: "", avatar: "" },
-  { id: 2, pos: "🥈", place: "2nd Place Award", desc: "Outstanding Presentation", edition: "Maiden Workshop 2025", field: "Data Science",    name: "", avatar: "" },
-  { id: 3, pos: "🥉", place: "3rd Place Award", desc: "Commended Presenter",      edition: "Maiden Workshop 2025", field: "Computer Science", name: "", avatar: "" },
+  { id: 1, pos: <Trophy size={36} style={{ color: "#C9A84C" }} />, place: "1st Place Award", desc: "Best Presenter",          edition: "Maiden Workshop 2025", field: "Computer Science", name: "", avatar: "" },
+  { id: 2, pos: <Medal  size={36} style={{ color: "#888" }} />,    place: "2nd Place Award", desc: "Outstanding Presentation", edition: "Maiden Workshop 2025", field: "Data Science",    name: "", avatar: "" },
+  { id: 3, pos: <Medal  size={36} style={{ color: "#b5700a" }} />, place: "3rd Place Award", desc: "Commended Presenter",      edition: "Maiden Workshop 2025", field: "Computer Science", name: "", avatar: "" },
 ];
 
 export default function AwardsPage({ awards, pastWinners, event = {} }) {
@@ -61,15 +63,15 @@ export default function AwardsPage({ awards, pastWinners, event = {} }) {
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {[
-              { pos: "🥇", label: "First Place", color: "#C9A84C", bg: "#FAF0D0", desc: "Best overall presentation judged across all categories" },
-              { pos: "🥈", label: "Second Place", color: "#888", bg: "#f5f5f5", desc: "Runner-up recognition for outstanding research presentation" },
-              { pos: "🥉", label: "Third Place", color: "#b5700a", bg: "#fef3e2", desc: "Third-place commendation for excellent academic work" },
+              { pos: <Trophy size={52} style={{ color: "#C9A84C" }} />, label: "First Place", color: "#C9A84C", bg: "#FAF0D0", desc: "Best overall presentation judged across all categories" },
+              { pos: <Medal  size={52} style={{ color: "#888" }} />,    label: "Second Place", color: "#888", bg: "#f5f5f5", desc: "Runner-up recognition for outstanding research presentation" },
+              { pos: <Medal  size={52} style={{ color: "#b5700a" }} />, label: "Third Place", color: "#b5700a", bg: "#fef3e2", desc: "Third-place commendation for excellent academic work" },
             ].map((a, i) => (
               <div key={i} style={{
                 background: a.bg, border: `2px solid ${a.color}30`,
                 borderRadius: 16, padding: "36px 28px", minWidth: 220, maxWidth: 260, flex: "1 1 220px"
               }}>
-                <div style={{ fontSize: 52, marginBottom: 12 }}>{a.pos}</div>
+                <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}>{a.pos}</div>
                 <div style={{ fontFamily: "Playfair Display, serif", fontSize: 20, fontWeight: 700, color: a.color, marginBottom: 8 }}>{a.label}</div>
                 <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6 }}>{a.desc}</p>
               </div>
@@ -159,7 +161,7 @@ export default function AwardsPage({ awards, pastWinners, event = {} }) {
                       style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: "3px solid #E5EAF3", display: "block" }} />
                   </div>
                 )}
-                <div style={{ fontSize: 36, marginBottom: 8 }}>{w.pos}</div>
+                <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}>{w.pos}</div>
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{w.name || w.place}</div>
                 {w.name && <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{w.place}</div>}
                 <div style={{ fontSize: 12, color: "#888", marginTop: 4 }}>{w.desc}</div>

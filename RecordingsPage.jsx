@@ -1,3 +1,5 @@
+import { Video, GraduationCap, Trophy, Play } from "lucide-react";
+
 const FALLBACK_VIDEOS = [
   { day: "Day 1", label: "Opening Ceremony & Keynote Address",        color: "#1B3A6B", youtubeId: "",             start: 0,    highlights: ["Welcome Address by HOD", "Keynote by Distinguished Speaker", "Morning Parallel Track Sessions"] },
   { day: "Day 2", label: "Research Presentations & Panel Discussion", color: "#C9A84C", youtubeId: "1KWiyZnJFmw", start: 9624, highlights: ["Poster & Technical Paper Sessions", "Faculty Panel Discussion", "Short Paper Presentations"] },
@@ -41,13 +43,13 @@ export default function RecordingsPage({ recordings }) {
           border: "1px solid #c5d0e8",
         }}>
           {[
-            { icon: "🎬", label: "3 Days",           sub: "Full coverage"         },
-            { icon: "📹", label: "2 Videos Live",     sub: "Day 1 coming soon"     },
-            { icon: "🎓", label: "DCS Workshop 2025", sub: "Inaugural edition"     },
-            { icon: "🏆", label: "Awards Ceremony",   sub: "Included in Day 3"     },
+            { icon: <Video size={24} />,          label: "3 Days",           sub: "Full coverage"         },
+            { icon: <Video size={24} />,          label: "2 Videos Live",     sub: "Day 1 coming soon"     },
+            { icon: <GraduationCap size={24} />,  label: "DCS Workshop 2025", sub: "Inaugural edition"     },
+            { icon: <Trophy size={24} />,         label: "Awards Ceremony",   sub: "Included in Day 3"     },
           ].map((s, i) => (
             <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 160 }}>
-              <span style={{ fontSize: 24 }}>{s.icon}</span>
+              <span style={{ color: "#1B3A6B" }}>{s.icon}</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: "#1B3A6B" }}>{s.label}</div>
                 <div style={{ fontSize: 12, color: "#666" }}>{s.sub}</div>
@@ -94,7 +96,7 @@ export default function RecordingsPage({ recordings }) {
                     aspectRatio: "16/9", background: "#0d1117",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
                   }}>
-                    <span style={{ fontSize: 44 }}>📹</span>
+                    <span style={{ color: "rgba(255,255,255,0.4)" }}><Video size={44} /></span>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, margin: 0 }}>Recording coming soon</p>
                   </div>
                 )}
@@ -121,7 +123,7 @@ export default function RecordingsPage({ recordings }) {
                           borderRadius: 8, padding: "9px 16px",
                           fontSize: 13, fontWeight: 600, textDecoration: "none",
                         }}>
-                        ▶ Watch on YouTube
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Play size={14} /> Watch on YouTube</span>
                       </a>
                     </div>
                   )}

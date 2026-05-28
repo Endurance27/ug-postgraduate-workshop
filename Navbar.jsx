@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 export default function Navbar({ page, navigate, registrant }) {
   const [open, setOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function Navbar({ page, navigate, registrant }) {
           display: "none", background: "none", border: "none",
           fontSize: 26, cursor: "pointer", color: "#1B3A6B", padding: "4px 8px",
           lineHeight: 1,
-        }} className="hamburger">{open ? "✕" : "☰"}</button>
+        }} className="hamburger">{open ? <X size={20} /> : <Menu size={20} />}</button>
       </div>
 
       {/* Mobile dropdown */}
@@ -79,7 +80,7 @@ export default function Navbar({ page, navigate, registrant }) {
                 background: "#C9A84C", color: "#0F2347", border: "none",
                 padding: "12px", borderRadius: 8, fontSize: 16,
                 fontWeight: 700, cursor: "pointer", margin: "6px 0",
-              }}>{l.label} →</button>
+              }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>{l.label}<ArrowRight size={14} /></span></button>
             ) : (
               <button key={l.key} onClick={() => go(l.key)} style={{
                 display: "block", width: "100%", textAlign: "left",

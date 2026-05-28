@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 
 const FALLBACK_PHOTOS = [
   { src: "/images/workshop-sessions.jpg",         caption: "Workshop Sessions",          year: "2025" },
@@ -106,7 +107,8 @@ export default function GalleryPage({ gallery }) {
             position: "absolute", top: 20, right: 20,
             background: "rgba(255,255,255,0.15)", border: "none", color: "#fff",
             fontSize: 20, width: 40, height: 40, borderRadius: "50%", cursor: "pointer",
-          }}>✕</button>
+          display: "flex", alignItems: "center", justifyContent: "center",
+          }}><X size={18} /></button>
         </div>
       )}
     </main>

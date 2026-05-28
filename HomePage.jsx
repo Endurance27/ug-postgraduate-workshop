@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Calendar, CreditCard, Mic, Trophy, Medal, Radio, CheckCircle, MailOpen, GraduationCap, BookOpen, Lightbulb, Landmark, Eye, ArrowRight } from "lucide-react";
 import Countdown from "./Countdown";
 
 function useReveal(threshold = 0.15) {
@@ -16,10 +17,10 @@ function useReveal(threshold = 0.15) {
 }
 
 const makeStats = (event) => [
-  { n: "3",                              label: "Workshop Days",       icon: "📅" },
-  { n: `GHS ${event?.fee ?? 100}`,       label: "Registration Fee",    icon: "💳" },
-  { n: "4",                              label: "Presentation Tracks", icon: "🎤" },
-  { n: "3",                              label: "Award Positions",     icon: "🏆" },
+  { n: "3",                              label: "Workshop Days",       icon: <Calendar size={24} color="#1B3A6B" /> },
+  { n: `GHS ${event?.fee ?? 100}`,       label: "Registration Fee",    icon: <CreditCard size={24} color="#1B3A6B" /> },
+  { n: "4",                              label: "Presentation Tracks", icon: <Mic size={24} color="#1B3A6B" /> },
+  { n: "3",                              label: "Award Positions",     icon: <Trophy size={24} color="#1B3A6B" /> },
 ];
 
 const tracks = [
@@ -46,9 +47,9 @@ const organizers = [
 ];
 
 const sponsors = [
-  { name: "University of Ghana",  tier: "Principal Funder",  icon: "🏛️" },
-  { name: "DCS Alumni Support",   tier: "Alumni Support",   icon: "🎓" },
-  { name: "Industry Partners",    tier: "Corporate Sponsors",icon: "🤝" },
+  { name: "University of Ghana",  tier: "Principal Funder",  icon: <Landmark size={32} color="#1B3A6B" /> },
+  { name: "DCS Alumni Support",   tier: "Alumni Support",   icon: <GraduationCap size={32} color="#1B3A6B" /> },
+  { name: "Industry Partners",    tier: "Corporate Sponsors",icon: <Trophy size={32} color="#1B3A6B" /> },
 ];
 
 export default function HomePage({ navigate, event, announcements, feed = [], images = {}, home = {} }) {
@@ -114,7 +115,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               background: "#C9A84C", color: "#0F2347",
               fontSize: 10, fontWeight: 800, padding: "3px 10px",
               borderRadius: 4, letterSpacing: "0.1em", whiteSpace: "nowrap", flexShrink: 0,
-            }}>📡 LIVE</span>
+            }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><Radio size={12} /> LIVE</span></span>
             <div style={{ overflow: "hidden", flex: 1 }}>
               <div style={{
                 display: "flex", gap: 48,
@@ -205,7 +206,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               {event?.registrationOpen !== false ? (
                 <button className="btn-gold animate-pulse-gold" onClick={() => navigate("register")}
                   style={{ fontSize: 16, padding: "14px 32px" }}>
-                  Register Now — GHS {event?.fee || 100} →
+                  <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now — GHS {event?.fee || 100}<ArrowRight size={14} /></span>
                 </button>
               ) : (
                 <div style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "12px 24px", color: "rgba(255,255,255,0.7)", fontSize: 15 }}>
@@ -293,7 +294,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                   padding: "32px 20px", textAlign: "center",
                   borderRight: i < 3 ? "1px solid #eee" : "none",
                 }}>
-                <div style={{ fontSize: 26 }}>{s.icon}</div>
+                <div style={{ display: "flex", justifyContent: "center" }}>{s.icon}</div>
                 <div style={{ fontFamily: "Playfair Display, serif", fontSize: 26,
                   fontWeight: 700, color: "#1B3A6B", marginTop: 6 }}>{s.n}</div>
                 <div style={{ fontSize: 13, color: "#666", marginTop: 3 }}>{s.label}</div>
@@ -348,10 +349,10 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
             {(home.importantDates || [
-              { id: 1, label: "Registration Opens",           date: "Now Open",    icon: "✅", done: true  },
-              { id: 2, label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: "📄", done: false },
-              { id: 3, label: "Acceptance Notification",      date: "8 Aug 2026",  icon: "📬", done: false },
-              { id: 4, label: "Workshop Begins",              date: "27 Aug 2026", icon: "🎓", done: false },
+              { id: 1, label: "Registration Opens",           date: "Now Open",    icon: <CheckCircle size={28} color="#4ade80" />, done: true  },
+              { id: 2, label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: <Calendar size={28} color="#C9A84C" />,    done: false },
+              { id: 3, label: "Acceptance Notification",      date: "8 Aug 2026",  icon: <MailOpen size={28} color="#C9A84C" />,    done: false },
+              { id: 4, label: "Workshop Begins",              date: "27 Aug 2026", icon: <GraduationCap size={28} color="#C9A84C" />, done: false },
             ]).map((d, i) => (
               <div key={i} style={{
                 background: d.done ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.07)",
@@ -360,7 +361,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 borderRadius: 14, padding: "24px 22px",
                 display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
               }}>
-                <span style={{ fontSize: 30 }}>{d.icon}</span>
+                <span style={{ display: "flex" }}>{d.icon}</span>
                 <div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", letterSpacing: "0.04em", marginBottom: 6, lineHeight: 1.4 }}>
                     {d.label}
@@ -431,7 +432,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 minWidth: 230,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 18 }}>📖</span>
+                  <BookOpen size={18} color="#C9A84C" />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#C9A84C", textTransform: "uppercase", letterSpacing: "0.08em" }}>Publication Opportunity</span>
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 6 }}>CBAS Journal</div>
@@ -466,7 +467,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                   width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
                   background: p.required ? "#E5EAF3" : "#f5f5f5",
                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
-                }}>{p.required ? "🎓" : "👁️"}</div>
+                }}>{p.required ? <GraduationCap size={18} color="#1B3A6B" /> : <Eye size={18} color="#888" />}</div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
                   <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>
@@ -483,7 +484,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               Registration fee: <strong>GHS {event?.fee || 100}</strong> — includes snacks, water, and workshop materials
             </p>
             <button className="btn-primary" onClick={() => navigate("register")}>
-              Register Now →
+              <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now<ArrowRight size={14} /></span>
             </button>
           </div>
         </div>
@@ -507,9 +508,9 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {[
-              { pos: "🥇", label: "First Place",  desc: "Best overall presentation", border: "#C9A84C" },
-              { pos: "🥈", label: "Second Place", desc: "Runner-up recognition",     border: "#b0b8c8" },
-              { pos: "🥉", label: "Third Place",  desc: "Honourable mention",        border: "#c87941" },
+              { pos: <Trophy size={48} color="#C9A84C" />, label: "First Place",  desc: "Best overall presentation", border: "#C9A84C" },
+              { pos: <Medal size={48} color="#b0b8c8" />,  label: "Second Place", desc: "Runner-up recognition",     border: "#b0b8c8" },
+              { pos: <Medal size={48} color="#c87941" />,  label: "Third Place",  desc: "Honourable mention",        border: "#c87941" },
             ].map((a, i) => (
               <div key={i}
                 className={awardsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
@@ -525,7 +526,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,0.35)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.25)"; }}
               >
-                <div style={{ fontSize: 52, marginBottom: 14 }}>{a.pos}</div>
+                <div style={{ marginBottom: 14, display: "flex", justifyContent: "center" }}>{a.pos}</div>
                 <div style={{ fontWeight: 700, fontSize: 18, color: "#fff", marginBottom: 6 }}>{a.label}</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{a.desc}</div>
               </div>
@@ -547,9 +548,9 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
             {(home.featuredSessions || [
-              { id: 1, icon: "🎤", tag: "Keynote",  session: "Opening Keynote",          role: "TBA — Keynote Speaker", status: "Announcement Coming Soon",        topic: "Technology, Research & the Future of Computing in Africa", accent: "#1B3A6B" },
-              { id: 2, icon: "💡", tag: "Industry", session: "Industry Insights Session", role: "TBA — Invited Speaker", status: "Industry / Academic Partner",      topic: "AI, Machine Learning & Applied Computer Science",          accent: "#C9A84C" },
-              { id: 3, icon: "📚", tag: "Panel",    session: "Research Methods Panel",    role: "TBA — Panel Chair",     status: "University of Ghana, DCS Faculty", topic: "Publishing Research: From Submission to Acceptance",        accent: "#0F2347" },
+              { id: 1, icon: <Mic size={28} />,       tag: "Keynote",  session: "Opening Keynote",          role: "TBA — Keynote Speaker", status: "Announcement Coming Soon",        topic: "Technology, Research & the Future of Computing in Africa", accent: "#1B3A6B" },
+              { id: 2, icon: <Lightbulb size={28} />, tag: "Industry", session: "Industry Insights Session", role: "TBA — Invited Speaker", status: "Industry / Academic Partner",      topic: "AI, Machine Learning & Applied Computer Science",          accent: "#C9A84C" },
+              { id: 3, icon: <BookOpen size={28} />,  tag: "Panel",    session: "Research Methods Panel",    role: "TBA — Panel Chair",     status: "University of Ghana, DCS Faculty", topic: "Publishing Research: From Submission to Acceptance",        accent: "#0F2347" },
             ]).map((s, i) => (
               <div key={i} className="card" style={{
                 borderTop: `4px solid ${s.accent}`,
@@ -563,7 +564,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                   width: 64, height: 64, borderRadius: "50%",
                   background: `${s.accent}15`, border: `2px solid ${s.accent}30`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 28, marginBottom: 16,
+                  marginBottom: 16,
                 }}>{s.icon}</div>
 
                 <div style={{
@@ -617,8 +618,8 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 <div style={{
                   width: 52, height: 52, borderRadius: "50%",
                   background: "#E5EAF3", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 22, margin: "0 auto 14px",
-                }}>🏛️</div>
+                  justifyContent: "center", margin: "0 auto 14px",
+                }}><Landmark size={22} color="#1B3A6B" /></div>
                 <div style={{ fontWeight: 600, fontSize: 15 }}>{o.title}</div>
                 <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>{o.sub}</div>
                 <span className="badge badge-blue" style={{ marginTop: 12 }}>{o.role}</span>
@@ -645,7 +646,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(201,168,76,0.18)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
-                <div style={{ fontSize: 32, marginBottom: 10 }}>{s.icon}</div>
+                <div style={{ marginBottom: 10, display: "flex", justifyContent: "center" }}>{s.icon}</div>
                 <div style={{ fontWeight: 600, fontSize: 15 }}>{s.name}</div>
                 <span className="badge badge-gold" style={{ marginTop: 8 }}>{s.tier}</span>
               </div>
@@ -704,7 +705,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           </p>
           <button className="btn-gold animate-pulse-gold" onClick={() => navigate("register")}
             style={{ fontSize: 17, padding: "16px 44px" }}>
-            Register Now →
+            <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now<ArrowRight size={14} /></span>
           </button>
         </div>
       </section>

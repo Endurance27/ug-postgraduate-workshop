@@ -1,3 +1,5 @@
+import { User } from "lucide-react";
+
 export default function SpeakersPage({ speakers = {}, images = {} }) {
   const keynote    = speakers.keynote   || {};
   const panelists  = speakers.panelists || [];
@@ -145,8 +147,8 @@ export default function SpeakersPage({ speakers = {}, images = {} }) {
                 <div style={{
                   width: 40, height: 40, borderRadius: "50%",
                   background: "#E5EAF3", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 18, flexShrink: 0,
-                }}>👤</div>
+                  justifyContent: "center", flexShrink: 0, color: "#1B3A6B",
+                }}><User size={20} /></div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{m.name}</div>
                   <div style={{ fontSize: 12, color: "#C9A84C", fontWeight: 500, marginTop: 2 }}>{m.role}</div>

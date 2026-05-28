@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Radio, Video, MessageCircle, RefreshCw, ArrowRight, Megaphone } from "lucide-react";
 
 const BASE_DAYS = [
   {
@@ -71,7 +72,7 @@ export default function LiveStreamPage({ event, navigate, stream = {} }) {
           }}>
             {isLive
               ? <><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff4444", display: "inline-block", animation: "pulse 1.2s infinite" }} />LIVE NOW</>
-              : "📡 Live Stream · Aug 2026"}
+              : <><Radio size={14} style={{ marginRight: 5 }} />Live Stream · Aug 2026</>}
           </span>
           <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem, 4.5vw, 3rem)", marginBottom: 12 }}>
             Live Stream
@@ -137,7 +138,7 @@ export default function LiveStreamPage({ event, navigate, stream = {} }) {
                   aspectRatio: "16/9", display: "flex", flexDirection: "column",
                   alignItems: "center", justifyContent: "center", padding: 40,
                 }}>
-                  <div style={{ fontSize: 52, marginBottom: 16 }}>📡</div>
+                  <div style={{ marginBottom: 16, color: "#C9A84C" }}><Radio size={52} /></div>
                   <h3 style={{ color: "#fff", fontFamily: "Playfair Display, serif", marginBottom: 8, textAlign: "center" }}>
                     {current.day} Stream
                   </h3>
@@ -171,7 +172,7 @@ export default function LiveStreamPage({ event, navigate, stream = {} }) {
                 background: "#fffbf0", border: "1.5px solid #e8c96e",
                 fontSize: 13, color: "#7a5800", lineHeight: 1.6,
               }}>
-                📢 <strong>Notice:</strong> {stream.note}
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Megaphone size={16} /><strong>Notice:</strong></span> {stream.note}
               </div>
             )}
           </div>
@@ -196,13 +197,13 @@ export default function LiveStreamPage({ event, navigate, stream = {} }) {
         {/* Info cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginTop: 32 }}>
           {[
-            { icon: "🔗", title: "Stream Link",  body: "Emailed to all registered virtual and hybrid participants before each day." },
-            { icon: "🎥", title: "YouTube Live", body: "No login required. Watch directly in your browser or on the YouTube app."   },
-            { icon: "💬", title: "Live Q&A",     body: "Submit questions via YouTube chat during panel sessions and Q&A blocks."    },
-            { icon: "🔁", title: "Recordings",   body: "Session recordings made available to registered participants after each day."},
+            { icon: <Radio size={24} />,          title: "Stream Link",  body: "Emailed to all registered virtual and hybrid participants before each day." },
+            { icon: <Video size={24} />,          title: "YouTube Live", body: "No login required. Watch directly in your browser or on the YouTube app."   },
+            { icon: <MessageCircle size={24} />,  title: "Live Q&A",     body: "Submit questions via YouTube chat during panel sessions and Q&A blocks."    },
+            { icon: <RefreshCw size={24} />,      title: "Recordings",   body: "Session recordings made available to registered participants after each day."},
           ].map((c, i) => (
             <div key={i} className="card" style={{ display: "flex", gap: 14 }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>{c.icon}</span>
+              <span style={{ flexShrink: 0, color: "#1B3A6B" }}>{c.icon}</span>
               <div>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{c.title}</div>
                 <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, margin: 0 }}>{c.body}</p>
@@ -215,7 +216,7 @@ export default function LiveStreamPage({ event, navigate, stream = {} }) {
           <strong>Registration required:</strong> You must register as a virtual or hybrid participant to receive the stream link.{" "}
           {navigate && (
             <button onClick={() => navigate("register")} style={{ background: "none", border: "none", color: "#1B3A6B", fontWeight: 600, cursor: "pointer", padding: 0, fontSize: 14 }}>
-              Register now →
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Register now <ArrowRight size={14} /></span>
             </button>
           )}
         </div>

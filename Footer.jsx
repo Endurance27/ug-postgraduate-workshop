@@ -36,13 +36,16 @@ export default function Footer({ navigate, footer = {} }) {
             <div>
               <h4 style={{ fontFamily: "Playfair Display, serif", fontSize: 16, marginBottom: 16, color: "#C9A84C" }}>Quick Links</h4>
               {[
-                { key: "home",     label: "Home"        },
-                { key: "about",    label: "About"       },
-                { key: "schedule", label: "Schedule"    },
-                { key: "stream",   label: "Livestream"  },
-                { key: "sponsors", label: "Sponsors"    },
-                { key: "contact",  label: "Contact"     },
-                { key: "register", label: "Register Now"},
+                { key: "home",       label: "Home"        },
+                { key: "about",      label: "About"       },
+                { key: "schedule",   label: "Schedule"    },
+                { key: "speakers",   label: "Speakers"    },
+                { key: "stream",     label: "Livestream"  },
+                { key: "gallery",    label: "Gallery"     },
+                { key: "recordings", label: "Recordings"  },
+                { key: "sponsors",   label: "Sponsors"    },
+                { key: "contact",    label: "Contact"     },
+                { key: "register",   label: "Register Now"},
               ].map(({ key, label }) => (
                 <button key={key} onClick={() => navigate(key)} style={{
                   display: "block", background: "none", border: "none",

@@ -135,9 +135,8 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
     if (form.password.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
     setAuthLoading(true);
     try {
-      const { user } = await createUserWithEmailAndPassword(auth, form.email.trim(), form.password);
-      await sendEmailVerification(user);
-      setAuthMsg("Account created! Check your email inbox and click the verification link.");
+      await createUserWithEmailAndPassword(auth, form.email.trim(), form.password);
+      setAuthMsg("Account created! Signing you in…");
     } catch (e) { setAuthError(firebaseErrorMsg(e.code)); }
     finally { setAuthLoading(false); }
   }
@@ -159,31 +158,6 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 36, marginBottom: 16 }}>🔐</div>
         <p style={{ color: "#555", fontSize: 15 }}>Loading admin console…</p>
-      </div>
-    </div>
-  );
-
-  // ── Email verification pending ──
-  if (fireUser && !fireUser.emailVerified) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f3f7" }}>
-      <div style={{ background: "#fff", borderRadius: 16, padding: "48px 44px", maxWidth: 440, width: "100%", textAlign: "center", boxShadow: "0 4px 32px rgba(0,0,0,0.10)" }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>📧</div>
-        <h2 style={{ fontFamily: "Playfair Display, serif", color: "#0F2347", marginBottom: 10 }}>Verify Your Email</h2>
-        <p style={{ color: "#666", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
-          A verification link was sent to <strong>{fireUser.email}</strong>.<br />
-          Click the link in your email to activate your account.
-        </p>
-        <button className="btn-primary" style={{ marginBottom: 12, width: "100%", justifyContent: "center" }}
-          onClick={async () => { await sendEmailVerification(fireUser); setAuthMsg("Verification email resent!"); }}
-        >Resend Verification Email</button>
-        <button onClick={() => { fireUser.reload().then(() => setFireUser({ ...auth.currentUser })); }}
-          style={{ background: "#f0f4ff", color: "#1B3A6B", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, cursor: "pointer", width: "100%", marginBottom: 12 }}>
-          I've verified — Refresh
-        </button>
-        {authMsg && <div style={{ color: "#27ae60", fontSize: 13, marginBottom: 12 }}>{authMsg}</div>}
-        <button onClick={() => signOut(auth)} style={{ color: "#aaa", background: "none", border: "none", fontSize: 13, cursor: "pointer" }}>
-          Sign out
-        </button>
       </div>
     </div>
   );
@@ -267,7 +241,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
               <label>Email Address</label>
               <input type="email" autoComplete="username" value={form.email} disabled={authLoading}
                 onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
-                placeholder="admin@cs.ug.edu.gh" />
+                placeholder="admin@ug.edu.gh" />
             </div>
             <div className="form-group">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -307,7 +281,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
                 <label>Email Address</label>
                 <input type="email" autoComplete="email" value={form.email} disabled={authLoading}
                   onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
-                  placeholder="admin@cs.ug.edu.gh" />
+                  placeholder="admin@ug.edu.gh" />
               </div>
               <div className="form-group">
                 <label>Password</label>
@@ -361,7 +335,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
                 <label>Email Address</label>
                 <input type="email" autoComplete="email" value={form.email} disabled={authLoading}
                   onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
-                  placeholder="admin@cs.ug.edu.gh"
+                  placeholder="admin@ug.edu.gh"
                   onKeyDown={e => e.key === "Enter" && !authLoading && handleForgotPassword()} />
               </div>
               <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}

@@ -25,7 +25,7 @@ export default function Footer({ navigate, footer = {} }) {
                 </svg>
               </div>
             </div>
-            <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 13, color: "#ccc", lineHeight: 1.7 }}>
               {tagline}<br />{dates}
             </p>
           </div>
@@ -54,18 +54,18 @@ export default function Footer({ navigate, footer = {} }) {
 
             <div>
               <h4 style={{ fontFamily: "Playfair Display, serif", fontSize: 16, marginBottom: 16, color: "#C9A84C" }}>Organizers</h4>
-              <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.9 }}>
+              <p style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9 }}>
                 {organizers.map((o, i) => <span key={i}>{o}{i < organizers.length - 1 && <br />}</span>)}
               </p>
             </div>
 
             <div>
               <h4 style={{ fontFamily: "Playfair Display, serif", fontSize: 16, marginBottom: 16, color: "#C9A84C" }}>Sponsors &amp; Funders</h4>
-              <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.9 }}>
+              <p style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9 }}>
                 {sponsors.map((s, i) => <span key={i}>{s}{i < sponsors.length - 1 && <br />}</span>)}
               </p>
               <div style={{ marginTop: 16 }}>
-                <span style={{ fontSize: 12, color: "#888" }}>Publication in:</span><br />
+                <span style={{ fontSize: 12, color: "#bbb" }}>Publication in:</span><br />
                 <span style={{ fontSize: 13, color: "#C9A84C", fontWeight: 500 }}>{publication}</span>
               </div>
             </div>

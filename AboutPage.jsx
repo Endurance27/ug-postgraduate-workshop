@@ -335,7 +335,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
             <span style={{ fontSize: 28 }}>📄</span>
             <div>
               <div style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>Ready to submit?</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>Register first, then upload your abstract or paper via the registration portal.</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.88)" }}>Register first, then upload your abstract or paper via the registration portal.</div>
             </div>
           </div>
           <button className="btn-gold" onClick={() => navigate("register")}

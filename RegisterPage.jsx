@@ -153,7 +153,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
           backgroundPosition: "center",
           opacity: 0.12,
         }} />
-        <div className="container" style={{
+        <div className="container reg-grid" style={{
           position: "relative",
           zIndex: 1,
           display: "grid",

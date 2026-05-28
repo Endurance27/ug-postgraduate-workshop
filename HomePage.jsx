@@ -157,7 +157,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
         <div className="hero-orb orb-1" />
         <div className="hero-orb orb-2" />
 
-        <div className="container" style={{
+        <div className="container hero-container" style={{
           position: "relative", zIndex: 2,
           display: "grid", gridTemplateColumns: "1fr 1fr",
           gap: 48, alignItems: "center", padding: "100px 24px 80px",
@@ -286,7 +286,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       {/* ── STATS BAR ────────────────────────────────────────────────── */}
       <section ref={statsRef} style={{ background: "#fff", borderBottom: "1px solid #eee" }}>
         <div className="container">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
             {stats.map((s, i) => (
               <div key={i}
                 className={statsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
@@ -306,7 +306,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
 
       {/* ── PHOTO STRIP ──────────────────────────────────────────────── */}
       <section ref={photoRef} style={{ overflow: "hidden" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", height: 260 }}>
+        <div className="photo-strip" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", height: 260 }}>
           {PHOTOS.map((p, i) => (
             <div key={i}
               className={photoVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
@@ -381,7 +381,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       {/* ── ABOUT ────────────────────────────────────────────────────── */}
       <section ref={aboutRef} className="section" style={{ background: "#f8f9fa" }}>
         <div className="container">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+          <div className="home-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
             <div className={aboutVisible ? "animate-fade-left" : "pre-anim"}>
               <span className="badge badge-blue" style={{ marginBottom: 16 }}>About the Workshop</span>
               <h2 className="about-heading" style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", marginBottom: 20, lineHeight: 1.25 }}>
@@ -393,7 +393,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               <p style={{ color: "#555", lineHeight: 1.85, marginBottom: 28 }}>
                 Students present thesis work as posters, papers, or technical demos. A panel of judges awards prizes for the best presentations across all categories.
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="about-tracks-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {tracks.map((t, i) => (
                   <div key={i} style={{
                     background: "#fff", borderRadius: 12, padding: "16px 18px",

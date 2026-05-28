@@ -72,7 +72,7 @@ export default function SchedulePage({ schedule: days, images = {} }) {
       </section>
 
       {/* PHOTO ROW */}
-      <div style={{
+      <div className="photo-strip" style={{
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
         height: 220,
@@ -192,7 +192,7 @@ export default function SchedulePage({ schedule: days, images = {} }) {
               {d.sessions.filter(matchesFilter).map((s, si) => {
                 const ts = typeStyle[s.type];
                 return (
-                  <div key={si} style={{
+                  <div key={si} className="session-row" style={{
                     display: "grid", gridTemplateColumns: "100px 1fr auto",
                     alignItems: "center", padding: "14px 20px", gap: 16,
                     background: si % 2 === 0 ? "#fff" : "#fafafa",

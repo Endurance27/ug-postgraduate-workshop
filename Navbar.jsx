@@ -22,7 +22,7 @@ export default function Navbar({ page, navigate, registrant }) {
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, paddingLeft: 16, paddingRight: 24 }}>
-        <button onClick={() => go("home")} style={{
+        <button onClick={() => go("home")} className="nav-logo" style={{
           background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center",
         }}>
           <svg
@@ -99,6 +99,9 @@ export default function Navbar({ page, navigate, registrant }) {
         @media (max-width: 900px) {
           .nav-links { display: none !important; }
           .hamburger { display: block !important; }
+        }
+        @media (max-width: 480px) {
+          .nav-logo svg { height: 34px !important; }
         }
       `}</style>
     </nav>

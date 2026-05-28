@@ -46,7 +46,7 @@ export default function SpeakersPage({ speakers = {}, images = {} }) {
           alignItems: "start", background: "#fff", borderRadius: 20,
           overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
           marginBottom: 72, border: "1px solid #e8e8e8",
-        }} className="keynote-card">
+        }} className="keynote-card keynote-grid">
           <div style={{ position: "relative" }}>
             <img src={keynote.photo} alt={keynote.name}
               style={{ width: "100%", height: 320, objectFit: "cover", display: "block" }} />

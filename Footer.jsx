@@ -10,7 +10,7 @@ export default function Footer({ navigate, footer = {} }) {
       background: "#0F2347", color: "#fff", marginTop: "auto"
     }}>
       <div className="container" style={{ padding: "56px 24px 32px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 34, marginBottom: 40, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 34, marginBottom: 40, flexWrap: "wrap", rowGap: 32 }}>
 
           {/* ── Logo (left) ── */}
           <div style={{ flexShrink: 0 }}>
@@ -31,7 +31,7 @@ export default function Footer({ navigate, footer = {} }) {
           </div>
 
           {/* ── Right group (Quick Links · Organizers · Sponsors) ── */}
-          <div style={{ display: "flex", gap: 50, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <div className="footer-right" style={{ display: "flex", gap: 50, flexWrap: "wrap", justifyContent: "flex-end" }}>
 
             <div>
               <h4 style={{ fontFamily: "Playfair Display, serif", fontSize: 16, marginBottom: 16, color: "#C9A84C" }}>Quick Links</h4>

@@ -354,7 +354,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
             <span className="badge badge-blue" style={{ marginBottom: 10 }}>Participant Eligibility</span>
           </div>
           <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid #e0e0e0" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1.6fr", background: "#0F2347" }}>
+            <div className="amber-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1.6fr", background: "#0F2347" }}>
               {["Programme", "Role", "Presentation Types"].map(h => (
                 <div key={h} style={{ padding: "13px 20px", color: "#C9A84C", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</div>
               ))}
@@ -368,7 +368,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
               { prog: "PhD Computer Science",    role: "Presenter (Optional)",  types: "Poster, Regular, Short, Technical" },
               { prog: "Other PG Students (UG)",  role: "Observer or Presenter", types: "Open registration"                 },
             ].map((r, i) => (
-              <div key={i} style={{
+              <div key={i} className="amber-grid" style={{
                 display: "grid", gridTemplateColumns: "1.4fr 1fr 1.6fr",
                 borderTop: "1px solid #f0f0f0",
                 background: i % 2 === 0 ? "#fff" : "#fafafa",

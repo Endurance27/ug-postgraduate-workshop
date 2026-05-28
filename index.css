@@ -199,6 +199,186 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
   100% { transform: translateX(-50%); }
 }
 
+/* ── Responsive layout utilities ─────────────────────────────── */
+
+/* These classes use !important so they can override inline styles at breakpoints */
+
+/* 2-col → 1-col */
+.resp-2col,
+.about-grid,
+.cfp-cols,
+.contact-grid,
+.keynote-grid,
+.reg-grid {
+  /* desktop: keep inline grid-template-columns */
+}
+
+/* 3-col grids */
+.resp-3col,
+.video-grid {
+  /* desktop: keep inline */
+}
+
+/* 4-col grids */
+.highlights-grid,
+.cfp-grid,
+.resp-4col {
+  /* desktop: keep inline */
+}
+
+/* 2-col sidebar grids (main + narrow sidebar) */
+.stream-grid,
+.rec-grid {
+  /* desktop: keep inline */
+}
+
+/* hero / full layouts */
+.hero-container,
+.stats-grid,
+.photo-strip {
+  /* desktop: keep inline */
+}
+
+/* ── Tablet (≤ 900px) ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  /* hero: 2-col → 1-col */
+  .hero-container {
+    grid-template-columns: 1fr !important;
+    padding: 60px 24px 48px !important;
+  }
+  /* stats: 4-col → 2x2 */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* photo strip: 3-col → 1-col */
+  .photo-strip {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+  .photo-strip > div {
+    height: 200px;
+  }
+  /* keynote: fixed 280px + 1fr → 1-col */
+  .keynote-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* schedule track header */
+  .schedule-track-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* register hero */
+  .reg-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  /* session row */
+  .session-row {
+    grid-template-columns: 80px 1fr auto !important;
+    padding: 12px 16px !important;
+    gap: 10px !important;
+  }
+}
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container { padding: 0 16px; }
+  .section   { padding: 48px 0; }
+  .section-sm { padding: 28px 0; }
+
+  .page-hero           { padding: 36px 0 28px; }
+  .page-hero h1        { font-size: 1.75rem; }
+  .page-hero p         { font-size: 0.95rem; }
+
+  /* 2-col grids → 1-col */
+  .resp-2col,
+  .about-grid,
+  .cfp-cols,
+  .reg-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  /* contact: "1fr 360px" → 1-col */
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  /* stream: "1fr 280px" → 1-col */
+  .stream-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  /* recordings: "1fr 260px" → 1-col */
+  .rec-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  /* 3-col grids → 1-col */
+  .resp-3col,
+  .video-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  /* 4-col grids → 2x2 */
+  .highlights-grid,
+  .cfp-grid,
+  .resp-4col {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* about page amber panel 3-col → 1-col */
+  .amber-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* home about / tracks inner grid */
+  .about-tracks-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  /* home about section 2-col → 1-col */
+  .home-about-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  /* hide right-side image columns on mobile */
+  .hide-mobile { display: none !important; }
+
+  /* footer quick-links wrap */
+  .footer-right {
+    flex-direction: column !important;
+    gap: 28px !important;
+  }
+
+  /* schedule session row: 3-col → stacked */
+  .session-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+  .session-row .session-time {
+    font-size: 12px;
+  }
+
+  /* admin sidebar */
+  .admin-sidebar { display: none !important; }
+
+  /* cards shouldn't overflow */
+  .card { overflow: hidden; }
+
+  /* buttons full-width on mobile forms */
+  .btn-block-mobile { width: 100% !important; justify-content: center !important; }
+}
+
+/* ── Small mobile (≤ 480px) ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .highlights-grid,
+  .cfp-grid,
+  .resp-4col {
+    grid-template-columns: 1fr !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .page-hero h1 { font-size: 1.5rem; }
+}
+
 /* ── Print styles ────────────────────────────────────────────── */
 @media print {
   nav, footer, .no-print { display: none !important; }

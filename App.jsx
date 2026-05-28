@@ -178,6 +178,31 @@ const INIT_CONTENT = {
     { day: "Day 2", label: "Research Presentations & Panel Discussion", color: "#C9A84C", youtubeId: "1KWiyZnJFmw", start: 9624, highlights: ["Poster & Technical Paper Sessions", "Faculty Panel Discussion", "Short Paper Presentations"] },
     { day: "Day 3", label: "Final Presentations & Awards Ceremony",     color: "#7b1fa2", youtubeId: "NUAZDcQ_lJs", start: 6,    highlights: ["Regular Paper Final Session", "Judges' Deliberation", "Awards Ceremony & Closing"] },
   ],
+  home: {
+    heroSubtitle: "Department of Computer Science · SPMS · University of Ghana",
+    heroDesc:     "MSc, MPhil & PhD students present cutting-edge thesis research. Outstanding papers are considered for the CBAS Journal.",
+    importantDates: [
+      { id: 1, label: "Registration Opens",           date: "Now Open",    icon: "✅", done: true  },
+      { id: 2, label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: "📄", done: false },
+      { id: 3, label: "Acceptance Notification",      date: "8 Aug 2026",  icon: "📬", done: false },
+      { id: 4, label: "Workshop Begins",              date: "27 Aug 2026", icon: "🎓", done: false },
+    ],
+    featuredSessions: [
+      { id: 1, icon: "🎤", tag: "Keynote",  session: "Opening Keynote",           role: "TBA — Keynote Speaker", status: "Announcement Coming Soon",        topic: "Technology, Research & the Future of Computing in Africa", accent: "#1B3A6B" },
+      { id: 2, icon: "💡", tag: "Industry", session: "Industry Insights Session",  role: "TBA — Invited Speaker", status: "Industry / Academic Partner",      topic: "AI, Machine Learning & Applied Computer Science",          accent: "#C9A84C" },
+      { id: 3, icon: "📚", tag: "Panel",    session: "Research Methods Panel",     role: "TBA — Panel Chair",     status: "University of Ghana, DCS Faculty", topic: "Publishing Research: From Submission to Acceptance",        accent: "#0F2347" },
+    ],
+    testimonials: [
+      { id: 1, quote: "Presenting my thesis research here was a turning point. The feedback from the judges helped me refine my work before my final defence.", name: "Ama Boateng",  prog: "MPhil Computer Science" },
+      { id: 2, quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Computer Science" },
+      { id: 3, quote: "I wasn't sure if my work was ready to present, but the committee was very encouraging. The experience gave me real academic confidence.", name: "Efua Mensah",  prog: "MSc Computer Science" },
+    ],
+  },
+  sponsors: [
+    { id: 1, name: "University of Ghana",                        role: "Host Institution",      desc: "The University of Ghana, founded in 1948, is the premier research university in Ghana and one of the leading universities in Africa. The institution provides core funding and facilities for the workshop.", tier: "gold",    logo: "🏛️" },
+    { id: 2, name: "School of Physical & Mathematical Sciences", role: "Faculty Sponsor",        desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee, enabling the Department of Computer Science to host this landmark postgraduate event.",               tier: "gold",    logo: "🔬" },
+    { id: 3, name: "Department of Computer Science",             role: "Organising Department",  desc: "The Department of Computer Science at UG is the primary organiser of the workshop, coordinating all academic, logistical, and publication activities for the three-day event.",                          tier: "primary", logo: "💻" },
+  ],
 };
 
 export default function App() {
@@ -195,6 +220,8 @@ export default function App() {
           about:       parsed.about       || INIT_CONTENT.about,
           pastWinners: parsed.pastWinners || INIT_CONTENT.pastWinners,
           contact:     { ...(parsed.contact || {}), ...INIT_CONTENT.contact },
+          home:        parsed.home        || INIT_CONTENT.home,
+          sponsors:    parsed.sponsors    || INIT_CONTENT.sponsors,
         };
       }
       return INIT_CONTENT;
@@ -219,7 +246,7 @@ export default function App() {
       {/* Main Navbar — hidden in admin so no accidental navigation */}
       {!isAdmin && <Navbar page={page} navigate={navigate} registrant={registrant} />}
 
-      {page === "home"       && <HomePage navigate={navigate} event={siteContent.event} announcements={siteContent.announcements} feed={siteContent.feed} images={siteContent.images} />}
+      {page === "home"       && <HomePage navigate={navigate} event={siteContent.event} announcements={siteContent.announcements} feed={siteContent.feed} images={siteContent.images} home={siteContent.home} />}
       {page === "about"      && <AboutPage navigate={navigate} images={siteContent.images} about={siteContent.about} event={siteContent.event} />}
       {page === "register"   && <RegisterPage navigate={navigate} setRegistrant={setRegistrant} event={siteContent.event} />}
       {page === "schedule"   && <SchedulePage schedule={siteContent.schedule} images={siteContent.images} />}
@@ -229,7 +256,7 @@ export default function App() {
       {page === "speakers"   && <SpeakersPage speakers={siteContent.speakers} images={siteContent.images} />}
       {page === "support"    && <SupportPage contact={siteContent.contact} />}
       {page === "gallery"    && <GalleryPage gallery={siteContent.gallery} />}
-      {page === "sponsors"   && <SponsorsPage navigate={navigate} images={siteContent.images} contact={siteContent.contact} footer={siteContent.footer} />}
+      {page === "sponsors"   && <SponsorsPage navigate={navigate} images={siteContent.images} contact={siteContent.contact} footer={siteContent.footer} sponsors={siteContent.sponsors} />}
       {page === "contact"    && <ContactPage contact={siteContent.contact} images={siteContent.images} />}
       {isAdmin && (
         <AdminPage

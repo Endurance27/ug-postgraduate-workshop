@@ -51,7 +51,7 @@ const sponsors = [
   { name: "Industry Partners",    tier: "Corporate Sponsors",icon: "🤝" },
 ];
 
-export default function HomePage({ navigate, event, announcements, feed = [], images = {} }) {
+export default function HomePage({ navigate, event, announcements, feed = [], images = {}, home = {} }) {
   const img = {
     workshop:   images.workshop   || "/images/workshop-sessions.jpg",
     research:   images.research   || "/images/research-presentations.jpg",
@@ -347,12 +347,12 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-            {[
-              { label: "Registration Opens",           date: "Now Open",    icon: "✅", done: true  },
-              { label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: "📄", done: false },
-              { label: "Acceptance Notification",      date: "8 Aug 2026",  icon: "📬", done: false },
-              { label: "Workshop Begins",              date: "27 Aug 2026", icon: "🎓", done: false },
-            ].map((d, i) => (
+            {(home.importantDates || [
+              { id: 1, label: "Registration Opens",           date: "Now Open",    icon: "✅", done: true  },
+              { id: 2, label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: "📄", done: false },
+              { id: 3, label: "Acceptance Notification",      date: "8 Aug 2026",  icon: "📬", done: false },
+              { id: 4, label: "Workshop Begins",              date: "27 Aug 2026", icon: "🎓", done: false },
+            ]).map((d, i) => (
               <div key={i} style={{
                 background: d.done ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.07)",
                 border: `1px solid ${d.done ? "rgba(74,222,128,0.3)" : "rgba(201,168,76,0.25)"}`,
@@ -546,35 +546,11 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
-            {[
-              {
-                icon: "🎤",
-                role: "TBA — Keynote Speaker",
-                session: "Opening Keynote",
-                status: "Announcement Coming Soon",
-                topic: "Technology, Research & the Future of Computing in Africa",
-                accent: "#1B3A6B",
-                tag: "Keynote",
-              },
-              {
-                icon: "💡",
-                role: "TBA — Invited Speaker",
-                session: "Industry Insights Session",
-                status: "Industry / Academic Partner",
-                topic: "AI, Machine Learning & Applied Computer Science",
-                accent: "#C9A84C",
-                tag: "Industry",
-              },
-              {
-                icon: "📚",
-                role: "TBA — Panel Chair",
-                session: "Research Methods Panel",
-                status: "University of Ghana, DCS Faculty",
-                topic: "Publishing Research: From Submission to Acceptance",
-                accent: "#0F2347",
-                tag: "Panel",
-              },
-            ].map((s, i) => (
+            {(home.featuredSessions || [
+              { id: 1, icon: "🎤", tag: "Keynote",  session: "Opening Keynote",          role: "TBA — Keynote Speaker", status: "Announcement Coming Soon",        topic: "Technology, Research & the Future of Computing in Africa", accent: "#1B3A6B" },
+              { id: 2, icon: "💡", tag: "Industry", session: "Industry Insights Session", role: "TBA — Invited Speaker", status: "Industry / Academic Partner",      topic: "AI, Machine Learning & Applied Computer Science",          accent: "#C9A84C" },
+              { id: 3, icon: "📚", tag: "Panel",    session: "Research Methods Panel",    role: "TBA — Panel Chair",     status: "University of Ghana, DCS Faculty", topic: "Publishing Research: From Submission to Acceptance",        accent: "#0F2347" },
+            ]).map((s, i) => (
               <div key={i} className="card" style={{
                 borderTop: `4px solid ${s.accent}`,
                 transition: "box-shadow 0.2s, transform 0.2s",
@@ -689,16 +665,16 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             <h2 className="about-heading" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>What Participants Say</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-            {[
-              { quote: "Presenting my thesis research here was a turning point. The feedback from the judges helped me refine my work before my final defence.", name: "Ama Boateng", prog: "MPhil Computer Science", photo: img.research },
-              { quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Computer Science", photo: img.students },
-              { quote: "I wasn't sure if my work was ready to present, but the committee was very encouraging. The experience gave me real academic confidence.", name: "Efua Mensah", prog: "MSc Computer Science", photo: img.workshop },
-            ].map((t, i) => (
+            {(home.testimonials || [
+              { id: 1, quote: "Presenting my thesis research here was a turning point. The feedback from the judges helped me refine my work before my final defence.", name: "Ama Boateng",  prog: "MPhil Computer Science" },
+              { id: 2, quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Computer Science" },
+              { id: 3, quote: "I wasn't sure if my work was ready to present, but the committee was very encouraging. The experience gave me real academic confidence.", name: "Efua Mensah",  prog: "MSc Computer Science" },
+            ]).map((t, i) => (
               <div key={i} className="card" style={{ position: "relative" }}>
                 <div style={{ fontSize: 40, color: "#C9A84C", fontFamily: "Georgia, serif", lineHeight: 1, marginBottom: 8 }}>"</div>
                 <p style={{ fontSize: 14, color: "#444", lineHeight: 1.85, marginBottom: 20, fontStyle: "italic" }}>{t.quote}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <img src={t.photo} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #E5EAF3" }} />
+                  <img src={t.photo || [img.research, img.students, img.workshop][i % 3]} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #E5EAF3" }} />
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{t.name}</div>
                     <div style={{ fontSize: 12, color: "#888" }}>{t.prog}</div>

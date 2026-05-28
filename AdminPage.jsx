@@ -1,4 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import {
+  auth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signOut,
+} from "./firebase.js";
+
+const ALLOWLIST_KEY = "dcs-admin-allowlist";
+
+function getAllowlist() {
+  try { return JSON.parse(localStorage.getItem(ALLOWLIST_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function firebaseErrorMsg(code) {
+  const map = {
+    "auth/user-not-found":        "No account found with this email.",
+    "auth/wrong-password":        "Incorrect password.",
+    "auth/invalid-credential":    "Invalid email or password.",
+    "auth/invalid-email":         "Please enter a valid email address.",
+    "auth/email-already-in-use":  "An account with this email already exists.",
+    "auth/weak-password":         "Password must be at least 6 characters.",
+    "auth/too-many-requests":     "Too many attempts. Please wait and try again.",
+    "auth/network-request-failed":"Network error. Check your connection.",
+    "auth/missing-password":      "Please enter your password.",
+  };
+  return map[code] || "Something went wrong. Please try again.";
+}
 
 const SLIDE_IMAGES = [
   { src: "/images/dcs-research.jpg",             caption: "Research in Action"        },
@@ -30,6 +61,7 @@ const SIDEBAR_TOOLS = [
   { key: "feed",          icon: "📡", label: "Live Feed"    },
   { key: "images",        icon: "🖼️", label: "Site Images"  },
   { key: "footer",        icon: "🔗", label: "Footer"       },
+  { key: "security",      icon: "🔐", label: "Security"     },
 ];
 
 const TRACK_OPTIONS = ["", "CS Track", "Data Science Track", "Technical Track", "IT for Business Track", "Poster Track"];
@@ -39,9 +71,16 @@ let _nextId = 9000;
 const uid = () => ++_nextId;
 
 export default function AdminPage({ siteContent, updateContent, navigate }) {
-  const [authed, setAuthed] = useState(false);
-  const [creds, setCreds]   = useState({ email: "", password: "" });
-  const [tab, setTab]       = useState("home");
+  const [fireUser, setFireUser]     = useState(null);
+  const [authReady, setAuthReady]   = useState(false);
+  const [authView, setAuthView]     = useState("signin"); // "signin" | "signup" | "forgot"
+  const [form, setForm]             = useState({ email: "", password: "", confirm: "" });
+  const [authError, setAuthError]   = useState("");
+  const [authMsg, setAuthMsg]       = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [showPass, setShowPass]     = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [tab, setTab]               = useState("home");
 
   const [slide, setSlide]     = useState(0);
   const [fading, setFading]   = useState(false);
@@ -57,7 +96,99 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
     return () => clearInterval(timer);
   }, []);
 
-  if (!authed) return (
+  // Firebase auth state listener
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        const list = getAllowlist();
+        if (list.length > 0 && !list.includes(u.email.toLowerCase())) {
+          signOut(auth);
+          setAuthError("This email is not authorised to access the admin console.");
+          setFireUser(null);
+        } else {
+          setFireUser(u);
+        }
+      } else {
+        setFireUser(null);
+      }
+      setAuthReady(true);
+    });
+    return unsub;
+  }, []);
+
+  function resetForm() { setForm({ email: "", password: "", confirm: "" }); setAuthError(""); setAuthMsg(""); }
+
+  async function handleSignIn() {
+    setAuthError(""); setAuthMsg("");
+    if (!form.email || !form.password) { setAuthError("Please enter your email and password."); return; }
+    setAuthLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, form.email.trim(), form.password);
+    } catch (e) { setAuthError(firebaseErrorMsg(e.code)); }
+    finally { setAuthLoading(false); }
+  }
+
+  async function handleSignUp() {
+    setAuthError(""); setAuthMsg("");
+    if (!form.email || !form.password) { setAuthError("Please fill in all fields."); return; }
+    if (form.password !== form.confirm) { setAuthError("Passwords do not match."); return; }
+    if (form.password.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
+    setAuthLoading(true);
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, form.email.trim(), form.password);
+      await sendEmailVerification(user);
+      setAuthMsg("Account created! Check your email inbox and click the verification link.");
+    } catch (e) { setAuthError(firebaseErrorMsg(e.code)); }
+    finally { setAuthLoading(false); }
+  }
+
+  async function handleForgotPassword() {
+    setAuthError(""); setAuthMsg("");
+    if (!form.email) { setAuthError("Please enter your email address."); return; }
+    setAuthLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, form.email.trim());
+      setAuthMsg("Password reset email sent. Check your inbox.");
+    } catch (e) { setAuthError(firebaseErrorMsg(e.code)); }
+    finally { setAuthLoading(false); }
+  }
+
+  // ── Loading while Firebase resolves auth state ──
+  if (!authReady) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f3f7" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 36, marginBottom: 16 }}>🔐</div>
+        <p style={{ color: "#555", fontSize: 15 }}>Loading admin console…</p>
+      </div>
+    </div>
+  );
+
+  // ── Email verification pending ──
+  if (fireUser && !fireUser.emailVerified) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f3f7" }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: "48px 44px", maxWidth: 440, width: "100%", textAlign: "center", boxShadow: "0 4px 32px rgba(0,0,0,0.10)" }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>📧</div>
+        <h2 style={{ fontFamily: "Playfair Display, serif", color: "#0F2347", marginBottom: 10 }}>Verify Your Email</h2>
+        <p style={{ color: "#666", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
+          A verification link was sent to <strong>{fireUser.email}</strong>.<br />
+          Click the link in your email to activate your account.
+        </p>
+        <button className="btn-primary" style={{ marginBottom: 12, width: "100%", justifyContent: "center" }}
+          onClick={async () => { await sendEmailVerification(fireUser); setAuthMsg("Verification email resent!"); }}
+        >Resend Verification Email</button>
+        <button onClick={() => { fireUser.reload().then(() => setFireUser({ ...auth.currentUser })); }}
+          style={{ background: "#f0f4ff", color: "#1B3A6B", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, cursor: "pointer", width: "100%", marginBottom: 12 }}>
+          I've verified — Refresh
+        </button>
+        {authMsg && <div style={{ color: "#27ae60", fontSize: 13, marginBottom: 12 }}>{authMsg}</div>}
+        <button onClick={() => signOut(auth)} style={{ color: "#aaa", background: "none", border: "none", fontSize: 13, cursor: "pointer" }}>
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!fireUser) return (
     <main style={{ minHeight: "100vh", display: "flex" }}>
       {/* ── Left: image slideshow ── */}
       <div style={{
@@ -115,39 +246,134 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
         </div>
       </div>
 
-      {/* ── Right: sign-in form ── */}
+      {/* ── Right: auth form ── */}
       <div style={{
         flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
         padding: "48px 40px", background: "#fff",
       }} className="admin-form-panel">
-        <div style={{ width: "100%", maxWidth: 380 }}>
+        <div style={{ width: "100%", maxWidth: 400 }}>
 
-          {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ fontSize: 12, color: "#C9A84C", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Admin Console</div>
-            <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "2rem", color: "#0F2347", marginBottom: 8 }}>Welcome Back</h2>
-            <p style={{ color: "#666", fontSize: 15 }}>Sign in to manage the workshop.</p>
-          </div>
+          {/* ── SIGN IN ── */}
+          {authView === "signin" && <>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: 12, color: "#C9A84C", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Admin Console</div>
+              <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "2rem", color: "#0F2347", marginBottom: 8 }}>Welcome Back</h2>
+              <p style={{ color: "#666", fontSize: 15 }}>Sign in to manage the workshop.</p>
+            </div>
+            <div style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }} />
+            {authError && <div style={{ background: "#fff3f3", border: "1px solid #f5b8b8", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#c0392b", fontSize: 13 }}>{authError}</div>}
+            {authMsg   && <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#1e7e3e", fontSize: 13 }}>{authMsg}</div>}
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" autoComplete="username" value={form.email} disabled={authLoading}
+                onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
+                placeholder="admin@cs.ug.edu.gh" />
+            </div>
+            <div className="form-group">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <label style={{ margin: 0 }}>Password</label>
+                <button type="button" onClick={() => { resetForm(); setAuthView("forgot"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 12, cursor: "pointer", padding: 0, fontWeight: 600 }}>Forgot password?</button>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input type={showPass ? "text" : "password"} autoComplete="current-password" value={form.password} disabled={authLoading}
+                  onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setAuthError(""); }}
+                  placeholder="••••••••" style={{ paddingRight: 44 }}
+                  onKeyDown={e => e.key === "Enter" && !authLoading && handleSignIn()} />
+                <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? "🙈" : "👁️"}</button>
+              </div>
+            </div>
+            <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, marginTop: 8, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
+              onClick={handleSignIn} disabled={authLoading}>
+              {authLoading ? "Signing in…" : "Sign In →"}
+            </button>
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <span style={{ color: "#888", fontSize: 13 }}>Don't have an account? </span>
+              <button type="button" onClick={() => { resetForm(); setAuthView("signup"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>Create account</button>
+            </div>
+          </>}
 
-          {/* Divider */}
-          <div style={{ borderTop: "1px solid #e0e0e0", marginBottom: 28 }} />
+          {/* ── SIGN UP ── */}
+          {authView === "signup" && <>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: 12, color: "#C9A84C", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Admin Console</div>
+              <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "2rem", color: "#0F2347", marginBottom: 8 }}>Create Account</h2>
+              <p style={{ color: "#666", fontSize: 15 }}>Set up admin access for the workshop.</p>
+            </div>
+            <div style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }} />
+            {authError && <div style={{ background: "#fff3f3", border: "1px solid #f5b8b8", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#c0392b", fontSize: 13 }}>{authError}</div>}
+            {authMsg   && <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#1e7e3e", fontSize: 13, lineHeight: 1.6 }}>{authMsg}</div>}
+            {!authMsg && <>
+              <div className="form-group">
+                <label>Email Address</label>
+                <input type="email" autoComplete="email" value={form.email} disabled={authLoading}
+                  onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
+                  placeholder="admin@cs.ug.edu.gh" />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <div style={{ position: "relative" }}>
+                  <input type={showPass ? "text" : "password"} autoComplete="new-password" value={form.password} disabled={authLoading}
+                    onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setAuthError(""); }}
+                    placeholder="At least 6 characters" style={{ paddingRight: 44 }} />
+                  <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showPass ? "🙈" : "👁️"}</button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Confirm Password</label>
+                <div style={{ position: "relative" }}>
+                  <input type={showConfirm ? "text" : "password"} autoComplete="new-password" value={form.confirm} disabled={authLoading}
+                    onChange={e => { setForm(f => ({ ...f, confirm: e.target.value })); setAuthError(""); }}
+                    placeholder="Re-enter your password" style={{ paddingRight: 44 }}
+                    onKeyDown={e => e.key === "Enter" && !authLoading && handleSignUp()} />
+                  <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>{showConfirm ? "🙈" : "👁️"}</button>
+                </div>
+              </div>
+              {form.password && (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                  {[{ label: "6+ chars", ok: form.password.length >= 6 }, { label: "Uppercase", ok: /[A-Z]/.test(form.password) }, { label: "Number", ok: /\d/.test(form.password) }].map(({ label, ok }) => (
+                    <span key={label} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, fontWeight: 600, background: ok ? "#e8f5ee" : "#f5f5f5", color: ok ? "#27ae60" : "#aaa" }}>{ok ? "✓" : "○"} {label}</span>
+                  ))}
+                </div>
+              )}
+              <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
+                onClick={handleSignUp} disabled={authLoading}>
+                {authLoading ? "Creating account…" : "Create Account →"}
+              </button>
+            </>}
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <span style={{ color: "#888", fontSize: 13 }}>Already have an account? </span>
+              <button type="button" onClick={() => { resetForm(); setAuthView("signin"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>Sign in</button>
+            </div>
+          </>}
 
-          {/* Fields */}
-          <div className="form-group">
-            <label>Email Address</label>
-            <input type="email" value={creds.email} onChange={e => setCreds(c => ({ ...c, email: e.target.value }))} placeholder="admin@cs.ug.edu.gh" />
-          </div>
-          <div className="form-group" style={{ marginBottom: 28 }}>
-            <label>Password</label>
-            <input type="password" value={creds.password} onChange={e => setCreds(c => ({ ...c, password: e.target.value }))} placeholder="••••••••" onKeyDown={e => e.key === "Enter" && creds.email && creds.password && setAuthed(true)} />
-          </div>
+          {/* ── FORGOT PASSWORD ── */}
+          {authView === "forgot" && <>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: 12, color: "#C9A84C", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Admin Console</div>
+              <h2 style={{ fontFamily: "Playfair Display, serif", fontSize: "2rem", color: "#0F2347", marginBottom: 8 }}>Reset Password</h2>
+              <p style={{ color: "#666", fontSize: 15 }}>Enter your email and we'll send a reset link.</p>
+            </div>
+            <div style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }} />
+            {authError && <div style={{ background: "#fff3f3", border: "1px solid #f5b8b8", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#c0392b", fontSize: 13 }}>{authError}</div>}
+            {authMsg   && <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "10px 14px", marginBottom: 18, color: "#1e7e3e", fontSize: 13 }}>{authMsg}</div>}
+            {!authMsg && <>
+              <div className="form-group">
+                <label>Email Address</label>
+                <input type="email" autoComplete="email" value={form.email} disabled={authLoading}
+                  onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setAuthError(""); }}
+                  placeholder="admin@cs.ug.edu.gh"
+                  onKeyDown={e => e.key === "Enter" && !authLoading && handleForgotPassword()} />
+              </div>
+              <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10, opacity: authLoading ? 0.65 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}
+                onClick={handleForgotPassword} disabled={authLoading}>
+                {authLoading ? "Sending…" : "Send Reset Link →"}
+              </button>
+            </>}
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <button type="button" onClick={() => { resetForm(); setAuthView("signin"); }} style={{ background: "none", border: "none", color: "#1B3A6B", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>← Back to Sign In</button>
+            </div>
+          </>}
 
-          <button className="btn-primary" style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: 15, borderRadius: 10 }}
-            onClick={() => { if (creds.email && creds.password) setAuthed(true); }}>
-            Sign In →
-          </button>
-
-          <p style={{ fontSize: 13, color: "#aaa", textAlign: "center", marginTop: 20 }}>Demo: enter any email and password</p>
         </div>
       </div>
 
@@ -245,7 +471,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
               {event.registrationOpen ? "● Open" : "● Closed"}
             </div>
           </div>
-          <button onClick={() => { setAuthed(false); navigate && navigate("home"); }} style={{
+          <button onClick={() => { signOut(auth); navigate && navigate("home"); }} style={{
             width: "100%", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)",
             border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8,
             padding: "8px", fontSize: 13, cursor: "pointer",
@@ -258,7 +484,10 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
 
         {/* ── HOME PAGE ────────────────────────────────────────── */}
         {tab === "home" && (
-          <HomePanel event={event} onChange={v => updateContent("event", v)} />
+          <HomePanel
+            event={event} onChange={v => updateContent("event", v)}
+            home={siteContent.home || {}} onChangeHome={v => updateContent("home", v)}
+          />
         )}
 
         {/* ── ABOUT PAGE ───────────────────────────────────────── */}
@@ -273,7 +502,10 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
 
         {/* ── SPONSORS PAGE ────────────────────────────────────── */}
         {tab === "sponsors" && (
-          <SponsorsAdminPanel footer={siteContent.footer} onChange={v => updateContent("footer", v)} />
+          <SponsorsAdminPanel
+            sponsors={siteContent.sponsors || []} onChangeSponsors={v => updateContent("sponsors", v)}
+            footer={siteContent.footer} onChange={v => updateContent("footer", v)}
+          />
         )}
 
         {/* ── REGISTER PAGE ────────────────────────────────────── */}
@@ -421,6 +653,9 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
           />
         )}
 
+        {/* ── SECURITY ─────────────────────────────────────────── */}
+        {tab === "security" && <SecurityPanel />}
+
       </div>
       </div>{/* end sidebar+content flex row */}
     </div>
@@ -446,6 +681,48 @@ function ToggleRow({ label, desc, value, onChange }) {
           boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
         }} />
       </button>
+    </div>
+  );
+}
+
+/* ── Reusable image upload field ─────────────────────────────── */
+function ImageUploadField({ value, onChange, label, placeholder }) {
+  const ref = useRef(null);
+  const isUpload = value && value.startsWith("data:");
+  return (
+    <div>
+      {label && <div style={{ fontSize: 13, fontWeight: 500, color: "#333", marginBottom: 6 }}>{label}</div>}
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ width: 96, height: 68, borderRadius: 8, overflow: "hidden", border: "1px solid #ddd", flexShrink: 0, background: "#f5f5f5" }}>
+          {value
+            ? <img src={value} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#ccc", fontSize: 22 }}>🖼️</div>}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {isUpload ? (
+            <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>Uploaded image</span>
+              <button type="button" onClick={() => onChange("")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+            </div>
+          ) : (
+            <input value={value || ""} onChange={e => onChange(e.target.value)}
+              placeholder={placeholder || "/images/... or https://..."}
+              style={{ width: "100%", padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13, marginBottom: 6 }} />
+          )}
+          <button type="button" onClick={() => ref.current.click()}
+            style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "5px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+            ↑ Upload Image
+          </button>
+          <input ref={ref} type="file" accept="image/*" style={{ display: "none" }}
+            onChange={e => {
+              const file = e.target.files[0]; if (!file) return;
+              const reader = new FileReader();
+              reader.onload = ev => onChange(ev.target.result);
+              reader.readAsDataURL(file);
+              e.target.value = "";
+            }} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1119,8 +1396,7 @@ function AwardsPanel({ awards, onChange, pastWinners = [], onChangePastWinners }
                 <input value={w.edition} onChange={e => updatePastForm(i, "edition", e.target.value)} placeholder="Maiden Workshop 2025" />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Photo URL (optional)</label>
-                <input value={w.avatar} onChange={e => updatePastForm(i, "avatar", e.target.value)} placeholder="/images/... or https://..." />
+                <ImageUploadField label="Photo (optional)" value={w.avatar} onChange={v => updatePastForm(i, "avatar", v)} />
               </div>
             </div>
           </div>
@@ -1171,9 +1447,7 @@ function SpeakersPanel({ speakers = {}, onChange }) {
         <div className="form-group"><label>Bio</label><textarea value={keynote.bio} onChange={e => setKeynote(k => ({ ...k, bio: e.target.value }))} style={{ minHeight: 80 }} /></div>
         <div className="form-row">
           <div className="form-group">
-            <label>Photo URL</label>
-            <input value={keynote.photo} onChange={e => setKeynote(k => ({ ...k, photo: e.target.value }))} placeholder="/images/..." />
-            {keynote.photo && <img src={keynote.photo} alt="keynote preview" style={{ width: 96, height: 68, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd", marginTop: 6, display: "block" }} />}
+            <ImageUploadField label="Photo" value={keynote.photo} onChange={v => setKeynote(k => ({ ...k, photo: v }))} />
           </div>
           <div className="form-group"><label>Tags (comma-separated)</label><input value={keynote.tags} onChange={e => setKeynote(k => ({ ...k, tags: e.target.value }))} placeholder="AI, Machine Learning" /></div>
         </div>
@@ -1202,9 +1476,7 @@ function SpeakersPanel({ speakers = {}, onChange }) {
             <div className="form-row">
               <div className="form-group"><label>Bio</label><textarea value={p.bio} onChange={e => updatePanelist(i, "bio", e.target.value)} style={{ minHeight: 60 }} /></div>
               <div className="form-group">
-                <label>Photo URL</label>
-                <input value={p.photo} onChange={e => updatePanelist(i, "photo", e.target.value)} placeholder="/images/..." />
-                {p.photo && <img src={p.photo} alt="panelist preview" style={{ width: 80, height: 58, objectFit: "cover", borderRadius: 6, border: "1px solid #ddd", marginTop: 6, display: "block" }} />}
+                <ImageUploadField label="Photo" value={p.photo} onChange={v => updatePanelist(i, "photo", v)} />
               </div>
             </div>
           </div>
@@ -1234,16 +1506,19 @@ function SpeakersPanel({ speakers = {}, onChange }) {
 
 /* ── Contact Info Panel ──────────────────────────────────────── */
 function ContactPanel({ contact = {}, onChange }) {
-  const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", ...contact });
+  const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
   const [saved, setSaved] = useState(false);
 
   const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div style={{ maxWidth: 640 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Contact Info</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>These details appear on the Contact page and WhatsApp button.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved.</div>}
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>These details appear on the Contact page, Support page contact tab, and the WhatsApp float button.</p>
+      <div className="alert alert-info" style={{ marginBottom: 20, fontSize: 13 }}>
+        Changes here update the <strong>Contact</strong> page, <strong>Support</strong> page, and <strong>WhatsApp</strong> button across the whole site.
+      </div>
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — contact details updated site-wide.</div>}
 
       <div className="card">
         <div className="form-row">
@@ -1251,11 +1526,15 @@ function ContactPanel({ contact = {}, onChange }) {
           <div className="form-group"><label>Website</label><input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} placeholder="www.cs.ug.edu.gh" /></div>
         </div>
         <div className="form-row">
-          <div className="form-group"><label>WhatsApp Number</label><input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="233XXXXXXXXX" /></div>
-          <div className="form-group"><label>Office Hours</label><input value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT" /></div>
+          <div className="form-group"><label>Phone Number</label><input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+233 (0) 536 909 471" /></div>
+          <div className="form-group"><label>WhatsApp Number</label><input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="233XXXXXXXXX (no + or spaces)" /></div>
         </div>
         <div className="form-group">
-          <label>Location (one line per line)</label>
+          <label>Office Hours</label>
+          <input value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT" />
+        </div>
+        <div className="form-group">
+          <label>Location / Address</label>
           <textarea value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ minHeight: 80 }} />
         </div>
         <button className="btn-primary" onClick={save}>Save Contact Info →</button>
@@ -1318,64 +1597,210 @@ function FooterPanel({ footer = {}, onChange }) {
 }
 
 /* ── Home Page Panel ─────────────────────────────────────────── */
-function HomePanel({ event, onChange }) {
-  const [form, setForm] = useState({ ...event });
+function HomePanel({ event, onChange, home = {}, onChangeHome }) {
+  const [evForm, setEvForm] = useState({ ...event });
+  const [homeForm, setHomeForm] = useState({
+    heroSubtitle: home.heroSubtitle || "Department of Computer Science · SPMS · University of Ghana",
+    heroDesc:     home.heroDesc     || "",
+    importantDates:    home.importantDates    || [],
+    featuredSessions:  home.featuredSessions  || [],
+    testimonials:      home.testimonials      || [],
+  });
   const [saved, setSaved] = useState(false);
-  const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
+
+  const saveAll = () => {
+    onChange(evForm);
+    onChangeHome(homeForm);
+    setSaved(true); setTimeout(() => setSaved(false), 2500);
+  };
+
+  const updateDate = (i, field, val) =>
+    setHomeForm(f => ({ ...f, importantDates: f.importantDates.map((d, di) => di === i ? { ...d, [field]: val } : d) }));
+  const updateSession = (i, field, val) =>
+    setHomeForm(f => ({ ...f, featuredSessions: f.featuredSessions.map((s, si) => si === i ? { ...s, [field]: val } : s) }));
+  const updateTestimonial = (i, field, val) =>
+    setHomeForm(f => ({ ...f, testimonials: f.testimonials.map((t, ti) => ti === i ? { ...t, [field]: val } : t) }));
+
+  const addDate = () => setHomeForm(f => ({ ...f, importantDates: [...f.importantDates, { id: uid(), label: "New Date", date: "TBD", icon: "📅", done: false }] }));
+  const removeDate = (i) => setHomeForm(f => ({ ...f, importantDates: f.importantDates.filter((_, di) => di !== i) }));
+
+  const addSession = () => setHomeForm(f => ({ ...f, featuredSessions: [...f.featuredSessions, { id: uid(), icon: "🎤", tag: "Session", session: "New Session", role: "", status: "", topic: "", accent: "#1B3A6B" }] }));
+  const removeSession = (i) => setHomeForm(f => ({ ...f, featuredSessions: f.featuredSessions.filter((_, si) => si !== i) }));
+
+  const addTestimonial = () => setHomeForm(f => ({ ...f, testimonials: [...f.testimonials, { id: uid(), quote: "", name: "", prog: "" }] }));
+  const removeTestimonial = (i) => setHomeForm(f => ({ ...f, testimonials: f.testimonials.filter((_, ti) => ti !== i) }));
 
   return (
-    <div style={{ maxWidth: 680 }}>
+    <div style={{ maxWidth: 760 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Home Page</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>Edit the headline, dates, venue and hero content shown on the Home page.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — changes are live on the Home page.</div>}
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>Edit all sections shown on the Home page — hero, dates, sessions, and testimonials.</p>
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — all Home page changes are live.</div>}
 
+      {/* ── Hero ── */}
       <div className="card" style={{ marginBottom: 20 }}>
         <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>Hero Section</h4>
         <div className="form-row">
           <div className="form-group">
             <label>Event Title</label>
-            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+            <input value={evForm.title} onChange={e => setEvForm(f => ({ ...f, title: e.target.value }))} />
           </div>
           <div className="form-group">
-            <label>Edition</label>
-            <input value={form.edition} onChange={e => setForm(f => ({ ...f, edition: e.target.value }))} />
+            <label>Edition Badge</label>
+            <input value={evForm.edition} onChange={e => setEvForm(f => ({ ...f, edition: e.target.value }))} placeholder="2nd Annual Edition" />
           </div>
         </div>
         <div className="form-row">
           <div className="form-group">
             <label>Dates</label>
-            <input value={form.dates} onChange={e => setForm(f => ({ ...f, dates: e.target.value }))} placeholder="27–29 August 2026" />
+            <input value={evForm.dates} onChange={e => setEvForm(f => ({ ...f, dates: e.target.value }))} placeholder="27–29 August 2026" />
           </div>
           <div className="form-group">
             <label>Venue</label>
-            <input value={form.venue} onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} />
+            <input value={evForm.venue} onChange={e => setEvForm(f => ({ ...f, venue: e.target.value }))} />
           </div>
         </div>
         <div className="form-group">
-          <label>Short Description</label>
-          <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} style={{ minHeight: 80 }} />
+          <label>Subtitle Line (shown below title)</label>
+          <input value={homeForm.heroSubtitle} onChange={e => setHomeForm(f => ({ ...f, heroSubtitle: e.target.value }))} placeholder="Department of Computer Science · SPMS · University of Ghana" />
         </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Registration</h4>
+        <div className="form-group">
+          <label>Hero Description</label>
+          <textarea value={homeForm.heroDesc} onChange={e => setHomeForm(f => ({ ...f, heroDesc: e.target.value }))} style={{ minHeight: 80 }} placeholder="Brief description shown below the title in the hero…" />
+        </div>
         <div className="form-group" style={{ maxWidth: 200 }}>
           <label>Registration Fee (GHS)</label>
-          <input type="number" min="0" value={form.fee} onChange={e => setForm(f => ({ ...f, fee: Number(e.target.value) }))} />
+          <input type="number" min="0" value={evForm.fee} onChange={e => setEvForm(f => ({ ...f, fee: Number(e.target.value) }))} />
         </div>
-        <ToggleRow label="Registration Open" desc="Visitors can register from the Home page" value={form.registrationOpen}
-          onChange={v => setForm(f => ({ ...f, registrationOpen: v }))} />
-        <ToggleRow label="Submissions Open" desc="Participants can submit papers" value={form.submissionsOpen}
-          onChange={v => setForm(f => ({ ...f, submissionsOpen: v }))} />
+        <ToggleRow label="Registration Open" desc="Show 'Register Now' button on hero" value={evForm.registrationOpen}
+          onChange={v => setEvForm(f => ({ ...f, registrationOpen: v }))} />
+        <ToggleRow label="Submissions Open" desc="Allow paper/abstract submissions" value={evForm.submissionsOpen}
+          onChange={v => setEvForm(f => ({ ...f, submissionsOpen: v }))} />
       </div>
 
-      <div style={{ background: "#f8f9fa", borderRadius: 12, padding: "16px 20px", marginBottom: 20, fontSize: 13, color: "#666" }}>
-        <strong style={{ color: "#1B3A6B" }}>Homepage banners & ticker</strong> — manage via <strong>Announcements</strong> and <strong>Live Feed</strong> in Admin Tools.
-        <br />
-        <strong style={{ color: "#1B3A6B" }}>Homepage photos</strong> — change images via <strong>Site Images</strong> in Admin Tools.
+      {/* ── Important Dates ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Important Dates</h4>
+          <button onClick={addDate} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add Date</button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>These date cards appear in the dark navy strip on the Home page.</p>
+        {homeForm.importantDates.map((d, i) => (
+          <div key={d.id || i} style={{ border: "1px solid #e0e0e0", borderRadius: 10, padding: "14px 16px", marginBottom: 10, background: d.done ? "#f0fff5" : "#fafafa" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 1fr 60px auto", gap: 10, alignItems: "end" }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Icon</label>
+                <input value={d.icon} onChange={e => updateDate(i, "icon", e.target.value)} style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 18, textAlign: "center" }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Label</label>
+                <input value={d.label} onChange={e => updateDate(i, "label", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Date / Status</label>
+                <input value={d.date} onChange={e => updateDate(i, "date", e.target.value)} placeholder="e.g. 31 Jul 2026" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                <label style={{ fontSize: 11, color: "#888" }}>Done</label>
+                <button onClick={() => updateDate(i, "done", !d.done)} style={{
+                  width: 36, height: 22, borderRadius: 11, border: "none", cursor: "pointer",
+                  background: d.done ? "#1B6B3A" : "#ccc", position: "relative", transition: "background 0.2s",
+                }}>
+                  <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: d.done ? 17 : 3, transition: "left 0.2s" }} />
+                </button>
+              </div>
+              <button onClick={() => removeDate(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 20 }}>✕</button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <button className="btn-primary" onClick={save}>Save Home Page →</button>
+      {/* ── Featured Sessions ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Featured Sessions</h4>
+          <button onClick={addSession} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add Session</button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>Speaker / session cards in the "Programme Highlights" section on the Home page.</p>
+        {homeForm.featuredSessions.map((s, i) => (
+          <div key={s.id || i} style={{ border: "1px solid #e0e0e0", borderRadius: 10, padding: "16px", marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{s.session || `Session ${i + 1}`}</span>
+              <button onClick={() => removeSession(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "3px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Icon</label>
+                <input value={s.icon} onChange={e => updateSession(i, "icon", e.target.value)} style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 18, textAlign: "center", width: "100%" }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Tag (shown as badge)</label>
+                <input value={s.tag} onChange={e => updateSession(i, "tag", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="e.g. Keynote" />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Accent Colour</label>
+                <input value={s.accent} onChange={e => updateSession(i, "accent", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="#1B3A6B" />
+              </div>
+            </div>
+            <div className="form-row" style={{ marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Session Title</label>
+                <input value={s.session} onChange={e => updateSession(i, "session", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Speaker / Role</label>
+                <input value={s.role} onChange={e => updateSession(i, "role", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="TBA — Keynote Speaker" />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Status / Affiliation</label>
+                <input value={s.status} onChange={e => updateSession(i, "status", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Topic / Theme</label>
+                <input value={s.topic} onChange={e => updateSession(i, "topic", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Testimonials ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Testimonials</h4>
+          <button onClick={addTestimonial} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add</button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>Participant quotes in the "What Participants Say" section. Photos use the global site images.</p>
+        {homeForm.testimonials.map((t, i) => (
+          <div key={t.id || i} style={{ border: "1px solid #e0e0e0", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+              <button onClick={() => removeTestimonial(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "3px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+            </div>
+            <div className="form-group" style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12 }}>Quote</label>
+              <textarea value={t.quote} onChange={e => updateTestimonial(i, "quote", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13, minHeight: 70, resize: "vertical" }} />
+            </div>
+            <div className="form-row">
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Name</label>
+                <input value={t.name} onChange={e => updateTestimonial(i, "name", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Programme</label>
+                <input value={t.prog} onChange={e => updateTestimonial(i, "prog", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="MSc Computer Science" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: "#f8f9fa", borderRadius: 12, padding: "14px 18px", marginBottom: 20, fontSize: 13, color: "#666" }}>
+        <strong style={{ color: "#1B3A6B" }}>Announcements & Live Feed</strong> — manage via Admin Tools sidebar.<br />
+        <strong style={{ color: "#1B3A6B" }}>Homepage photos</strong> — change via <strong>Site Images</strong> in Admin Tools.
+      </div>
+
+      <button className="btn-primary" onClick={saveAll}>Save All Home Page Changes →</button>
     </div>
   );
 }
@@ -1506,52 +1931,115 @@ function StreamPanel({ stream = {}, onChange }) {
 }
 
 /* ── Sponsors Page Panel ─────────────────────────────────────── */
-function SponsorsAdminPanel({ footer = {}, onChange }) {
-  const [form, setForm] = useState({
+function SponsorsAdminPanel({ sponsors = [], onChangeSponsors, footer = {}, onChange }) {
+  const [items, setItems] = useState(sponsors.map(s => ({ ...s })));
+  const [footerForm, setFooterForm] = useState({
+    publication: footer.publication || "CBAS Journal",
     organizers:  (footer.organizers  || []).join("\n"),
     sponsors:    (footer.sponsors    || []).join("\n"),
-    publication: footer.publication || "CBAS Journal",
   });
   const [saved, setSaved] = useState(false);
 
-  const save = () => {
+  const update = (i, field, val) => setItems(arr => arr.map((s, si) => si === i ? { ...s, [field]: val } : s));
+  const remove = (i) => setItems(arr => arr.filter((_, si) => si !== i));
+  const add = () => setItems(arr => [...arr, { id: uid(), name: "New Sponsor", role: "Partner", desc: "Description of this sponsor's contribution.", tier: "gold", logo: "🏢" }]);
+
+  const saveAll = () => {
+    onChangeSponsors(items);
     onChange({
       ...footer,
-      organizers:  form.organizers.split("\n").map(s => s.trim()).filter(Boolean),
-      sponsors:    form.sponsors.split("\n").map(s => s.trim()).filter(Boolean),
-      publication: form.publication,
+      publication: footerForm.publication,
+      organizers:  footerForm.organizers.split("\n").map(s => s.trim()).filter(Boolean),
+      sponsors:    footerForm.sponsors.split("\n").map(s => s.trim()).filter(Boolean),
     });
     setSaved(true); setTimeout(() => setSaved(false), 2500);
   };
 
-  return (
-    <div style={{ maxWidth: 640 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Sponsors Page</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Edit sponsor names and publication partner shown site-wide.</p>
-      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved.</div>}
+  const tierColors = { gold: "#C9A84C", primary: "#1B3A6B", silver: "#7a7a7a", bronze: "#b56f3e" };
 
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Sponsors Page</h2>
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage institutional sponsor cards, publication partner, and footer sponsor lists.</p>
+      {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — Sponsors page updated.</div>}
+
+      {/* Institutional Sponsor Cards */}
       <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Institutional Sponsors</h4>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Institutional Sponsor Cards</h4>
+          <button onClick={add} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add Sponsor</button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>These cards appear in the "Institutional Sponsors" grid on the Sponsors page.</p>
+
+        {items.map((s, i) => (
+          <div key={s.id || i} style={{
+            border: `2px solid ${tierColors[s.tier] || "#ddd"}`,
+            borderRadius: 12, padding: "16px", marginBottom: 14,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 24 }}>{s.logo}</span>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{s.name || `Sponsor ${i + 1}`}</span>
+              </div>
+              <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 1fr 120px", gap: 10, marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Logo / Icon</label>
+                <input value={s.logo} onChange={e => update(i, "logo", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 18, textAlign: "center" }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Organisation Name</label>
+                <input value={s.name} onChange={e => update(i, "name", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Role / Badge Label</label>
+                <input value={s.role} onChange={e => update(i, "role", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="Host Institution" />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Tier</label>
+                <select value={s.tier} onChange={e => update(i, "tier", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}>
+                  <option value="gold">Gold</option>
+                  <option value="primary">Primary (Blue)</option>
+                  <option value="silver">Silver</option>
+                  <option value="bronze">Bronze</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Description</label>
+              <textarea value={s.desc} onChange={e => update(i, "desc", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13, minHeight: 60, resize: "vertical" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Publication Partner */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Publication Partner</h4>
+        <div className="form-group" style={{ maxWidth: 300 }}>
+          <label>Journal / Publisher Name</label>
+          <input value={footerForm.publication} onChange={e => setFooterForm(f => ({ ...f, publication: e.target.value }))} placeholder="CBAS Journal" />
+        </div>
+      </div>
+
+      {/* Footer Lists */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Footer Sponsor Lists</h4>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>These text lists appear in the site footer (not the Sponsors page cards).</p>
         <div className="form-row">
           <div className="form-group">
             <label>Organizers (one per line)</label>
-            <textarea value={form.organizers} onChange={e => setForm(f => ({ ...f, organizers: e.target.value }))} style={{ minHeight: 90 }} />
+            <textarea value={footerForm.organizers} onChange={e => setFooterForm(f => ({ ...f, organizers: e.target.value }))} style={{ minHeight: 80 }} />
           </div>
           <div className="form-group">
             <label>Sponsors & Funders (one per line)</label>
-            <textarea value={form.sponsors} onChange={e => setForm(f => ({ ...f, sponsors: e.target.value }))} style={{ minHeight: 90 }} />
+            <textarea value={footerForm.sponsors} onChange={e => setFooterForm(f => ({ ...f, sponsors: e.target.value }))} style={{ minHeight: 80 }} />
           </div>
         </div>
-        <div className="form-group" style={{ maxWidth: 280 }}>
-          <label>Publication Partner</label>
-          <input value={form.publication} onChange={e => setForm(f => ({ ...f, publication: e.target.value }))} placeholder="CBAS Journal" />
-        </div>
-        <button className="btn-primary" onClick={save}>Save Sponsors →</button>
       </div>
 
-      <div style={{ background: "#f8f9fa", borderRadius: 12, padding: "16px 20px", fontSize: 13, color: "#666" }}>
-        <strong style={{ color: "#1B3A6B" }}>Sponsorship tiers & contact info</strong> — the tier packages (Platinum, Gold, Silver, Bronze) and the contact email on the Sponsors page are fixed. Contact the developer to update these.
-      </div>
+      <button className="btn-primary" onClick={saveAll}>Save Sponsors Page →</button>
     </div>
   );
 }
@@ -1611,79 +2099,76 @@ function ImagesPanel({ images = {}, onChange }) {
     students:   images.students   || "/images/dcs-research.jpg",
   });
   const [saved, setSaved] = useState(false);
+  const fileRef = useRef(null);
+  const uploadingKeyRef = useRef(null);
 
   const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
+  const triggerUpload = (key) => { uploadingKeyRef.current = key; fileRef.current.click(); };
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file || !uploadingKeyRef.current) return;
+    const key = uploadingKeyRef.current;
+    const reader = new FileReader();
+    reader.onload = ev => setForm(f => ({ ...f, [key]: ev.target.result }));
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
   const IMAGE_DEFS = [
-    {
-      key: "workshop",
-      label: "Workshop Sessions",
-      usedOn: "Home hero background · Home photo strip · Home testimonials",
-    },
-    {
-      key: "research",
-      label: "Research Presentations",
-      usedOn: "Home 'About' section · Home photo strip · About page hero",
-    },
-    {
-      key: "networking",
-      label: "Networking & Events",
-      usedOn: "Home CTA background · Contact page · Speakers page · Sponsors page",
-    },
-    {
-      key: "students",
-      label: "Students / DCS Research",
-      usedOn: "Home hero card photo · Home awards background · Home testimonials",
-    },
+    { key: "workshop",   label: "Workshop Sessions",      usedOn: "Home hero background · Home photo strip · Home testimonials" },
+    { key: "research",   label: "Research Presentations", usedOn: "Home 'About' section · Home photo strip · About page hero" },
+    { key: "networking", label: "Networking & Events",    usedOn: "Home CTA background · Contact page · Speakers page · Sponsors page" },
+    { key: "students",   label: "Students / DCS Research", usedOn: "Home hero card photo · Home awards background · Home testimonials" },
   ];
 
   return (
-    <div style={{ maxWidth: 720 }}>
+    <div style={{ maxWidth: 760 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Site Images</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
-        These 4 images appear across all pages of the site. Change a URL here and every page that uses it updates instantly.
+        These 4 images appear across all pages of the site. Upload a new image or paste a URL — every page updates instantly.
       </p>
       <div className="alert alert-info" style={{ marginBottom: 24, fontSize: 13 }}>
-        To use a local file: place it in <code>public/images/</code> and enter <code>/images/yourfile.jpg</code>. For external images, paste any direct image URL.
+        <strong>Upload:</strong> click "↑ Upload" to pick a file from your device. <strong>URL:</strong> paste <code>/images/yourfile.jpg</code> for files in <code>public/images/</code>, or any direct image link.
       </div>
-
       {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Images saved and live on the site.</div>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {IMAGE_DEFS.map(def => (
-          <div key={def.key} style={{
-            background: "#fff", border: "1px solid #e0e0e0", borderRadius: 14,
-            padding: "20px 22px", display: "flex", gap: 20, alignItems: "flex-start",
-          }}>
-            {/* Preview thumbnail */}
-            <div style={{
-              width: 130, height: 90, borderRadius: 10, overflow: "hidden",
-              border: "1px solid #e0e0e0", flexShrink: 0, background: "#f5f5f5",
-              position: "relative",
-            }}>
-              {form[def.key] ? (
-                <img src={form[def.key]} alt={def.label}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#bbb", fontSize: 28 }}>🖼️</div>
-              )}
-            </div>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
 
-            {/* Controls */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3, color: "#1B3A6B" }}>{def.label}</div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>
-                Used on: {def.usedOn}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {IMAGE_DEFS.map(def => {
+          const val = form[def.key];
+          const isUpload = val && val.startsWith("data:");
+          return (
+            <div key={def.key} style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 14, padding: "20px 22px", display: "flex", gap: 20, alignItems: "flex-start" }}>
+              <div style={{ width: 140, height: 96, borderRadius: 10, overflow: "hidden", border: "1px solid #e0e0e0", flexShrink: 0, background: "#f5f5f5" }}>
+                {val
+                  ? <img src={val} alt={def.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#bbb", fontSize: 28 }}>🖼️</div>}
               </div>
-              <input
-                value={form[def.key]}
-                onChange={e => setForm(f => ({ ...f, [def.key]: e.target.value }))}
-                placeholder="https://... or /images/filename.jpg"
-                style={{ width: "100%", padding: "8px 12px", border: "1.5px solid #ddd", borderRadius: 8, fontSize: 13 }}
-              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2, color: "#1B3A6B" }}>{def.label}</div>
+                <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Used on: {def.usedOn}</div>
+                {isUpload ? (
+                  <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>Uploaded image</span>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, [def.key]: "" }))}
+                      style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+                  </div>
+                ) : (
+                  <input value={val} onChange={e => setForm(f => ({ ...f, [def.key]: e.target.value }))}
+                    placeholder="https://... or /images/filename.jpg"
+                    style={{ width: "100%", padding: "8px 12px", border: "1.5px solid #ddd", borderRadius: 8, fontSize: 13, marginBottom: 8 }} />
+                )}
+                <button type="button" onClick={() => triggerUpload(def.key)}
+                  style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "6px 16px", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
+                  ↑ Upload Image
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <button className="btn-primary" onClick={save} style={{ marginTop: 24 }}>Save All Images →</button>
@@ -1695,43 +2180,74 @@ function ImagesPanel({ images = {}, onChange }) {
 function GalleryPanel({ gallery = [], onChange }) {
   const [items, setItems] = useState(gallery.map(p => ({ ...p })));
   const [saved, setSaved] = useState(false);
+  const fileRef = useRef(null);
+  const uploadingIdxRef = useRef(null);
 
   const save = () => { onChange(items); setSaved(true); setTimeout(() => setSaved(false), 2500); };
   const update = (i, field, val) => setItems(arr => arr.map((p, pi) => pi === i ? { ...p, [field]: val } : p));
   const remove = (i) => setItems(arr => arr.filter((_, pi) => pi !== i));
-  const add = () => setItems(arr => [...arr, { src: "", caption: "New Photo", year: "2025" }]);
+  const add = () => setItems(arr => [...arr, { src: "", caption: "New Photo", year: "2026" }]);
+
+  const triggerUpload = (i) => { uploadingIdxRef.current = i; fileRef.current.click(); };
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file || uploadingIdxRef.current === null) return;
+    const idx = uploadingIdxRef.current;
+    const reader = new FileReader();
+    reader.onload = ev => update(idx, "src", ev.target.result);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   return (
-    <div style={{ maxWidth: 760 }}>
+    <div style={{ maxWidth: 800 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Gallery</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage photos shown on the Gallery page. Each photo has a caption and year label.</p>
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage photos shown on the Gallery page. Upload images or paste URLs. Each photo shows with a caption and year label.</p>
       {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Gallery saved.</div>}
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
-        {items.map((p, i) => (
-          <div key={i} style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}>
-            <div style={{ width: 110, height: 76, borderRadius: 8, overflow: "hidden", border: "1px solid #eee", flexShrink: 0, background: "#f5f5f5" }}>
-              {p.src && <img src={p.src} alt={p.caption} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
-            </div>
-            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 10, alignItems: "end" }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Image URL</label>
-                <input value={p.src} onChange={e => update(i, "src", e.target.value)} placeholder="/images/... or https://..." />
+        {items.map((p, i) => {
+          const isUpload = p.src && p.src.startsWith("data:");
+          return (
+            <div key={i} style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}>
+              <div style={{ width: 120, height: 84, borderRadius: 8, overflow: "hidden", border: "1px solid #eee", flexShrink: 0, background: "#f5f5f5" }}>
+                {p.src
+                  ? <img src={p.src} alt={p.caption} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#ccc", fontSize: 24 }}>🖼️</div>}
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Caption</label>
-                <input value={p.caption} onChange={e => update(i, "caption", e.target.value)} />
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <div className="form-group" style={{ marginBottom: 0, width: 72 }}>
-                  <label>Year</label>
-                  <input value={p.year} onChange={e => update(i, "year", e.target.value)} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 70px", gap: 10, marginBottom: 8, alignItems: "end" }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Caption</label>
+                    <input value={p.caption} onChange={e => update(i, "caption", e.target.value)} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Year</label>
+                    <input value={p.year} onChange={e => update(i, "year", e.target.value)} />
+                  </div>
+                  <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✕ Remove</button>
                 </div>
-                <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 13, cursor: "pointer", marginTop: 20, flexShrink: 0 }}>✕</button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  {isUpload ? (
+                    <div style={{ flex: 1, fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>Uploaded image</span>
+                      <button type="button" onClick={() => update(i, "src", "")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
+                    </div>
+                  ) : (
+                    <input value={p.src} onChange={e => update(i, "src", e.target.value)}
+                      placeholder="/images/... or https://..."
+                      style={{ flex: 1, padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13 }} />
+                  )}
+                  <button type="button" onClick={() => triggerUpload(i)}
+                    style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "7px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500, flexShrink: 0 }}>
+                    ↑ Upload
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={{ display: "flex", gap: 12 }}>
@@ -1796,16 +2312,16 @@ function RecordingsPanel({ recordings = [], onChange }) {
 
 /* ── Support Page Panel ──────────────────────────────────────── */
 function SupportAdminPanel({ contact = {}, onChange }) {
-  const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", ...contact });
+  const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
   const [saved, setSaved] = useState(false);
   const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div style={{ maxWidth: 640 }}>
       <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Support Page</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>The Support page has FAQs (fixed) and a contact tab. Manage the contact details shown there.</p>
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>The Support page shows FAQs (fixed content) and a contact tab. Edit the contact details shown there — these are shared with the Contact page.</p>
       <div className="alert alert-info" style={{ marginBottom: 24, fontSize: 13 }}>
-        The FAQ answers are fixed content. The contact details below appear on both the <strong>Contact page</strong> and the <strong>Support page contact tab</strong>.
+        FAQ questions and answers are fixed in code. Contact details here are shared with the <strong>Contact page</strong> and the <strong>WhatsApp button</strong>.
       </div>
       {saved && <div className="alert alert-success" style={{ marginBottom: 20 }}>✓ Saved — contact info updated on both Contact and Support pages.</div>}
 
@@ -1815,14 +2331,141 @@ function SupportAdminPanel({ contact = {}, onChange }) {
           <div className="form-group"><label>Website</label><input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} placeholder="www.cs.ug.edu.gh" /></div>
         </div>
         <div className="form-row">
+          <div className="form-group"><label>Phone Number</label><input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+233 (0) 536 909 471" /></div>
           <div className="form-group"><label>WhatsApp Number</label><input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="233XXXXXXXXX" /></div>
-          <div className="form-group"><label>Office Hours</label><input value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT" /></div>
         </div>
         <div className="form-group">
-          <label>Location</label>
+          <label>Office Hours</label>
+          <input value={form.hours} onChange={e => setForm(f => ({ ...f, hours: e.target.value }))} placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT" />
+        </div>
+        <div className="form-group">
+          <label>Location / Address</label>
           <textarea value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} style={{ minHeight: 70 }} />
         </div>
         <button className="btn-primary" onClick={save}>Save Support Contact →</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Security Panel ─────────────────────────────────────────────── */
+function SecurityPanel() {
+  const [status, setStatus]     = useState(null);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [newEntry, setNewEntry] = useState("");
+  const [allowlist, setAllowlist] = useState(getAllowlist);
+
+  const user = auth.currentUser;
+
+  function saveAllowlist(list) {
+    setAllowlist(list);
+    localStorage.setItem(ALLOWLIST_KEY, JSON.stringify(list));
+  }
+
+  function addEmail() {
+    const e = newEntry.trim().toLowerCase();
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { setStatus({ type: "error", msg: "Please enter a valid email address." }); return; }
+    if (allowlist.includes(e)) { setStatus({ type: "error", msg: "This email is already in the list." }); return; }
+    saveAllowlist([...allowlist, e]);
+    setNewEntry("");
+    setStatus({ type: "success", msg: `${e} added to the admin allowlist.` });
+  }
+
+  function removeEmail(email) {
+    if (user && email === user.email.toLowerCase()) { setStatus({ type: "error", msg: "You cannot remove your own email from the allowlist." }); return; }
+    saveAllowlist(allowlist.filter(e => e !== email));
+    setStatus({ type: "success", msg: `${email} removed.` });
+  }
+
+  async function sendReset() {
+    setResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setResetSent(true);
+    } catch (e) {
+      setStatus({ type: "error", msg: firebaseErrorMsg(e.code) });
+    } finally { setResetLoading(false); }
+  }
+
+  return (
+    <div style={{ maxWidth: 620 }}>
+      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Security Settings</h2>
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>Manage admin access and account security.</p>
+
+      {status && (
+        <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, fontSize: 13,
+          background: status.type === "success" ? "#f0faf4" : "#fff3f3",
+          border: `1px solid ${status.type === "success" ? "#a8d5b5" : "#f5b8b8"}`,
+          color: status.type === "success" ? "#1e7e3e" : "#c0392b",
+        }}>{status.type === "success" ? "✓ " : "⚠ "}{status.msg}</div>
+      )}
+
+      {/* Current account */}
+      <div style={{ background: "#f4f6fb", borderRadius: 12, padding: "16px 20px", marginBottom: 24, border: "1px solid #e0e4ef", display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1B3A6B", display: "flex", alignItems: "center", justifyContent: "center", color: "#C9A84C", fontSize: 20, flexShrink: 0 }}>
+          {user?.email?.[0]?.toUpperCase() || "A"}
+        </div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F2347" }}>{user?.email}</div>
+          <div style={{ fontSize: 12, color: user?.emailVerified ? "#27ae60" : "#e67e22", marginTop: 2 }}>
+            {user?.emailVerified ? "✓ Email verified" : "⚠ Email not verified"}
+          </div>
+        </div>
+      </div>
+
+      {/* Password reset */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 8 }}>Change Password</h4>
+        <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>Firebase will email a secure password reset link to your account email.</p>
+        {resetSent
+          ? <div style={{ background: "#f0faf4", border: "1px solid #a8d5b5", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#1e7e3e" }}>✓ Password reset email sent to <strong>{user?.email}</strong>. Check your inbox.</div>
+          : <button className="btn-primary" onClick={sendReset} disabled={resetLoading} style={{ opacity: resetLoading ? 0.65 : 1, cursor: resetLoading ? "not-allowed" : "pointer" }}>
+              {resetLoading ? "Sending…" : "Send Password Reset Email →"}
+            </button>
+        }
+      </div>
+
+      {/* Admin allowlist */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 8 }}>Admin Email Allowlist</h4>
+        <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+          Only emails in this list can sign in to the admin console. Leave the list <strong>empty</strong> to allow any verified Firebase account.
+        </p>
+
+        {allowlist.length === 0
+          ? <div style={{ background: "#fffbea", border: "1px solid #f0d080", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#7a6000", marginBottom: 16 }}>
+              No allowlist — any verified account can access this console. Add emails below to restrict access.
+            </div>
+          : <div style={{ marginBottom: 16 }}>
+              {allowlist.map(email => (
+                <div key={email} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 14px", background: "#f8f9fb", borderRadius: 8, marginBottom: 6, border: "1px solid #e8eaf0" }}>
+                  <span style={{ fontSize: 13, color: "#333" }}>{email}</span>
+                  <button onClick={() => removeEmail(email)} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>Remove</button>
+                </div>
+              ))}
+            </div>
+        }
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <input value={newEntry} onChange={e => setNewEntry(e.target.value)} placeholder="admin@example.com"
+            onKeyDown={e => e.key === "Enter" && addEmail()}
+            style={{ flex: 1, padding: "9px 14px", border: "1.5px solid #ddd", borderRadius: 8, fontSize: 14 }} />
+          <button className="btn-primary" onClick={addEmail} style={{ whiteSpace: "nowrap" }}>Add Email</button>
+        </div>
+      </div>
+
+      {/* Session info */}
+      <div className="card">
+        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 12 }}>Session & Security Info</h4>
+        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.9 }}>
+          <div>Authentication is powered by <strong>Firebase Auth</strong> — sessions persist across page refreshes.</div>
+          <div>Email verification is required before accessing the admin console.</div>
+          <div>Firebase automatically rate-limits repeated failed login attempts.</div>
+          <div style={{ marginTop: 8 }}>
+            <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" style={{ color: "#1B3A6B", fontWeight: 600 }}>Open Firebase Console →</a>
+          </div>
+        </div>
       </div>
     </div>
   );

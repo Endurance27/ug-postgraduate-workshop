@@ -1,4 +1,4 @@
-export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {} }) {
+export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {}, sponsors = [] }) {
   const contactEmail = contact.email || "dcsworkshop@ug.edu.gh";
   const publication  = footer.publication || "CBAS Journal";
   return (
@@ -37,29 +37,11 @@ export default function SponsorsPage({ navigate, images = {}, contact = {}, foot
           <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 36 }}>Primary supporters of the 2nd Annual DCS Postgraduate Workshop</p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
-            {[
-              {
-                name: "University of Ghana",
-                role: "Host Institution",
-                desc: "The University of Ghana, founded in 1948, is the premier research university in Ghana and one of the leading universities in Africa. The institution provides core funding and facilities for the workshop.",
-                tier: "gold",
-                logo: "🏛️",
-              },
-              {
-                name: "School of Physical & Mathematical Sciences",
-                role: "Faculty Sponsor",
-                desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee, enabling the Department of Computer Science to host this landmark postgraduate event.",
-                tier: "gold",
-                logo: "🔬",
-              },
-              {
-                name: "Department of Computer Science",
-                role: "Organising Department",
-                desc: "The Department of Computer Science at UG is the primary organiser of the workshop, coordinating all academic, logistical, and publication activities for the three-day event.",
-                tier: "primary",
-                logo: "💻",
-              },
-            ].map((s, i) => (
+            {(sponsors.length > 0 ? sponsors : [
+              { id: 1, name: "University of Ghana",                        role: "Host Institution",      desc: "The University of Ghana, founded in 1948, is the premier research university in Ghana and one of the leading universities in Africa.", tier: "gold",    logo: "🏛️" },
+              { id: 2, name: "School of Physical & Mathematical Sciences", role: "Faculty Sponsor",        desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee.",                               tier: "gold",    logo: "🔬" },
+              { id: 3, name: "Department of Computer Science",             role: "Organising Department",  desc: "The Department of Computer Science at UG is the primary organiser of the workshop.",                                                tier: "primary", logo: "💻" },
+            ]).map((s, i) => (
               <div key={i} className="card" style={{
                 borderTop: `4px solid ${s.tier === "gold" ? "#C9A84C" : "#1B3A6B"}`,
                 position: "relative", overflow: "hidden",

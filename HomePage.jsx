@@ -135,7 +135,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       )}
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <section style={{
+      <section className="hero-section" style={{
         position: "relative", overflow: "hidden",
         minHeight: "92vh", display: "flex", alignItems: "center",
         background: "#0F2347",
@@ -228,8 +228,8 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </div>
           </div>
 
-          {/* RIGHT: floating image card */}
-          <div className={heroReady ? "animate-fade-right delay-3" : "pre-anim"}
+          {/* RIGHT: floating image card — hidden on mobile */}
+          <div className={`hide-mobile ${heroReady ? "animate-fade-right delay-3" : "pre-anim"}`}
             style={{ position: "relative", display: "flex", justifyContent: "center" }}>
 
             {/* main photo */}

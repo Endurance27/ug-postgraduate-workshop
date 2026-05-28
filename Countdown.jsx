@@ -29,11 +29,21 @@ export default function Countdown() {
   );
 
   return (
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+    <div className="countdown-row" style={{ display: "flex", gap: 12, flexWrap: "nowrap", justifyContent: "flex-start" }}>
       <Box n={t.d} label="Days" />
       <Box n={t.h} label="Hours" />
       <Box n={t.m} label="Min" />
       <Box n={t.s} label="Sec" />
+      <style>{`
+        @media (max-width: 480px) {
+          .countdown-row { gap: 8px !important; }
+          .countdown-row > div > div:first-child {
+            padding: 10px 12px !important;
+            min-width: 56px !important;
+            font-size: 26px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

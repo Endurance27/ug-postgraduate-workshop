@@ -244,7 +244,11 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; transition: backgr
   /* hero: 2-col → 1-col */
   .hero-container {
     grid-template-columns: 1fr !important;
-    padding: 60px 24px 48px !important;
+    padding: 48px 20px 40px !important;
+  }
+  /* hero section: reduce min-height on tablet */
+  .hero-section {
+    min-height: auto !important;
   }
   /* stats: 4-col → 2x2 */
   .stats-grid {

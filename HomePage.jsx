@@ -188,16 +188,10 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </h1>
 
             <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
-              fontSize: 18, fontWeight: 600, letterSpacing: "0.04em",
-              color: "#C9A84C", maxWidth: 520, lineHeight: 1.6, marginBottom: 6,
+              fontSize: 17, color: "rgba(255,255,255,0.8)",
+              maxWidth: 520, lineHeight: 1.75, marginBottom: 10,
             }}>
-              Present · Collaborate · Publish
-            </p>
-            <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
-              fontSize: 15, color: "rgba(255,255,255,0.65)",
-              maxWidth: 520, lineHeight: 1.7, marginBottom: 10,
-            }}>
-              Department of Computer Science · University of Ghana, Legon
+              Department of Computer Science · SPMS · University of Ghana
             </p>
             <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
               fontSize: 15, color: "rgba(255,255,255,0.6)",

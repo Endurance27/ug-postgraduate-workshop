@@ -12,6 +12,7 @@ import SpeakersPage from "./SpeakersPage";
 import GalleryPage from "./GalleryPage";
 import SponsorsPage from "./SponsorsPage";
 import ContactPage from "./ContactPage";
+import PaymentPage from "./PaymentPage";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ChatBot from "./ChatBot";
@@ -258,6 +259,7 @@ export default function App() {
       {page === "gallery"    && <GalleryPage gallery={siteContent.gallery} />}
       {page === "sponsors"   && <SponsorsPage navigate={navigate} images={siteContent.images} contact={siteContent.contact} footer={siteContent.footer} sponsors={siteContent.sponsors} />}
       {page === "contact"    && <ContactPage contact={siteContent.contact} images={siteContent.images} />}
+      {page === "payment"    && <PaymentPage navigate={navigate} event={siteContent.event} />}
       {isAdmin && (
         <AdminPage
           siteContent={siteContent}

@@ -11,6 +11,8 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyDyjd30AFI5giahRMU62665BXAZWCDBTYw",
@@ -22,7 +24,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+export const auth    = getAuth(app);
+export const db      = getFirestore(app);
+export const storage = getStorage(app);
 
 export {
   onAuthStateChanged,
@@ -34,4 +39,10 @@ export {
   updatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  doc,
+  getDoc,
+  setDoc,
+  storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
 };

@@ -9,13 +9,26 @@ import {
 } from "lucide-react";
 import {
   auth,
+  storage,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
+  storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
 } from "./firebase.js";
+
+// Upload a file to Firebase Storage and return the public download URL
+async function uploadToStorage(file) {
+  const path = `workshop-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const ref = storageRef(storage, path);
+  const task = uploadBytesResumable(ref, file);
+  await new Promise((resolve, reject) => task.on("state_changed", null, reject, resolve));
+  return getDownloadURL(task.snapshot.ref);
+}
 
 const ALLOWLIST_KEY = "dcs-admin-allowlist";
 
@@ -669,40 +682,44 @@ function ToggleRow({ label, desc, value, onChange }) {
 
 /* ── Reusable image upload field ─────────────────────────────── */
 function ImageUploadField({ value, onChange, label, placeholder }) {
-  const ref = useRef(null);
-  const isUpload = value && value.startsWith("data:");
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const isBase64 = value && value.startsWith("data:");
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = "";
+    setUploading(true);
+    try {
+      const url = await uploadToStorage(file);
+      onChange(url);
+    } catch (err) {
+      console.error("Storage upload failed:", err);
+      alert("Image upload failed. Check Firebase Storage rules and try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
       {label && <div style={{ fontSize: 13, fontWeight: 500, color: "#333", marginBottom: 6 }}>{label}</div>}
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
         <div style={{ width: 96, height: 68, borderRadius: 8, overflow: "hidden", border: "1px solid #ddd", flexShrink: 0, background: "#f5f5f5" }}>
-          {value
+          {value && !isBase64
             ? <img src={value} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}><Image size={24} color="#ccc" /></div>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {isUpload ? (
-            <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span>Uploaded image</span>
-              <button type="button" onClick={() => onChange("")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
-            </div>
-          ) : (
-            <input value={value || ""} onChange={e => onChange(e.target.value)}
-              placeholder={placeholder || "/images/... or https://..."}
-              style={{ width: "100%", padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13, marginBottom: 6 }} />
-          )}
-          <button type="button" onClick={() => ref.current.click()}
-            style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "5px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload Image</span>
+          <input value={(!isBase64 && value) ? value : ""} onChange={e => onChange(e.target.value)}
+            placeholder={placeholder || "/images/... or https://..."}
+            style={{ width: "100%", padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13, marginBottom: 6 }} />
+          <button type="button" onClick={() => fileRef.current.click()} disabled={uploading}
+            style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "5px 14px", fontSize: 12, cursor: uploading ? "not-allowed" : "pointer", fontWeight: 500, opacity: uploading ? 0.65 : 1 }}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> {uploading ? "Uploading…" : "Upload Image"}</span>
           </button>
-          <input ref={ref} type="file" accept="image/*" style={{ display: "none" }}
-            onChange={e => {
-              const file = e.target.files[0]; if (!file) return;
-              const reader = new FileReader();
-              reader.onload = ev => onChange(ev.target.result);
-              reader.readAsDataURL(file);
-              e.target.value = "";
-            }} />
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
         </div>
       </div>
     </div>
@@ -2085,6 +2102,7 @@ function ImagesPanel({ images = {}, onChange }) {
     students:   images.students   || "/images/dcs-research.jpg",
   });
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(null);
   const fileRef = useRef(null);
   const uploadingKeyRef = useRef(null);
 
@@ -2092,14 +2110,21 @@ function ImagesPanel({ images = {}, onChange }) {
 
   const triggerUpload = (key) => { uploadingKeyRef.current = key; fileRef.current.click(); };
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files[0];
     if (!file || !uploadingKeyRef.current) return;
     const key = uploadingKeyRef.current;
-    const reader = new FileReader();
-    reader.onload = ev => setForm(f => ({ ...f, [key]: ev.target.result }));
-    reader.readAsDataURL(file);
     e.target.value = "";
+    setUploading(key);
+    try {
+      const url = await uploadToStorage(file);
+      setForm(f => ({ ...f, [key]: url }));
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Image upload failed. Check Firebase Storage rules and try again.");
+    } finally {
+      setUploading(null);
+    }
   };
 
   const IMAGE_DEFS = [
@@ -2125,7 +2150,7 @@ function ImagesPanel({ images = {}, onChange }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {IMAGE_DEFS.map(def => {
           const val = form[def.key];
-          const isUpload = val && val.startsWith("data:");
+          const isUploading = uploading === def.key;
           return (
             <div key={def.key} style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 14, padding: "20px 22px", display: "flex", gap: 20, alignItems: "flex-start" }}>
               <div style={{ width: 140, height: 96, borderRadius: 10, overflow: "hidden", border: "1px solid #e0e0e0", flexShrink: 0, background: "#f5f5f5" }}>
@@ -2136,20 +2161,12 @@ function ImagesPanel({ images = {}, onChange }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2, color: "#1B3A6B" }}>{def.label}</div>
                 <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Used on: {def.usedOn}</div>
-                {isUpload ? (
-                  <div style={{ fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>Uploaded image</span>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, [def.key]: "" }))}
-                      style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
-                  </div>
-                ) : (
-                  <input value={val} onChange={e => setForm(f => ({ ...f, [def.key]: e.target.value }))}
-                    placeholder="https://... or /images/filename.jpg"
-                    style={{ width: "100%", padding: "8px 12px", border: "1.5px solid #ddd", borderRadius: 8, fontSize: 13, marginBottom: 8 }} />
-                )}
-                <button type="button" onClick={() => triggerUpload(def.key)}
-                  style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "6px 16px", fontSize: 13, cursor: "pointer", fontWeight: 500 }}>
-                  <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload Image</span>
+                <input value={val || ""} onChange={e => setForm(f => ({ ...f, [def.key]: e.target.value }))}
+                  placeholder="https://... or /images/filename.jpg"
+                  style={{ width: "100%", padding: "8px 12px", border: "1.5px solid #ddd", borderRadius: 8, fontSize: 13, marginBottom: 8 }} />
+                <button type="button" onClick={() => triggerUpload(def.key)} disabled={!!uploading}
+                  style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "6px 16px", fontSize: 13, cursor: uploading ? "not-allowed" : "pointer", fontWeight: 500, opacity: uploading ? 0.65 : 1 }}>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> {isUploading ? "Uploading…" : "Upload Image"}</span>
                 </button>
               </div>
             </div>
@@ -2166,6 +2183,7 @@ function ImagesPanel({ images = {}, onChange }) {
 function GalleryPanel({ gallery = [], onChange }) {
   const [items, setItems] = useState(gallery.map(p => ({ ...p })));
   const [saved, setSaved] = useState(false);
+  const [uploadingIdx, setUploadingIdx] = useState(null);
   const fileRef = useRef(null);
   const uploadingIdxRef = useRef(null);
 
@@ -2175,14 +2193,21 @@ function GalleryPanel({ gallery = [], onChange }) {
   const add = () => setItems(arr => [...arr, { src: "", caption: "New Photo", year: "2026" }]);
 
   const triggerUpload = (i) => { uploadingIdxRef.current = i; fileRef.current.click(); };
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files[0];
     if (!file || uploadingIdxRef.current === null) return;
     const idx = uploadingIdxRef.current;
-    const reader = new FileReader();
-    reader.onload = ev => update(idx, "src", ev.target.result);
-    reader.readAsDataURL(file);
     e.target.value = "";
+    setUploadingIdx(idx);
+    try {
+      const url = await uploadToStorage(file);
+      update(idx, "src", url);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Image upload failed. Check Firebase Storage rules and try again.");
+    } finally {
+      setUploadingIdx(null);
+    }
   };
 
   return (
@@ -2194,7 +2219,7 @@ function GalleryPanel({ gallery = [], onChange }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
         {items.map((p, i) => {
-          const isUpload = p.src && p.src.startsWith("data:");
+          const isUploading = uploadingIdx === i;
           return (
             <div key={i} style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 12, padding: "16px 18px", display: "flex", gap: 16, alignItems: "flex-start" }}>
               <div style={{ width: 120, height: 84, borderRadius: 8, overflow: "hidden", border: "1px solid #eee", flexShrink: 0, background: "#f5f5f5" }}>
@@ -2215,19 +2240,12 @@ function GalleryPanel({ gallery = [], onChange }) {
                   <button onClick={() => remove(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "8px 10px", fontSize: 13, cursor: "pointer", marginBottom: 20 }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  {isUpload ? (
-                    <div style={{ flex: 1, fontSize: 12, color: "#666", padding: "7px 10px", background: "#f5f5f5", borderRadius: 7, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span>Uploaded image</span>
-                      <button type="button" onClick={() => update(i, "src", "")} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer" }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><X size={12} /> Remove</span></button>
-                    </div>
-                  ) : (
-                    <input value={p.src} onChange={e => update(i, "src", e.target.value)}
-                      placeholder="/images/... or https://..."
-                      style={{ flex: 1, padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13 }} />
-                  )}
-                  <button type="button" onClick={() => triggerUpload(i)}
-                    style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "7px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500, flexShrink: 0 }}>
-                    <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> Upload</span>
+                  <input value={p.src || ""} onChange={e => update(i, "src", e.target.value)}
+                    placeholder="/images/... or https://..."
+                    style={{ flex: 1, padding: "7px 10px", border: "1.5px solid #ddd", borderRadius: 7, fontSize: 13 }} />
+                  <button type="button" onClick={() => triggerUpload(i)} disabled={uploadingIdx !== null}
+                    style={{ background: "#E5EAF3", color: "#1B3A6B", border: "1px solid #b0bdd8", borderRadius: 7, padding: "7px 14px", fontSize: 12, cursor: uploadingIdx !== null ? "not-allowed" : "pointer", fontWeight: 500, flexShrink: 0, opacity: uploadingIdx !== null ? 0.65 : 1 }}>
+                    <span style={{display:"inline-flex",alignItems:"center",gap:5}}><Upload size={13} /> {isUploading ? "Uploading…" : "Upload"}</span>
                   </button>
                 </div>
               </div>

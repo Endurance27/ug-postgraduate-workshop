@@ -1,4 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { db, doc, getDoc, setDoc } from "./firebase.js";
+
+// Strip base64 data URLs before persisting — they're too large for localStorage/Firestore
+function stripBase64(obj) {
+  if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
+  if (Array.isArray(obj)) return obj.map(stripBase64);
+  if (obj && typeof obj === "object")
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, stripBase64(v)]));
+  return obj;
+}
 import HomePage from "./HomePage";
 import RegisterPage from "./RegisterPage";
 import SchedulePage from "./SchedulePage";
@@ -206,35 +216,66 @@ const INIT_CONTENT = {
   ],
 };
 
+function mergeRemote(base, remote) {
+  return {
+    ...base,
+    ...remote,
+    event:       { ...INIT_CONTENT.event,    ...(remote.event    || {}) },
+    about:       remote.about       || base.about,
+    pastWinners: remote.pastWinners || base.pastWinners,
+    contact:     { ...INIT_CONTENT.contact,  ...(remote.contact  || {}) },
+    home:        remote.home        || base.home,
+    sponsors:    remote.sponsors    || base.sponsors,
+  };
+}
+
 export default function App() {
   const [page, setPage] = useState("home");
   const [registrant, setRegistrant] = useState(null);
+  const saveTimer = useRef(null);
+
+  // 1. Initialise from localStorage instantly (fast, works offline)
   const [siteContent, setSiteContent] = useState(() => {
     try {
       const saved = localStorage.getItem("dcs-workshop-content");
       if (saved) {
         const parsed = JSON.parse(saved);
-        return {
-          ...INIT_CONTENT,
-          ...parsed,
-          event:       { ...INIT_CONTENT.event,       ...(parsed.event   || {}) },
-          about:       parsed.about       || INIT_CONTENT.about,
-          pastWinners: parsed.pastWinners || INIT_CONTENT.pastWinners,
-          contact:     { ...INIT_CONTENT.contact, ...(parsed.contact || {}) },
-          home:        parsed.home        || INIT_CONTENT.home,
-          sponsors:    parsed.sponsors    || INIT_CONTENT.sponsors,
-        };
+        return mergeRemote(INIT_CONTENT, parsed);
       }
-      return INIT_CONTENT;
-    } catch { return INIT_CONTENT; }
+    } catch {}
+    return INIT_CONTENT;
   });
 
+  // 2. On mount: pull the latest from Firestore (overrides localStorage if newer)
   useEffect(() => {
+    let alive = true;
+    getDoc(doc(db, "workshop", "siteContent"))
+      .then(snap => {
+        if (alive && snap.exists()) {
+          setSiteContent(c => mergeRemote(c, snap.data()));
+        }
+      })
+      .catch(() => {}); // offline / rules not set yet — silently use localStorage
+    return () => { alive = false; };
+  }, []);
+
+  // 3. On every change: save stripped content to localStorage + Firestore (debounced 800 ms)
+  useEffect(() => {
+    const stripped = stripBase64(siteContent);
+
+    // localStorage — immediate (fast reload)
     try {
-      localStorage.setItem("dcs-workshop-content", JSON.stringify(siteContent));
+      localStorage.setItem("dcs-workshop-content", JSON.stringify(stripped));
     } catch (e) {
-      console.warn("Could not persist admin changes (storage full?):", e.message);
+      console.warn("localStorage quota exceeded:", e.message);
     }
+
+    // Firestore — debounced so rapid edits don't flood the DB
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      setDoc(doc(db, "workshop", "siteContent"), stripped)
+        .catch(e => console.warn("Firestore save failed (check security rules):", e.message));
+    }, 800);
   }, [siteContent]);
 
 

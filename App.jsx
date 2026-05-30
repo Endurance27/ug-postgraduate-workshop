@@ -220,7 +220,7 @@ export default function App() {
           event:       { ...INIT_CONTENT.event,       ...(parsed.event   || {}) },
           about:       parsed.about       || INIT_CONTENT.about,
           pastWinners: parsed.pastWinners || INIT_CONTENT.pastWinners,
-          contact:     { ...(parsed.contact || {}), ...INIT_CONTENT.contact },
+          contact:     { ...INIT_CONTENT.contact, ...(parsed.contact || {}) },
           home:        parsed.home        || INIT_CONTENT.home,
           sponsors:    parsed.sponsors    || INIT_CONTENT.sponsors,
         };
@@ -230,7 +230,11 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem("dcs-workshop-content", JSON.stringify(siteContent));
+    try {
+      localStorage.setItem("dcs-workshop-content", JSON.stringify(siteContent));
+    } catch (e) {
+      console.warn("Could not persist admin changes (storage full?):", e.message);
+    }
   }, [siteContent]);
 
 

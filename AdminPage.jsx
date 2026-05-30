@@ -1491,6 +1491,10 @@ function ContactPanel({ contact = {}, onChange }) {
   const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    setForm(f => ({ ...f, ...contact }));
+  }, [contact]);
+
   const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (
@@ -2296,6 +2300,11 @@ function RecordingsPanel({ recordings = [], onChange }) {
 function SupportAdminPanel({ contact = {}, onChange }) {
   const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setForm(f => ({ ...f, ...contact }));
+  }, [contact]);
+
   const save = () => { onChange(form); setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (

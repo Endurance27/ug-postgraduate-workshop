@@ -1,5 +1,17 @@
-// @ts-nocheck
 import { useState, useEffect, useRef } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface FAQItem {
+  patterns: string[];
+  answer: string;
+  quick: string[];
+}
+
+interface Message {
+  from: "user" | "bot";
+  text: string;
+  quick?: string[];
+}
 
 const FAQ = [
   {
@@ -86,15 +98,15 @@ const FAQ = [
 
 const QUICK_START = ["How do I register?", "Workshop dates?", "Registration fee?", "Submission deadline?"];
 
-function matchFAQ(text) {
+function matchFAQ(text: string): FAQItem | null {
   const lower = text.toLowerCase();
   for (const item of FAQ) {
-    if (item.patterns.some(p => lower.includes(p))) return item;
+    if (item.patterns.some((p) => lower.includes(p))) return item;
   }
   return null;
 }
 
-function formatMessage(text) {
+function formatMessage(text: string): string {
   return text
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\n•/g, "<br/>•")
@@ -103,18 +115,18 @@ function formatMessage(text) {
 }
 
 export default function ChatBot() {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  const [open, setOpen] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
       text: "👋 Hi! I'm the **DCS Workshop Assistant**.\n\nI can answer questions about registration, dates, fees, submission, and more. How can I help you?",
       quick: QUICK_START,
     },
   ]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const [unread, setUnread] = useState(0);
-  const bottomRef = useRef(null);
+  const [input, setInput] = useState<string>("");
+  const [typing, setTyping] = useState<boolean>(false);
+  const [unread, setUnread] = useState<number>(0);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -123,7 +135,7 @@ export default function ChatBot() {
     }
   }, [open, messages]);
 
-  const sendMessage = (text) => {
+  const sendMessage = (text: string): void => {
     const msg = text.trim();
     if (!msg) return;
     setInput("");

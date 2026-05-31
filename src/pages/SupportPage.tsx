@@ -1,6 +1,48 @@
-// @ts-nocheck
 import { useState } from "react";
 import { Mail, Globe, MapPin, Clock, CreditCard, Trophy, ArrowRight } from "lucide-react";
+import { ReactNode } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface AccordionItemProps {
+  q: string;
+  a: string;
+}
+
+interface FAQItem {
+  q: string;
+  a: string;
+}
+
+interface FAQSection {
+  category: string;
+  icon: ReactNode;
+  items: FAQItem[];
+}
+
+interface FormState {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  subject?: string;
+  message?: string;
+}
+
+interface ContactData {
+  email?: string;
+  website?: string;
+  location?: string;
+  hours?: string;
+}
+
+interface SupportPageProps {
+  contact?: ContactData;
+}
 
 const FAQS = [
   {

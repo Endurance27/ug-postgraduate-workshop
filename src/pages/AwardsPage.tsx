@@ -1,5 +1,33 @@
-// @ts-nocheck
 import { Trophy, Medal } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Award {
+  id: number;
+  emoji: string;
+  label: string;
+  winner: string;
+  paper: string;
+  announced: boolean;
+}
+
+interface PastWinner {
+  id: number;
+  pos: React.ReactNode;
+  place: string;
+  desc: string;
+  edition: string;
+  field: string;
+  name: string;
+  avatar: string;
+}
+
+interface AwardsPageProps {
+  awards?: Award[];
+  pastWinners?: PastWinner[];
+  event?: Record<string, string>;
+}
+
+import React from "react";
 
 const criteria = [
   { label: "Research Quality", weight: "30%", desc: "Originality, depth, and rigour of the research." },
@@ -15,7 +43,7 @@ const FALLBACK_PAST_WINNERS = [
   { id: 3, pos: <Medal  size={36} style={{ color: "#b5700a" }} />, place: "3rd Place Award", desc: "Commended Presenter",      edition: "Maiden Workshop 2025", field: "Computer Science", name: "", avatar: "" },
 ];
 
-export default function AwardsPage({ awards, pastWinners, event = {} }) {
+export default function AwardsPage({ awards, pastWinners, event = {} }: AwardsPageProps) {
   const displayPastWinners = (pastWinners && pastWinners.length > 0) ? pastWinners : FALLBACK_PAST_WINNERS;
   return (
     <main>

@@ -1,6 +1,16 @@
-// @ts-nocheck
 import { useState } from "react";
 import { X } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Photo {
+  src: string;
+  caption: string;
+  year: string;
+}
+
+interface GalleryPageProps {
+  gallery?: Photo[];
+}
 
 const FALLBACK_PHOTOS = [
   {
@@ -25,13 +35,13 @@ const FALLBACK_PHOTOS = [
   },
 ];
 
-export default function GalleryPage({ gallery }) {
+export default function GalleryPage({ gallery }: GalleryPageProps) {
   const PHOTOS = gallery && gallery.length > 0 ? gallery : FALLBACK_PHOTOS;
-  const [lightbox, setLightbox] = useState(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
 
   const prev = () =>
-    setLightbox((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
-  const next = () => setLightbox((i) => (i + 1) % PHOTOS.length);
+    setLightbox((i) => ((i ?? 0) - 1 + PHOTOS.length) % PHOTOS.length);
+  const next = () => setLightbox((i) => ((i ?? 0) + 1) % PHOTOS.length);
 
   return (
     <main>

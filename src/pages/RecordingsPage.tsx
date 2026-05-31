@@ -1,5 +1,18 @@
-// @ts-nocheck
 import { Video, GraduationCap, Trophy, Play } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Recording {
+  day: string;
+  label: string;
+  color: string;
+  youtubeId: string;
+  start: number;
+  highlights: string[];
+}
+
+interface RecordingsPageProps {
+  recordings?: Recording[];
+}
 
 const FALLBACK_VIDEOS = [
   { day: "Day 1", label: "Opening Ceremony & Keynote Address",        color: "#1B3A6B", youtubeId: "",             start: 0,    highlights: ["Welcome Address by HOD", "Keynote by Distinguished Speaker", "Morning Parallel Track Sessions"] },
@@ -7,7 +20,7 @@ const FALLBACK_VIDEOS = [
   { day: "Day 3", label: "Final Presentations & Awards Ceremony",     color: "#7b1fa2", youtubeId: "NUAZDcQ_lJs", start: 6,    highlights: ["Regular Paper Final Session", "Judges' Deliberation", "Awards Ceremony & Closing"] },
 ];
 
-export default function RecordingsPage({ recordings }) {
+export default function RecordingsPage({ recordings }: RecordingsPageProps) {
   const VIDEOS = (recordings && recordings.length > 0) ? recordings : FALLBACK_VIDEOS;
   return (
     <main>

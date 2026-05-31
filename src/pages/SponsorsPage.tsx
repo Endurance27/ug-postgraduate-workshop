@@ -1,7 +1,26 @@
-// @ts-nocheck
 import { BookOpen, Handshake, Mail, ArrowRight, Check, Gem, Trophy, Medal, Landmark, FlaskConical, Laptop } from "lucide-react";
 
-export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {}, sponsors = [] }) {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Sponsor {
+  id: number;
+  name: string;
+  role: string;
+  desc: string;
+  tier: string;
+  logo: React.ReactNode;
+}
+
+interface SponsorsPageProps {
+  navigate?: (page: string) => void;
+  images?: Record<string, string>;
+  contact?: Record<string, string>;
+  footer?: Record<string, string>;
+  sponsors?: Sponsor[];
+}
+
+import React from "react";
+
+export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {}, sponsors = [] }: SponsorsPageProps) {
   const contactEmail = contact.email || "dcsworkshop@ug.edu.gh";
   const publication  = footer.publication || "CBAS Journal";
   return (

@@ -1,24 +1,53 @@
-// @ts-nocheck
 import { useState } from "react";
+import React from "react";
 import { Mail, Phone, Globe, MapPin, Clock, MessageCircle, ArrowRight } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface ContactData {
+  email?: string;
+  website?: string;
+  location?: string;
+  phone?: string;
+  hours?: string;
+  whatsapp?: string;
+}
+
+interface FormState {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  subject?: string;
+  message?: string;
+}
+
+interface ContactPageProps {
+  contact?: ContactData;
+  images?: Record<string, string>;
+}
 
 const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sponsorship / Partnership", "General Enquiry"];
 
-export default function ContactPage({ contact = {}, images = {} }) {
+export default function ContactPage({ contact = {}, images = {} }: ContactPageProps) {
   const email    = contact.email    || "dcsworkshop@ug.edu.gh";
   const website  = contact.website  || "www.cs.ug.edu.gh";
   const location = contact.location || "Department of Computer Science, University of Ghana, Legon, P.O. Box LG 25, Accra, Ghana";
   const phone    = contact.phone    || "+233 (0) 536 909 471";
   const hours    = contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT";
   const whatsapp = contact.whatsapp || "233536909471";
-  const [form, setForm]     = useState({ name: "", email: "", subject: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [form, setForm]     = useState<FormState>({ name: "", email: "", subject: "", message: "" });
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: keyof FormState, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const validate = () => {
-    const e = {};
+  const validate = (): boolean => {
+    const e: FormErrors = {};
     if (!form.name.trim())    e.name    = "Your name is required.";
     if (!form.email.trim())   e.email   = "Your email is required.";
     if (!form.subject)        e.subject = "Please select a subject.";
@@ -27,7 +56,7 @@ export default function ContactPage({ contact = {}, images = {} }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) setSubmitted(true);
   };

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
+import React from "react";
 import { Mail, Globe, MapPin, Clock, CreditCard, Trophy, ArrowRight } from "lucide-react";
-import { ReactNode } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AccordionItemProps {
@@ -79,8 +79,8 @@ const FAQS = [
 
 const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sponsorship / Partnership", "General Enquiry"];
 
-function AccordionItem({ q, a }) {
-  const [open, setOpen] = useState(false);
+function AccordionItem({ q, a }: AccordionItemProps) {
+  const [open, setOpen] = useState<boolean>(false);
   return (
     <div style={{ borderBottom: "1px solid #f0f0f0" }}>
       <button onClick={() => setOpen(o => !o)} style={{
@@ -102,17 +102,17 @@ function AccordionItem({ q, a }) {
   );
 }
 
-export default function SupportPage({ contact = {} }) {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [form, setForm]     = useState({ name: "", email: "", subject: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [tab, setTab]       = useState("faq");
+export default function SupportPage({ contact = {} }: SupportPageProps) {
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [form, setForm] = useState<FormState>({ name: "", email: "", subject: "", message: "" });
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [tab, setTab] = useState<string>("faq");
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: keyof FormState, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const validate = () => {
-    const e = {};
+  const validate = (): boolean => {
+    const e: FormErrors = {};
     if (!form.name.trim())    e.name    = "Your name is required.";
     if (!form.email.trim())   e.email   = "Your email is required.";
     if (!form.subject)        e.subject = "Please select a subject.";
@@ -121,7 +121,7 @@ export default function SupportPage({ contact = {} }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) setSubmitted(true);
   };

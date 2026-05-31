@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { ComponentType } from "react";
 import AboutPage from "./pages/AboutPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import AwardsPage from "./pages/AwardsPage.jsx";
@@ -14,7 +14,28 @@ import SpeakersPage from "./pages/SpeakersPage.jsx";
 import SponsorsPage from "./pages/SponsorsPage.jsx";
 import SupportPage from "./pages/SupportPage.jsx";
 
-export const routes = [
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface Route {
+  key: string;
+  path: string;
+  label: string;
+  component: ComponentType<Record<string, unknown>>;
+  index?: boolean;
+  showInNav?: boolean;
+  gold?: boolean;
+  layout?: "admin" | "main";
+}
+
+export interface RouteContext {
+  siteContent: Record<string, unknown>;
+  navigate: (page: string) => void;
+  setRegistrant: (r: unknown) => void;
+  saveRegistration: (data: unknown) => void;
+  updateContent: (key: string, value: unknown) => void;
+}
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+export const routes: Route[] = [
   { key: "home", path: "/", index: true, label: "Home", component: HomePage, showInNav: true },
   { key: "about", path: "/about", label: "About", component: AboutPage, showInNav: true },
   {
@@ -66,24 +87,24 @@ export const routeMap = Object.fromEntries(
   routes.map((route) => [route.key, route]),
 );
 
-export function getRoutePath(routeKeyOrPath) {
+export function getRoutePath(routeKeyOrPath: string): string {
   if (!routeKeyOrPath) return routeMap.home.path;
   const target = String(routeKeyOrPath);
   if (target.startsWith("/")) return target;
   return routeMap[target]?.path || routeMap.home.path;
 }
 
-export function getChildRoutePath(route) {
+export function getChildRoutePath(route: Route): string | undefined {
   if (route.index) return undefined;
   return route.path.replace(/^\//, "");
 }
 
-export function getRouteByPathname(pathname) {
+export function getRouteByPathname(pathname: string): Route {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
   return routes.find((route) => route.path === normalizedPath) || routeMap.home;
 }
 
-export function getRouteProps(routeKey, context) {
+export function getRouteProps(routeKey: string, context: RouteContext): Record<string, unknown> {
   const {
     siteContent,
     navigate,

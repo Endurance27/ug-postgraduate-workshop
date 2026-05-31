@@ -231,7 +231,7 @@ function mergeRemote(base, remote) {
     about:       remote.about       || base.about,
     pastWinners: remote.pastWinners || base.pastWinners,
     contact:     { ...INIT_CONTENT.contact,  ...(remote.contact  || {}) },
-    home:        remote.home        || base.home,
+    home:        { ...(base.home || INIT_CONTENT.home), ...(remote.home || {}) },
     sponsors:    remote.sponsors    || base.sponsors,
   };
 }
@@ -286,7 +286,11 @@ export default function App() {
 
   const navigate = (p) => { setPage(p); window.scrollTo(0, 0); };
   const updateContent = (section, value) =>
-    setSiteContent(c => ({ ...c, [section]: value }));
+    setSiteContent(c => (
+      section && typeof section === "object"
+        ? { ...c, ...section }
+        : { ...c, [section]: value }
+    ));
 
 
   const isAdmin = page === "admin";

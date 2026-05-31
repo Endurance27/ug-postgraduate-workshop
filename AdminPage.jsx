@@ -489,6 +489,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
           <HomePanel
             event={event} onChange={v => updateContent("event", v)}
             home={siteContent.home || {}} onChangeHome={v => updateContent("home", v)}
+            onSaveAll={v => updateContent(v)}
           />
         )}
 
@@ -1616,20 +1617,38 @@ function FooterPanel({ footer = {}, onChange }) {
 }
 
 /* ── Home Page Panel ─────────────────────────────────────────── */
-function HomePanel({ event, onChange, home = {}, onChangeHome }) {
-  const [evForm, setEvForm] = useState({ ...event });
-  const [homeForm, setHomeForm] = useState({
+function makeHomeForm(home = {}) {
+  return {
     heroSubtitle: home.heroSubtitle || "Department of Computer Science · SPMS · University of Ghana",
     heroDesc:     home.heroDesc     || "",
-    importantDates:    home.importantDates    || [],
-    featuredSessions:  home.featuredSessions  || [],
-    testimonials:      home.testimonials      || [],
-  });
+    importantDates:    Array.isArray(home.importantDates)   ? home.importantDates   : [],
+    featuredSessions:  Array.isArray(home.featuredSessions) ? home.featuredSessions : [],
+    testimonials:      Array.isArray(home.testimonials)     ? home.testimonials     : [],
+  };
+}
+
+function HomePanel({ event, onChange, home = {}, onChangeHome, onSaveAll }) {
+  const [evForm, setEvForm] = useState({ ...event });
+  const [homeForm, setHomeForm] = useState(() => makeHomeForm(home));
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    setEvForm({ ...event });
+  }, [event]);
+
+  useEffect(() => {
+    setHomeForm(makeHomeForm(home));
+  }, [home]);
+
   const saveAll = () => {
-    onChange(evForm);
-    onChangeHome(homeForm);
+    const nextEvent = { ...event, ...evForm };
+    const nextHome = { ...home, ...homeForm };
+    if (onSaveAll) {
+      onSaveAll({ event: nextEvent, home: nextHome });
+    } else {
+      onChange(nextEvent);
+      onChangeHome(nextHome);
+    }
     setSaved(true); setTimeout(() => setSaved(false), 2500);
   };
 

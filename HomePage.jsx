@@ -52,6 +52,17 @@ const sponsors = [
   { name: "Industry Partners",    tier: "Corporate Sponsors",icon: <Trophy size={32} color="#1B3A6B" /> },
 ];
 
+function splitHeroTitle(title) {
+  const fallback = "DCS Postgraduate Research Workshop 2026";
+  const text = (title || "").trim() || fallback;
+  const match = text.match(/\bResearch Workshop\b.*$/i);
+  if (!match || match.index === 0) return { lead: text, highlight: "" };
+  return {
+    lead: text.slice(0, match.index).trim(),
+    highlight: match[0].trim(),
+  };
+}
+
 export default function HomePage({ navigate, event, announcements, feed = [], images = {}, home = {} }) {
   const img = {
     workshop:   images.workshop   || "/images/workshop-sessions.jpg",
@@ -81,6 +92,9 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
   const activeFeed = (feed || []).filter(f => f.active);
   const annBg    = { info: "#E5EAF3", warning: "#fdf3e0", success: "#e3f5eb" };
   const annColor = { info: "#1B3A6B", warning: "#b5700a", success: "#1B6B3A" };
+  const heroTitle = splitHeroTitle(event?.title);
+  const heroSubtitle = home.heroSubtitle || "Department of Computer Science · SPMS · University of Ghana";
+  const heroDesc = home.heroDesc || "MSc, MPhil & PhD students present cutting-edge thesis research. Outstanding papers are considered for the CBAS Journal.";
 
   return (
     <main>
@@ -183,22 +197,25 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               fontWeight: 700, color: "#fff", lineHeight: 1.12,
               maxWidth: 600, marginBottom: 20,
             }}>
-              DCS Postgraduate<br />
-              <span style={{ color: "#C9A84C" }}>Research Workshop 2026</span>
+              {heroTitle.highlight ? (
+                <>
+                  {heroTitle.lead}<br />
+                  <span style={{ color: "#C9A84C" }}>{heroTitle.highlight}</span>
+                </>
+              ) : heroTitle.lead}
             </h1>
 
             <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
               fontSize: 17, color: "rgba(255,255,255,0.8)",
               maxWidth: 520, lineHeight: 1.75, marginBottom: 10,
             }}>
-              Department of Computer Science · SPMS · University of Ghana
+              {heroSubtitle}
             </p>
             <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
               fontSize: 15, color: "rgba(255,255,255,0.6)",
               maxWidth: 520, lineHeight: 1.75, marginBottom: 36,
             }}>
-              MSc, MPhil &amp; PhD students present cutting-edge thesis research.
-              Outstanding papers are considered for the <strong style={{ color: "#C9A84C" }}>CBAS Journal</strong>.
+              {heroDesc}
             </p>
 
             <div className={heroReady ? "animate-fade-up delay-4" : "pre-anim"}

@@ -2587,9 +2587,11 @@ function PaymentTrackingPanel({ payments = [], fee = 100, onChange }) {
 
   const methodBadge = (m) => (
     <span style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
       background: m === "card" ? "#E5EAF3" : "#e8f5ee",
       color:      m === "card" ? "#1B3A6B" : "#1B6B3A",
-      fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
+      fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20,
+      whiteSpace: "nowrap", minWidth: 100, textAlign: "center",
     }}>{m === "card" ? "Card" : "Mobile Money"}</span>
   );
 
@@ -2778,7 +2780,7 @@ function PaymentTrackingPanel({ payments = [], fee = 100, onChange }) {
                     <div style={{ fontSize: 11, color: "#aaa" }}>{p.date ? new Date(p.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : ""}</div>
                   </td>
                   <td style={{ padding: "13px 16px", fontWeight: 700, color: "#0F2347" }}>GH₵ {fmt(Number(p.amount) || 0)}</td>
-                  <td style={{ padding: "13px 16px" }}>{methodBadge(p.method)}</td>
+                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>{methodBadge(p.method)}</td>
                   <td style={{ padding: "13px 16px" }}>{statusBadge(p.status)}</td>
                   <td style={{ padding: "13px 16px" }}>
                     <button onClick={() => setSelected(p)} style={{

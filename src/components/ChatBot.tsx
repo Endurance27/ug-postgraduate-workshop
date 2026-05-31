@@ -144,7 +144,7 @@ export default function ChatBot() {
 
     setTimeout(() => {
       const match = matchFAQ(msg);
-      const reply = match
+      const reply: Message = match
         ? { from: "bot", text: match.answer, quick: match.quick }
         : {
             from: "bot",

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { auth, db, doc, getDoc, setDoc, collection, getDocs, onAuthStateChanged } from "./firebase.js";
@@ -11,10 +10,77 @@ import {
   getRouteProps,
   mainRoutes,
   routeMap,
+  Route as AppRoute,
 } from "./routes.js";
 import "./index.css";
 
-function stripBase64(obj) {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Participant {
+  id: string | number;
+  name: string;
+  fullName?: string;
+  email: string;
+  phone?: string;
+  studentId?: string;
+  department?: string;
+  programme?: string;
+  level?: string;
+  type?: string;
+  participationType?: string;
+  payment?: string;
+  mode?: string;
+  attendanceMode?: string;
+  presentationType?: string;
+  registeredAt?: string;
+  updatedAt?: string;
+  payRef?: string;
+}
+
+interface PaymentRecord {
+  id: string | number;
+  transactionId: string;
+  studentId: string;
+  name: string;
+  email: string;
+  programme: string;
+  amount: number;
+  method: string;
+  date: string;
+  status: string;
+}
+
+interface SaveOptions {
+  paymentStatus?: string;
+  paymentReference?: string;
+  amount?: number;
+  method?: string;
+}
+
+interface SiteContent {
+  event: Record<string, unknown>;
+  about: Record<string, unknown>;
+  home: Record<string, unknown>;
+  footer: Record<string, unknown>;
+  contact: Record<string, unknown>;
+  schedule: unknown[];
+  participants: Participant[];
+  payments: PaymentRecord[];
+  speakers: Record<string, unknown>;
+  sponsors: unknown[];
+  gallery: unknown[];
+  recordings: unknown[];
+  stream: Record<string, unknown>;
+  awards: unknown[];
+  pastWinners: unknown[];
+  announcements: unknown[];
+  submissions: unknown[];
+  feed: unknown[];
+  votes: Record<string, unknown>;
+  images: Record<string, string>;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function stripBase64(obj: unknown): unknown {
   if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
   if (Array.isArray(obj)) return obj.map(stripBase64);
   if (obj && typeof obj === "object")
@@ -218,7 +284,7 @@ const INIT_CONTENT = {
   ],
 };
 
-function mergeRemote(base, remote) {
+function mergeRemote(base: SiteContent, remote: Partial<SiteContent>): SiteContent {
   return {
     ...base,
     ...remote,
@@ -231,11 +297,11 @@ function mergeRemote(base, remote) {
   };
 }
 
-function normalizeEmail(email = "") {
+function normalizeEmail(email = ""): string {
   return email.trim().toLowerCase();
 }
 
-function makeDocId(...parts) {
+function makeDocId(...parts: unknown[]): string {
   const id = parts
     .filter(Boolean)
     .map(part => String(part).trim())
@@ -245,17 +311,17 @@ function makeDocId(...parts) {
   return id || String(Date.now());
 }
 
-function participantKey(item = {}) {
+function participantKey(item: Partial<Participant> = {}): string {
   const email = normalizeEmail(item.email);
   const studentId = String(item.studentId || "").trim().toLowerCase();
   return email || studentId ? `${email}|${studentId}` : String(item.id || Date.now());
 }
 
-function paymentKey(item = {}) {
+function paymentKey(item: Partial<PaymentRecord> = {}): string {
   return String(item.transactionId || item.id || Date.now());
 }
 
-function mergeRecords(existing = [], incoming = [], getKey) {
+function mergeRecords<T>(existing: T[] = [], incoming: T[] = [], getKey: (item: T) => string): T[] {
   const map = new Map();
   existing.forEach(item => map.set(getKey(item), item));
   incoming.forEach(item => {
@@ -272,15 +338,15 @@ export default function App() {
   const saveTimer = useRef(null);
 
   // 1. Initialise from localStorage instantly (fast, works offline)
-  const [siteContent, setSiteContent] = useState(() => {
+  const [siteContent, setSiteContent] = useState<SiteContent>(() => {
     try {
       const saved = localStorage.getItem("dcs-workshop-content");
       if (saved) {
         const parsed = JSON.parse(saved);
-        return mergeRemote(INIT_CONTENT, parsed);
+        return mergeRemote(INIT_CONTENT as SiteContent, parsed);
       }
     } catch {}
-    return INIT_CONTENT;
+    return INIT_CONTENT as SiteContent;
   });
 
   // 2. On mount: pull the latest from Firestore (overrides localStorage if newer)
@@ -306,9 +372,9 @@ export default function App() {
           }));
           setSiteContent(c => ({
             ...c,
-            participants: mergeRecords(c.participants || [], firebaseParticipants, participantKey),
-            payments: mergeRecords(c.payments || [], firebasePayments, paymentKey),
-          }));
+            participants: mergeRecords(c.participants || [], firebaseParticipants as Participant[], participantKey),
+            payments: mergeRecords(c.payments || [], firebasePayments as PaymentRecord[], paymentKey),
+          }) as SiteContent);
         })
         .catch(() => {});
     };
@@ -353,18 +419,18 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const navigate = (routeKeyOrPath) => {
+  const navigate = (routeKeyOrPath: string): void => {
     routerNavigate(getRoutePath(routeKeyOrPath));
   };
 
-  const updateContent = (section, value) =>
+  const updateContent = (section: string | Record<string, unknown>, value?: unknown) =>
     setSiteContent(c => (
       section && typeof section === "object"
-        ? { ...c, ...section }
-        : { ...c, [section]: value }
+        ? { ...c, ...(section as Partial<SiteContent>) } as SiteContent
+        : { ...c, [section as string]: value } as SiteContent
     ));
 
-  const saveRegistration = (registration, options = {}) => {
+  const saveRegistration = (registration: Partial<Participant>, options: SaveOptions = {}): Participant => {
     const now = new Date().toISOString();
     const email = normalizeEmail(registration.email);
     const studentId = String(registration.studentId || "").trim();
@@ -391,7 +457,7 @@ export default function App() {
       updatedAt: now,
     };
 
-    if (options.paymentReference) participantRecord.payRef = options.paymentReference;
+    if (options.paymentReference) (participantRecord as Participant).payRef = options.paymentReference;
 
     const paymentRecord = options.paymentReference ? {
       id: makeDocId(options.paymentReference),
@@ -427,7 +493,7 @@ export default function App() {
         ? mergeRecords(c.payments || [], [paymentRecord], paymentKey)
         : c.payments || [];
 
-      return { ...c, participants: nextParticipants, payments: nextPayments };
+      return { ...c, participants: nextParticipants as Participant[], payments: nextPayments as PaymentRecord[] } as SiteContent;
     });
 
     if (db && doc && setDoc) {
@@ -444,12 +510,12 @@ export default function App() {
   };
 
 
-  const renderPage = (route) => {
+  const renderPage = (route: AppRoute) => {
     const Page = route.component;
     return (
       <Page
         {...getRouteProps(route.key, {
-          siteContent,
+          siteContent: siteContent as unknown as Record<string, unknown>,
           navigate,
           setRegistrant,
           saveRegistration,

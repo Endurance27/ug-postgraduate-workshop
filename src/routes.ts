@@ -19,7 +19,8 @@ export interface Route {
   key: string;
   path: string;
   label: string;
-  component: ComponentType<Record<string, unknown>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentType<any>;
   index?: boolean;
   showInNav?: boolean;
   gold?: boolean;

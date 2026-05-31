@@ -1,5 +1,12 @@
-// @ts-nocheck
 import { useState, useEffect, useRef } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface AdminPageProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  siteContent: { [key: string]: any };
+  updateContent: (section: string | Record<string, unknown>, value?: unknown) => void;
+  navigate?: (page: string) => void;
+}
 import {
   Home,
   Info,
@@ -67,7 +74,7 @@ import {
   storageRef,
   uploadBytesResumable,
   getDownloadURL,
-} from "../firebase.js";
+} from "../firebase";
 
 // Upload a file to Firebase Storage and return the public download URL
 async function uploadToStorage(file) {
@@ -89,8 +96,8 @@ async function uploadToStorage(file) {
   const path = `workshop-images/${auth.currentUser.uid}/${Date.now()}-${safeName}`;
   const ref = storageRef(storage, path);
   const task = uploadBytesResumable(ref, file);
-  await new Promise((resolve, reject) =>
-    task.on("state_changed", null, reject, resolve),
+  await new Promise<void>((resolve, reject) =>
+    task.on("state_changed", null, reject, () => resolve()),
   );
   return getDownloadURL(task.snapshot.ref);
 }
@@ -193,7 +200,7 @@ const TYPE_OPTIONS = ["plenary", "parallel", "track", "break"];
 let _nextId = 9000;
 const uid = () => ++_nextId;
 
-export default function AdminPage({ siteContent, updateContent, navigate }) {
+export default function AdminPage({ siteContent, updateContent, navigate }: AdminPageProps) {
   const [fireUser, setFireUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authView, setAuthView] = useState("signin"); // "signin" | "signup" | "forgot"
@@ -224,7 +231,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (u) {
         const list = getAllowlist();
-        if (list.length > 0 && !list.includes(u.email.toLowerCase())) {
+        if (list.length > 0 && !list.includes((u.email || "").toLowerCase())) {
           signOut(auth);
           setAuthError(
             "This email is not authorised to access the admin console.",
@@ -1714,7 +1721,7 @@ function ToggleRow({ label, desc, value, onChange }) {
 }
 
 /* ── Reusable image upload field ─────────────────────────────── */
-function ImageUploadField({ value, onChange, label, placeholder }) {
+function ImageUploadField({ value, onChange, label, placeholder = "" }) {
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const isBase64 = value && value.startsWith("data:");
@@ -2129,7 +2136,7 @@ function AnnouncementsPanel({ items, onChange }) {
 function ScheduleEditor({ schedule, onChange }) {
   const [activeDay, setActiveDay] = useState(0);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [editForm, setEditForm] = useState<Record<string, string>>({});
   const [addForm, setAddForm] = useState({
     time: "",
     title: "",
@@ -3486,7 +3493,7 @@ function AwardsPanel({
 }
 
 /* ── Speakers Panel ──────────────────────────────────────────── */
-function SpeakersPanel({ speakers = {}, onChange }) {
+function SpeakersPanel({ speakers = {} as Record<string, any>, onChange }) {
   const [keynote, setKeynote] = useState({ ...(speakers.keynote || {}) });
   const [panelists, setPanelists] = useState(
     (speakers.panelists || []).map((p) => ({ ...p })),
@@ -3964,7 +3971,7 @@ function ContactPanel({ contact = {}, onChange }) {
 }
 
 /* ── Footer Panel ────────────────────────────────────────────── */
-function FooterPanel({ footer = {}, onChange }) {
+function FooterPanel({ footer = {} as Record<string, any>, onChange }) {
   const [form, setForm] = useState({
     tagline: footer.tagline || "",
     dates: footer.dates || "",
@@ -4082,7 +4089,7 @@ function FooterPanel({ footer = {}, onChange }) {
 }
 
 /* ── Home Page Panel ─────────────────────────────────────────── */
-function makeHomeForm(home = {}) {
+function makeHomeForm(home: Record<string, any> = {}) {
   return {
     heroSubtitle:
       home.heroSubtitle ||
@@ -4790,7 +4797,7 @@ function HomePanel({ event, onChange, home = {}, onChangeHome, onSaveAll }) {
 }
 
 /* ── About Page Panel ────────────────────────────────────────── */
-function AboutPanel({ about = {}, onChange }) {
+function AboutPanel({ about = {} as Record<string, any>, onChange }) {
   const [form, setForm] = useState({
     badge: about.badge || "2nd Annual Edition",
     title:
@@ -4940,7 +4947,7 @@ function AboutPanel({ about = {}, onChange }) {
 }
 
 /* ── Livestream Page Panel ───────────────────────────────────── */
-function StreamPanel({ stream = {}, onChange }) {
+function StreamPanel({ stream = {} as Record<string, any>, onChange }) {
   const [form, setForm] = useState({
     live: stream.live || false,
     note: stream.note || "",
@@ -5064,7 +5071,7 @@ function StreamPanel({ stream = {}, onChange }) {
 function SponsorsAdminPanel({
   sponsors = [],
   onChangeSponsors,
-  footer = {},
+  footer = {} as Record<string, any>,
   onChange,
 }) {
   const [items, setItems] = useState(sponsors.map((s) => ({ ...s })));
@@ -5472,7 +5479,7 @@ function RegisterPanel({ event, onChange }) {
 }
 
 /* ── Site Images Panel ───────────────────────────────────────── */
-function ImagesPanel({ images = {}, onChange }) {
+function ImagesPanel({ images = {} as Record<string, any>, onChange }) {
   const [form, setForm] = useState({
     workshop: images.workshop || "/images/workshop-sessions.jpg",
     research: images.research || "/images/research-presentations.jpg",
@@ -6268,7 +6275,7 @@ function SecurityPanel() {
   }
 
   function removeEmail(email) {
-    if (user && email === user.email.toLowerCase()) {
+    if (user && email === (user.email || "").toLowerCase()) {
       setStatus({
         type: "error",
         msg: "You cannot remove your own email from the allowlist.",

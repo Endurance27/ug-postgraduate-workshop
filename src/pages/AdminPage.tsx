@@ -1404,6 +1404,8 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
             <SupportAdminPanel
               contact={siteContent.contact}
               onChange={(v) => updateContent("contact", v)}
+              faqs={siteContent.faqs || []}
+              onChangeFaqs={(v) => updateContent("faqs", v)}
             />
           )}
 
@@ -4102,6 +4104,14 @@ function makeHomeForm(home: Record<string, any> = {}) {
       ? home.featuredSessions
       : [],
     testimonials: Array.isArray(home.testimonials) ? home.testimonials : [],
+    // Stats bar overrides
+    workshopDays:       home.workshopDays       ?? 3,
+    presentationTracks: home.presentationTracks ?? 4,
+    awardPositions:     home.awardPositions      ?? 3,
+    // Research tracks (empty = page uses built-in defaults)
+    tracks:     Array.isArray(home.tracks)     ? home.tracks     : [],
+    // Eligible programmes (empty = page uses built-in defaults)
+    programmes: Array.isArray(home.programmes) ? home.programmes : [],
   };
 }
 
@@ -4202,6 +4212,34 @@ function HomePanel({ event, onChange, home = {}, onChangeHome, onSaveAll }) {
     setHomeForm((f) => ({
       ...f,
       testimonials: f.testimonials.filter((_, ti) => ti !== i),
+    }));
+
+  // ── Tracks helpers ──
+  const addTrack = () =>
+    setHomeForm((f) => ({
+      ...f,
+      tracks: [...f.tracks, { title: "New Track", desc: "", color: "#1B3A6B" }],
+    }));
+  const removeTrack = (i) =>
+    setHomeForm((f) => ({ ...f, tracks: f.tracks.filter((_, ti) => ti !== i) }));
+  const updateTrack = (i, field, val) =>
+    setHomeForm((f) => ({
+      ...f,
+      tracks: f.tracks.map((t, ti) => ti === i ? { ...t, [field]: val } : t),
+    }));
+
+  // ── Programmes helpers ──
+  const addProgramme = () =>
+    setHomeForm((f) => ({
+      ...f,
+      programmes: [...f.programmes, { name: "New Programme", role: "Observer", required: false }],
+    }));
+  const removeProgramme = (i) =>
+    setHomeForm((f) => ({ ...f, programmes: f.programmes.filter((_, pi) => pi !== i) }));
+  const updateProgramme = (i, field, val) =>
+    setHomeForm((f) => ({
+      ...f,
+      programmes: f.programmes.map((p, pi) => pi === i ? { ...p, [field]: val } : p),
     }));
 
   return (
@@ -4766,6 +4804,118 @@ function HomePanel({ event, onChange, home = {}, onChangeHome, onSaveAll }) {
                 />
               </div>
             </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Stats Bar ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h4 style={{ marginBottom: 8, fontFamily: "Playfair Display, serif" }}>Stats Bar</h4>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>
+          Numbers shown in the strip below the hero. Registration Fee is set by the fee field above.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Workshop Days</label>
+            <input
+              type="number" min="1"
+              value={homeForm.workshopDays}
+              onChange={(e) => setHomeForm((f) => ({ ...f, workshopDays: Number(e.target.value) }))}
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Presentation Tracks</label>
+            <input
+              type="number" min="1"
+              value={homeForm.presentationTracks}
+              onChange={(e) => setHomeForm((f) => ({ ...f, presentationTracks: Number(e.target.value) }))}
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Award Positions</label>
+            <input
+              type="number" min="1"
+              value={homeForm.awardPositions}
+              onChange={(e) => setHomeForm((f) => ({ ...f, awardPositions: Number(e.target.value) }))}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Research Tracks ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Research Tracks</h4>
+          <button onClick={addTrack} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>
+            + Add Track
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+          Presentation tracks in the "How to Participate" section. Leave empty to use the built-in defaults.
+        </p>
+        {homeForm.tracks.length === 0 && (
+          <p style={{ fontSize: 13, color: "#aaa", fontStyle: "italic", marginBottom: 8 }}>Using built-in defaults. Add a track to override all of them.</p>
+        )}
+        {homeForm.tracks.map((t, i) => (
+          <div key={i} style={{ border: "1px solid #e0e0e0", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{t.title || `Track ${i + 1}`}</span>
+              <button onClick={() => removeTrack(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "3px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 90px", gap: 10, marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Track Title</label>
+                <input value={t.title} onChange={(e) => updateTrack(i, "title", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Colour</label>
+                <input value={t.color} onChange={(e) => updateTrack(i, "color", e.target.value)} placeholder="#1B3A6B" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Description</label>
+              <input value={t.desc} onChange={(e) => updateTrack(i, "desc", e.target.value)} placeholder="Brief description of this track…" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Eligible Programmes ── */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Eligible Programmes</h4>
+          <button onClick={addProgramme} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>
+            + Add Programme
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+          Eligibility table in the "Who Can Participate" section. Leave empty to use built-in defaults.
+        </p>
+        {homeForm.programmes.length === 0 && (
+          <p style={{ fontSize: 13, color: "#aaa", fontStyle: "italic", marginBottom: 8 }}>Using built-in defaults. Add a programme to override all of them.</p>
+        )}
+        {homeForm.programmes.map((p, i) => (
+          <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 140px auto auto", gap: 10, alignItems: "end", marginBottom: 10 }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Programme Name</label>
+              <input value={p.name} onChange={(e) => updateProgramme(i, "name", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Role</label>
+              <input value={p.role} onChange={(e) => updateProgramme(i, "role", e.target.value)} placeholder="Presenter" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, paddingBottom: 2 }}>
+              <label style={{ fontSize: 11, color: "#888" }}>Required</label>
+              <button
+                onClick={() => updateProgramme(i, "required", !p.required)}
+                style={{ width: 36, height: 22, borderRadius: 11, border: "none", cursor: "pointer", background: p.required ? "#1B6B3A" : "#ccc", position: "relative", transition: "background 0.2s" }}
+              >
+                <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: p.required ? 17 : 3, transition: "left 0.2s" }} />
+              </button>
+            </div>
+            <button onClick={() => removeProgramme(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 0 }}>
+              <X size={14} />
+            </button>
           </div>
         ))}
       </div>
@@ -5985,261 +6135,304 @@ function RecordingsPanel({ recordings = [], onChange }) {
     setTimeout(() => setSaved(false), 2500);
   };
   const update = (i, field, val) =>
-    setItems((arr) =>
-      arr.map((r, ri) => (ri === i ? { ...r, [field]: val } : r)),
-    );
+    setItems((arr) => arr.map((r, ri) => (ri === i ? { ...r, [field]: val } : r)));
   const updateHighlight = (i, hi, val) =>
     setItems((arr) =>
       arr.map((r, ri) =>
-        ri === i
-          ? {
-              ...r,
-              highlights: r.highlights.map((h, hii) => (hii === hi ? val : h)),
-            }
-          : r,
+        ri === i ? { ...r, highlights: r.highlights.map((h, hii) => (hii === hi ? val : h)) } : r,
       ),
     );
+  const addHighlight = (i) =>
+    setItems((arr) => arr.map((r, ri) => ri === i ? { ...r, highlights: [...r.highlights, ""] } : r));
+  const removeHighlight = (i, hi) =>
+    setItems((arr) =>
+      arr.map((r, ri) => ri === i ? { ...r, highlights: r.highlights.filter((_, hii) => hii !== hi) } : r),
+    );
+  const addRecording = () =>
+    setItems((arr) => [
+      ...arr,
+      { day: `Day ${arr.length + 1}`, label: "New Recording", color: "#1B3A6B", youtubeId: "", start: 0, highlights: [""] },
+    ]);
+  const removeRecording = (i) => setItems((arr) => arr.filter((_, ri) => ri !== i));
+
+  const COLOR_OPTIONS = ["#1B3A6B", "#C9A84C", "#7b1fa2", "#0F2347", "#1B6B3A", "#c0392b"];
 
   return (
     <div style={{ maxWidth: 700 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Recordings
-      </h2>
+      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Recordings</h2>
       <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
-        Set YouTube video IDs and highlight bullet points for each workshop day
-        recording.
+        Manage YouTube recordings for each workshop day — video ID, start timestamp, and highlights.
       </p>
       {saved && (
         <div className="alert alert-success" style={{ marginBottom: 20 }}>
-          <Check
-            size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
-          />{" "}
-          Recordings saved.
+          <Check size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Recordings saved.
         </div>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {items.map((r, i) => (
-          <div
-            key={i}
-            className="card"
-            style={{ borderLeft: `4px solid ${r.color}` }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 16,
-              }}
-            >
-              <span
-                style={{
-                  fontWeight: 700,
-                  fontSize: 15,
-                  fontFamily: "Playfair Display, serif",
-                  color: r.color,
-                }}
-              >
-                {r.day}
-              </span>
-              <span style={{ fontSize: 13, color: "#666" }}>{r.label}</span>
+          <div key={i} className="card" style={{ borderLeft: `4px solid ${r.color}` }}>
+            {/* Header row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 15, fontFamily: "Playfair Display, serif", color: r.color }}>{r.day}</span>
+                <span style={{ fontSize: 13, color: "#666" }}>{r.label}</span>
+              </div>
+              {items.length > 1 && (
+                <button onClick={() => removeRecording(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+              )}
             </div>
-            <div className="form-group">
-              <label>YouTube Video ID</label>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <input
-                  value={r.youtubeId}
-                  onChange={(e) => update(i, "youtubeId", e.target.value)}
-                  placeholder="e.g. 1KWiyZnJFmw (leave blank = coming soon)"
-                  style={{ flex: 1 }}
-                />
-                {r.youtubeId && (
-                  <a
-                    href={`https://youtube.com/watch?v=${r.youtubeId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      fontSize: 12,
-                      color: "#1B3A6B",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    ▶ Preview
-                  </a>
-                )}
+
+            {/* Day label + colour */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 90px", gap: 10, marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Day Label</label>
+                <input value={r.day} onChange={(e) => update(i, "day", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} placeholder="Day 1" />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Session Title</label>
+                <input value={r.label} onChange={(e) => update(i, "label", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Colour</label>
+                <select
+                  value={r.color}
+                  onChange={(e) => update(i, "color", e.target.value)}
+                  style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+                >
+                  {COLOR_OPTIONS.map((c) => (
+                    <option key={c} value={c} style={{ background: c, color: "#fff" }}>{c}</option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  display: "block",
-                  marginBottom: 8,
-                }}
-              >
-                Highlights (shown in sidebar)
-              </label>
-              {r.highlights.map((h, hi) => (
+
+            {/* YouTube ID + start */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: 10, marginBottom: 10 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>YouTube Video ID</label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input
+                    value={r.youtubeId}
+                    onChange={(e) => update(i, "youtubeId", e.target.value)}
+                    placeholder="e.g. 1KWiyZnJFmw (blank = coming soon)"
+                    style={{ flex: 1 }}
+                  />
+                  {r.youtubeId && (
+                    <a href={`https://youtube.com/watch?v=${r.youtubeId}`} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#1B3A6B", whiteSpace: "nowrap" }}>▶ Preview</a>
+                  )}
+                </div>
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Start Time (seconds)</label>
                 <input
-                  key={hi}
-                  value={h}
-                  onChange={(e) => updateHighlight(i, hi, e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 10px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    marginBottom: 6,
-                  }}
+                  type="number" min="0"
+                  value={r.start ?? 0}
+                  onChange={(e) => update(i, "start", Number(e.target.value))}
+                  placeholder="0"
                 />
+              </div>
+            </div>
+
+            {/* Highlights */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label style={{ fontSize: 13, fontWeight: 500 }}>Highlights (shown in sidebar)</label>
+                <button onClick={() => addHighlight(i)} style={{ background: "#E5EAF3", color: "#1B3A6B", border: "none", borderRadius: 6, padding: "3px 10px", fontSize: 12, cursor: "pointer" }}>+ Add</button>
+              </div>
+              {r.highlights.map((h, hi) => (
+                <div key={hi} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                  <input
+                    value={h}
+                    onChange={(e) => updateHighlight(i, hi, e.target.value)}
+                    style={{ flex: 1, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+                  />
+                  {r.highlights.length > 1 && (
+                    <button onClick={() => removeHighlight(i, hi)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}><X size={12} /></button>
+                  )}
+                </div>
               ))}
             </div>
           </div>
         ))}
       </div>
 
-      <button className="btn-primary" onClick={save} style={{ marginTop: 20 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          Save Recordings <ArrowRight size={14} />
-        </span>
-      </button>
+      <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+        <button onClick={addRecording} style={{ background: "#fff", border: "2px dashed #C9A84C", color: "#b5700a", borderRadius: 10, padding: "10px 20px", fontSize: 13, cursor: "pointer" }}>
+          + Add Recording Day
+        </button>
+        <button className="btn-primary" onClick={save}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Save Recordings <ArrowRight size={14} /></span>
+        </button>
+      </div>
     </div>
   );
 }
 
 /* ── Support Page Panel ──────────────────────────────────────── */
-function SupportAdminPanel({ contact = {}, onChange }) {
-  const [form, setForm] = useState({
-    email: "",
-    website: "",
-    location: "",
-    hours: "",
-    whatsapp: "",
-    phone: "",
-    ...contact,
-  });
-  const [saved, setSaved] = useState(false);
+function SupportAdminPanel({ contact = {}, onChange, faqs = [], onChangeFaqs }) {
+  const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
+  const [contactSaved, setContactSaved] = useState(false);
 
+  const [faqItems, setFaqItems] = useState(() =>
+    faqs.length > 0 ? faqs.map((f) => ({ ...f, items: [...(f.items || [])] })) : []
+  );
+  const [faqSaved, setFaqSaved] = useState(false);
+
+  useEffect(() => { setForm((f) => ({ ...f, ...contact })); }, [contact]);
   useEffect(() => {
-    setForm((f) => ({ ...f, ...contact }));
-  }, [contact]);
+    if (faqs.length > 0) setFaqItems(faqs.map((f) => ({ ...f, items: [...(f.items || [])] })));
+  }, [faqs]);
 
-  const save = () => {
-    onChange(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+  const saveContact = () => { onChange(form); setContactSaved(true); setTimeout(() => setContactSaved(false), 2500); };
+  const saveFaqs = () => { onChangeFaqs(faqItems); setFaqSaved(true); setTimeout(() => setFaqSaved(false), 2500); };
+
+  // FAQ CRUD
+  const addCategory = () => setFaqItems((arr) => [...arr, { category: "New Category", icon: "❓", items: [] }]);
+  const removeCategory = (ci) => setFaqItems((arr) => arr.filter((_, i) => i !== ci));
+  const updateCategory = (ci, field, val) =>
+    setFaqItems((arr) => arr.map((c, i) => i === ci ? { ...c, [field]: val } : c));
+
+  const addItem = (ci) =>
+    setFaqItems((arr) => arr.map((c, i) => i === ci ? { ...c, items: [...c.items, { q: "", a: "" }] } : c));
+  const removeItem = (ci, qi) =>
+    setFaqItems((arr) => arr.map((c, i) => i === ci ? { ...c, items: c.items.filter((_, j) => j !== qi) } : c));
+  const updateItem = (ci, qi, field, val) =>
+    setFaqItems((arr) =>
+      arr.map((c, i) => i === ci ? { ...c, items: c.items.map((item, j) => j === qi ? { ...item, [field]: val } : item) } : c)
+    );
 
   return (
-    <div style={{ maxWidth: 640 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Support Page
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
-        The Support page shows FAQs (fixed content) and a contact tab. Edit the
-        contact details shown there — these are shared with the Contact page.
+    <div style={{ maxWidth: 700 }}>
+      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Support Page</h2>
+      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+        Edit FAQ content and the contact details shown on the Support page.
       </p>
-      <div
-        className="alert alert-info"
-        style={{ marginBottom: 24, fontSize: 13 }}
-      >
-        FAQ questions and answers are fixed in code. Contact details here are
-        shared with the <strong>Contact page</strong> and the{" "}
-        <strong>WhatsApp button</strong>.
-      </div>
-      {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
-          <Check
-            size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
-          />{" "}
-          Saved — contact info updated on both Contact and Support pages.
+
+      {/* ── Contact Details ── */}
+      <h3 style={{ fontSize: 15, fontFamily: "Playfair Display, serif", marginBottom: 12 }}>Contact Details</h3>
+      {contactSaved && (
+        <div className="alert alert-success" style={{ marginBottom: 16 }}>
+          <Check size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Saved — contact info updated.
         </div>
       )}
-
-      <div className="card">
+      <div className="card" style={{ marginBottom: 32 }}>
         <div className="form-row">
           <div className="form-group">
             <label>Email Address</label>
-            <input
-              value={form.email}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, email: e.target.value }))
-              }
-              placeholder="dcsworkshop@ug.edu.gh"
-            />
+            <input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="dcsworkshop@ug.edu.gh" />
           </div>
           <div className="form-group">
             <label>Website</label>
-            <input
-              value={form.website}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, website: e.target.value }))
-              }
-              placeholder="www.cs.ug.edu.gh"
-            />
+            <input value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} placeholder="www.cs.ug.edu.gh" />
           </div>
         </div>
         <div className="form-row">
           <div className="form-group">
             <label>Phone Number</label>
-            <input
-              value={form.phone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, phone: e.target.value }))
-              }
-              placeholder="+233 (0) 536 909 471"
-            />
+            <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+233 (0) 536 909 471" />
           </div>
           <div className="form-group">
             <label>WhatsApp Number</label>
-            <input
-              value={form.whatsapp}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, whatsapp: e.target.value }))
-              }
-              placeholder="233XXXXXXXXX"
-            />
+            <input value={form.whatsapp} onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))} placeholder="233XXXXXXXXX" />
           </div>
         </div>
         <div className="form-group">
           <label>Office Hours</label>
-          <input
-            value={form.hours}
-            onChange={(e) => setForm((f) => ({ ...f, hours: e.target.value }))}
-            placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT"
-          />
+          <input value={form.hours} onChange={(e) => setForm((f) => ({ ...f, hours: e.target.value }))} placeholder="Mon–Fri · 8:00 AM – 5:00 PM GMT" />
         </div>
         <div className="form-group">
           <label>Location / Address</label>
-          <textarea
-            value={form.location}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, location: e.target.value }))
-            }
-            style={{ minHeight: 70 }}
-          />
+          <textarea value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} style={{ minHeight: 70 }} />
         </div>
-        <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
-            Save Support Contact <ArrowRight size={14} />
-          </span>
+        <button className="btn-primary" onClick={saveContact}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Save Contact Details <ArrowRight size={14} /></span>
         </button>
       </div>
+
+      {/* ── FAQ Editor ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <h3 style={{ fontSize: 15, fontFamily: "Playfair Display, serif" }}>FAQ Editor</h3>
+        <button onClick={addCategory} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add Category</button>
+      </div>
+      <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+        Add FAQ categories and questions. Leave empty to keep the built-in default FAQs on the Support page.
+      </p>
+      {faqSaved && (
+        <div className="alert alert-success" style={{ marginBottom: 16 }}>
+          <Check size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> FAQs saved.
+        </div>
+      )}
+      {faqItems.length === 0 && (
+        <div className="alert alert-info" style={{ marginBottom: 16, fontSize: 13 }}>
+          Currently using built-in default FAQs. Add a category above to create custom FAQs.
+        </div>
+      )}
+
+      {faqItems.map((cat, ci) => (
+        <div key={ci} className="card" style={{ marginBottom: 16 }}>
+          {/* Category header */}
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 14 }}>
+            <div className="form-group" style={{ width: 72, marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Icon (emoji)</label>
+              <input
+                value={cat.icon}
+                onChange={(e) => updateCategory(ci, "icon", e.target.value)}
+                style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 20, textAlign: "center", width: "100%" }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label style={{ fontSize: 12 }}>Category Name</label>
+              <input
+                value={cat.category}
+                onChange={(e) => updateCategory(ci, "category", e.target.value)}
+                style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+              />
+            </div>
+            <button onClick={() => removeCategory(ci)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 12, cursor: "pointer", marginBottom: 0 }}>
+              Remove Category
+            </button>
+          </div>
+
+          {/* Q&A items */}
+          {cat.items.map((item, qi) => (
+            <div key={qi} style={{ border: "1px solid #e8e8e8", borderRadius: 8, padding: "12px 14px", marginBottom: 8, background: "#fafafa" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: "#888", fontWeight: 500 }}>Q&A {qi + 1}</span>
+                <button onClick={() => removeItem(ci, qi)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 5, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Remove</button>
+              </div>
+              <div className="form-group" style={{ marginBottom: 8 }}>
+                <label style={{ fontSize: 12 }}>Question</label>
+                <input
+                  value={item.q}
+                  onChange={(e) => updateItem(ci, qi, "q", e.target.value)}
+                  placeholder="e.g. Who can register for the workshop?"
+                  style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+                />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ fontSize: 12 }}>Answer</label>
+                <textarea
+                  value={item.a}
+                  onChange={(e) => updateItem(ci, qi, "a", e.target.value)}
+                  placeholder="Full answer text…"
+                  style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13, minHeight: 70, resize: "vertical" }}
+                />
+              </div>
+            </div>
+          ))}
+
+          <button onClick={() => addItem(ci)} style={{ background: "#E5EAF3", color: "#1B3A6B", border: "none", borderRadius: 7, padding: "7px 14px", fontSize: 13, cursor: "pointer", marginTop: 4 }}>
+            + Add Question
+          </button>
+        </div>
+      ))}
+
+      {faqItems.length > 0 && (
+        <button className="btn-primary" onClick={saveFaqs} style={{ marginBottom: 8 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Save FAQs <ArrowRight size={14} /></span>
+        </button>
+      )}
     </div>
   );
 }

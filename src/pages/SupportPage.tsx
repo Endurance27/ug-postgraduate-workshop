@@ -42,6 +42,7 @@ interface ContactData {
 
 interface SupportPageProps {
   contact?: ContactData;
+  faqs?: FAQSection[];
 }
 
 const FAQS = [
@@ -102,7 +103,10 @@ function AccordionItem({ q, a }: AccordionItemProps) {
   );
 }
 
-export default function SupportPage({ contact = {} }: SupportPageProps) {
+export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPageProps) {
+  // Use admin-edited FAQs when available, otherwise fall back to built-in defaults
+  const ACTIVE_FAQS = (faqsProp && faqsProp.length > 0) ? faqsProp : FAQS;
+
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [form, setForm] = useState<FormState>({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -126,8 +130,8 @@ export default function SupportPage({ contact = {} }: SupportPageProps) {
     if (validate()) setSubmitted(true);
   };
 
-  const categories = ["All", ...FAQS.map(f => f.category)];
-  const visibleFAQs = activeCategory === "All" ? FAQS : FAQS.filter(f => f.category === activeCategory);
+  const categories = ["All", ...ACTIVE_FAQS.map(f => f.category)];
+  const visibleFAQs = activeCategory === "All" ? ACTIVE_FAQS : ACTIVE_FAQS.filter(f => f.category === activeCategory);
 
   return (
     <main>

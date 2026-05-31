@@ -52,12 +52,31 @@ interface Testimonial {
   photo?: string;
 }
 
+interface TrackItem {
+  title: string;
+  desc: string;
+  color: string;
+}
+
+interface ProgrammeItem {
+  name: string;
+  role: string;
+  required: boolean;
+}
+
 interface HomeData {
   heroSubtitle?: string;
   heroDesc?: string;
   importantDates?: ImportantDate[];
   featuredSessions?: FeaturedSession[];
   testimonials?: Testimonial[];
+  // Admin-editable overrides
+  workshopDays?: number;
+  presentationTracks?: number;
+  awardPositions?: number;
+  tracks?: TrackItem[];
+  programmes?: ProgrammeItem[];
+  [key: string]: unknown;
 }
 
 interface HomePageProps {
@@ -83,11 +102,11 @@ function useReveal(threshold = 0.15): [RefObject<HTMLElement>, boolean] {
   return [ref, visible];
 }
 
-const makeStats = (event?: EventData): { n: string; label: string; icon: React.ReactNode }[] => [
-  { n: "3",                              label: "Workshop Days",       icon: <Calendar size={24} color="#1B3A6B" /> },
-  { n: `GHS ${event?.fee ?? 100}`,       label: "Registration Fee",    icon: <CreditCard size={24} color="#1B3A6B" /> },
-  { n: "4",                              label: "Presentation Tracks", icon: <Mic size={24} color="#1B3A6B" /> },
-  { n: "3",                              label: "Award Positions",     icon: <Trophy size={24} color="#1B3A6B" /> },
+const makeStats = (event?: EventData, home?: Record<string, unknown>): { n: string; label: string; icon: React.ReactNode }[] => [
+  { n: String(home?.workshopDays ?? 3),            label: "Workshop Days",       icon: <Calendar size={24} color="#1B3A6B" /> },
+  { n: `GHS ${event?.fee ?? 100}`,                 label: "Registration Fee",    icon: <CreditCard size={24} color="#1B3A6B" /> },
+  { n: String(home?.presentationTracks ?? 4),      label: "Presentation Tracks", icon: <Mic size={24} color="#1B3A6B" /> },
+  { n: String(home?.awardPositions ?? 3),          label: "Award Positions",     icon: <Trophy size={24} color="#1B3A6B" /> },
 ];
 
 const tracks = [
@@ -142,7 +161,10 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
     { src: img.research,   label: "Research Presentations"    },
     { src: img.networking, label: "Collaboration & Networking" },
   ];
-  const stats = makeStats(event);
+  // Use admin-edited arrays when present, otherwise fall back to built-in defaults
+  const activeTracks    = (Array.isArray(home?.tracks)     && (home.tracks as unknown[]).length     > 0) ? (home.tracks    as typeof tracks)      : tracks;
+  const activeProgrammes= (Array.isArray(home?.programmes) && (home.programmes as unknown[]).length > 0) ? (home.programmes as typeof programmes)  : programmes;
+  const stats = makeStats(event, home);
   const [heroReady, setHeroReady] = useState(false);
   const [statsRef, statsVisible] = useReveal();
   const [aboutRef, aboutVisible] = useReveal();
@@ -478,7 +500,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
                 Students present thesis work as posters, papers, or technical demos. A panel of judges awards prizes for the best presentations across all categories.
               </p>
               <div className="about-tracks-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {tracks.map((t, i) => (
+                {activeTracks.map((t, i) => (
                   <div key={i} style={{
                     background: "#fff", borderRadius: 12, padding: "16px 18px",
                     border: "1px solid #eee", borderTop: `3px solid ${t.color}`,
@@ -538,7 +560,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, maxWidth: 900, margin: "0 auto" }}>
-            {programmes.map((p, i) => (
+            {activeProgrammes.map((p, i) => (
               <div key={i} style={{
                 background: "#fff", border: "1px solid #e8e8e8", borderRadius: 12,
                 padding: "16px 20px", display: "flex", alignItems: "center", gap: 14,

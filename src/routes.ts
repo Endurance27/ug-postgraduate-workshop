@@ -158,6 +158,7 @@ export function getRouteProps(routeKey: string, context: RouteContext): Record<s
     },
     support: {
       contact: siteContent.contact,
+      faqs: siteContent.faqs,
     },
     gallery: {
       gallery: siteContent.gallery,

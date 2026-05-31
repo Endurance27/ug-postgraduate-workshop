@@ -23,6 +23,11 @@ import {
 
 // Upload a file to Firebase Storage and return the public download URL
 async function uploadToStorage(file) {
+  if (!storage || !storageRef || !uploadBytesResumable || !getDownloadURL) {
+    throw new Error(
+      "Firebase Storage is not configured. Enable it in the Firebase console and set security rules."
+    );
+  }
   const path = `workshop-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
   const ref = storageRef(storage, path);
   const task = uploadBytesResumable(ref, file);

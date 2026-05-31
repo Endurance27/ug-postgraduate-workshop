@@ -10,7 +10,7 @@ export default function Navbar({ page, navigate, registrant }) {
     { key: "stream",   label: "Livestream" },
     { key: "sponsors", label: "Sponsors"   },
     { key: "contact",  label: "Contact"    },
-    { key: "payment",  label: "Pay Fee"    },
+    // { key: "payment",  label: "Pay Fee"    },
     { key: "register", label: "Register Now", gold: true },
   ];
 

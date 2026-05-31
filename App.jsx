@@ -1,14 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { db, doc, getDoc, setDoc } from "./firebase.js";
-
-// Strip base64 data URLs before persisting — they're too large for localStorage/Firestore
-function stripBase64(obj) {
-  if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
-  if (Array.isArray(obj)) return obj.map(stripBase64);
-  if (obj && typeof obj === "object")
-    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, stripBase64(v)]));
-  return obj;
-}
 import HomePage from "./HomePage";
 import RegisterPage from "./RegisterPage";
 import SchedulePage from "./SchedulePage";
@@ -27,6 +18,14 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ChatBot from "./ChatBot";
 import "./index.css";
+
+function stripBase64(obj) {
+  if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
+  if (Array.isArray(obj)) return obj.map(stripBase64);
+  if (obj && typeof obj === "object")
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, stripBase64(v)]));
+  return obj;
+}
 
 const INIT_SCHEDULE = [
   {
@@ -248,33 +247,31 @@ export default function App() {
 
   // 2. On mount: pull the latest from Firestore (overrides localStorage if newer)
   useEffect(() => {
+    if (!db || !doc || !getDoc) return;
     let alive = true;
     getDoc(doc(db, "workshop", "siteContent"))
       .then(snap => {
-        if (alive && snap.exists()) {
-          setSiteContent(c => mergeRemote(c, snap.data()));
-        }
+        if (alive && snap.exists()) setSiteContent(c => mergeRemote(c, snap.data()));
       })
-      .catch(() => {}); // offline / rules not set yet — silently use localStorage
+      .catch(() => {}); // rules not set yet or offline — silently keep localStorage data
     return () => { alive = false; };
   }, []);
 
-  // 3. On every change: save stripped content to localStorage + Firestore (debounced 800 ms)
+  // 3. On every change: save to localStorage immediately + Firestore (debounced 800 ms)
   useEffect(() => {
     const stripped = stripBase64(siteContent);
 
-    // localStorage — immediate (fast reload)
     try {
       localStorage.setItem("dcs-workshop-content", JSON.stringify(stripped));
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
 
-    // Firestore — debounced so rapid edits don't flood the DB
+    if (!db || !doc || !setDoc) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       setDoc(doc(db, "workshop", "siteContent"), stripped)
-        .catch(e => console.warn("Firestore save failed (check security rules):", e.message));
+        .catch(e => console.warn("Firestore save failed — add security rules:", e.message));
     }, 800);
   }, [siteContent]);
 

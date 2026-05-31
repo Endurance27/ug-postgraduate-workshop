@@ -1,6 +1,40 @@
-// @ts-nocheck
 import { useState } from "react";
 import { Radio, Video, MessageCircle, RefreshCw, ArrowRight, Megaphone } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface StreamScheduleItem {
+  time: string;
+  title: string;
+}
+
+interface StreamDay {
+  day: string;
+  date: string;
+  color: string;
+  idKey: string;
+  schedule: StreamScheduleItem[];
+  youtubeId?: string;
+}
+
+interface StreamData {
+  live?: boolean;
+  note?: string;
+  day1Id?: string;
+  day2Id?: string;
+  day3Id?: string;
+  [key: string]: string | boolean | undefined;
+}
+
+interface EventData {
+  edition?: string;
+  dates?: string;
+}
+
+interface LiveStreamPageProps {
+  event?: EventData;
+  navigate?: (page: string) => void;
+  stream?: StreamData;
+}
 
 const BASE_DAYS = [
   {
@@ -46,10 +80,10 @@ const BASE_DAYS = [
   },
 ];
 
-export default function LiveStreamPage({ event, navigate, stream = {} }) {
+export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStreamPageProps) {
   const isLive = stream.live || false;
-  const [activeDay, setActiveDay] = useState(0);
-  const STREAM_DAYS = BASE_DAYS.map(d => ({ ...d, youtubeId: stream[d.idKey] || "" }));
+  const [activeDay, setActiveDay] = useState<number>(0);
+  const STREAM_DAYS: StreamDay[] = BASE_DAYS.map(d => ({ ...d, youtubeId: (stream[d.idKey] as string) || "" }));
   const current = STREAM_DAYS[activeDay];
 
   return (

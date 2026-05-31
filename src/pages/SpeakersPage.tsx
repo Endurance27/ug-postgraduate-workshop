@@ -1,12 +1,50 @@
-// @ts-nocheck
 import { User } from "lucide-react";
 
-export default function SpeakersPage({ speakers = {}, images = {} }) {
-  const keynote    = speakers.keynote   || {};
-  const panelists  = speakers.panelists || [];
-  const committee  = speakers.committee || [];
-  const tags       = typeof keynote.tags === "string"
-    ? keynote.tags.split(",").map(t => t.trim()).filter(Boolean)
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface KeynoteSpeaker {
+  name?: string;
+  title?: string;
+  institution?: string;
+  topic?: string;
+  bio?: string;
+  photo?: string;
+  tags?: string | string[];
+}
+
+interface Panelist {
+  id?: number;
+  name: string;
+  title: string;
+  institution: string;
+  role: string;
+  bio: string;
+  photo?: string;
+}
+
+interface CommitteeMember {
+  id?: number;
+  name: string;
+  role: string;
+  institution: string;
+}
+
+interface SpeakersData {
+  keynote?: KeynoteSpeaker;
+  panelists?: Panelist[];
+  committee?: CommitteeMember[];
+}
+
+interface SpeakersPageProps {
+  speakers?: SpeakersData;
+  images?: Record<string, string>;
+}
+
+export default function SpeakersPage({ speakers = {}, images = {} }: SpeakersPageProps) {
+  const keynote: KeynoteSpeaker    = speakers.keynote   || {};
+  const panelists: Panelist[]      = speakers.panelists || [];
+  const committee: CommitteeMember[] = speakers.committee || [];
+  const tags: string[]             = typeof keynote.tags === "string"
+    ? keynote.tags.split(",").map(t => t.trim()).filter(t => t.length > 0)
     : (keynote.tags || []);
   return (
     <main>

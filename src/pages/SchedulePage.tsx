@@ -1,5 +1,25 @@
-// @ts-nocheck
 import { Calendar, Laptop, BarChart2, Settings, Briefcase, Layers, Printer } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Session {
+  id?: number;
+  time: string;
+  title: string;
+  type: string;
+  track?: string;
+  presenter?: string;
+}
+
+interface ScheduleDay {
+  day: string;
+  date: string;
+  sessions: Session[];
+}
+
+interface SchedulePageProps {
+  schedule: ScheduleDay[];
+  images?: Record<string, string>;
+}
 
 const tracks = [
   { name: "CS Track", color: "#1B3A6B", bg: "#E5EAF3", desc: "MSc & MPhil Computer Science presentations" },
@@ -17,7 +37,7 @@ const typeStyle = {
   break:    { bg: "#f5f5f5", color: "#777", label: "Break" },
 };
 
-export default function SchedulePage({ schedule: days, images = {} }) {
+export default function SchedulePage({ schedule: days, images = {} }: SchedulePageProps) {
   const heroPhotos = [
     { src: images.research   || "/images/research-presentations.jpg",    label: "Research Sessions"  },
     { src: images.workshop   || "/images/workshop-sessions.jpg",         label: "Panel Discussions"  },
@@ -27,7 +47,7 @@ export default function SchedulePage({ schedule: days, images = {} }) {
 
   const filterOptions = ["All", "Plenary", "Track Sessions", "Breaks"];
 
-  const matchesFilter = (s) => {
+  const matchesFilter = (s: Session): boolean => {
     if (filter === "All")           return true;
     if (filter === "Plenary")       return s.type === "plenary" || s.type === "parallel";
     if (filter === "Track Sessions") return s.type === "track";

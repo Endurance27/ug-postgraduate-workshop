@@ -1,7 +1,28 @@
-// @ts-nocheck
 import { ArrowRight, Play, Video, Calendar, Globe, BookOpen, Trophy, FolderOpen, FileText, ClipboardList, Settings, Check, Sparkles } from "lucide-react";
 
-export default function AboutPage({ navigate, images = {}, about = {}, event = {} }) {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface AboutData {
+  badge?: string;
+  title?: string;
+  desc1?: string;
+  desc2?: string;
+  imageCaption1?: string;
+  imageCaption2?: string;
+  cardText?: string;
+}
+
+interface EventData {
+  fee?: number;
+}
+
+interface AboutPageProps {
+  navigate: (page: string) => void;
+  images?: Record<string, string>;
+  about?: AboutData;
+  event?: EventData;
+}
+
+export default function AboutPage({ navigate, images = {}, about = {}, event = {} }: AboutPageProps) {
   const a = {
     badge:         about.badge         || "2nd Annual Edition",
     title:         about.title         || "A Platform for Academic Excellence in Postgraduate Research",

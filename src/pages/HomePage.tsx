@@ -1,11 +1,77 @@
-// @ts-nocheck
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, RefObject } from "react";
 import { Calendar, CreditCard, Mic, Trophy, Medal, Radio, CheckCircle, MailOpen, GraduationCap, BookOpen, Lightbulb, Landmark, Eye, ArrowRight } from "lucide-react";
-import Countdown from "../components/Countdown.jsx";
+import Countdown from "../components/Countdown";
 
-function useReveal(threshold = 0.15) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface EventData {
+  fee?: number;
+  edition?: string;
+  dates?: string;
+  title?: string;
+  registrationOpen?: boolean;
+}
+
+interface Announcement {
+  id: number | string;
+  active: boolean;
+  type: string;
+  text: string;
+}
+
+interface FeedItem {
+  id: number | string;
+  active: boolean;
+  text: string;
+  time?: string;
+}
+
+interface ImportantDate {
+  id?: number;
+  label: string;
+  date: string;
+  icon?: React.ReactNode;
+  done: boolean;
+}
+
+interface FeaturedSession {
+  id?: number;
+  icon?: React.ReactNode;
+  tag: string;
+  session: string;
+  role: string;
+  status?: string;
+  topic: string;
+  accent: string;
+}
+
+interface Testimonial {
+  id?: number;
+  quote: string;
+  name: string;
+  prog: string;
+  photo?: string;
+}
+
+interface HomeData {
+  heroSubtitle?: string;
+  heroDesc?: string;
+  importantDates?: ImportantDate[];
+  featuredSessions?: FeaturedSession[];
+  testimonials?: Testimonial[];
+}
+
+interface HomePageProps {
+  navigate: (page: string) => void;
+  event?: EventData;
+  announcements?: Announcement[];
+  feed?: FeedItem[];
+  images?: Record<string, string>;
+  home?: HomeData;
+}
+
+function useReveal(threshold = 0.15): [RefObject<HTMLElement>, boolean] {
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState<boolean>(false);
   useEffect(() => {
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
@@ -17,7 +83,7 @@ function useReveal(threshold = 0.15) {
   return [ref, visible];
 }
 
-const makeStats = (event) => [
+const makeStats = (event?: EventData): { n: string; label: string; icon: React.ReactNode }[] => [
   { n: "3",                              label: "Workshop Days",       icon: <Calendar size={24} color="#1B3A6B" /> },
   { n: `GHS ${event?.fee ?? 100}`,       label: "Registration Fee",    icon: <CreditCard size={24} color="#1B3A6B" /> },
   { n: "4",                              label: "Presentation Tracks", icon: <Mic size={24} color="#1B3A6B" /> },
@@ -53,7 +119,7 @@ const sponsors = [
   { name: "Industry Partners",    tier: "Corporate Sponsors",icon: <Trophy size={32} color="#1B3A6B" /> },
 ];
 
-function splitHeroTitle(title) {
+function splitHeroTitle(title: string | undefined): { lead: string; highlight: string } {
   const fallback = "DCS Postgraduate Research Workshop 2026";
   const text = (title || "").trim() || fallback;
   const match = text.match(/\bResearch Workshop\b.*$/i);
@@ -64,7 +130,7 @@ function splitHeroTitle(title) {
   };
 }
 
-export default function HomePage({ navigate, event, announcements, feed = [], images = {}, home = {} }) {
+export default function HomePage({ navigate, event, announcements, feed = [], images = {}, home = {} }: HomePageProps) {
   const img = {
     workshop:   images.workshop   || "/images/workshop-sessions.jpg",
     research:   images.research   || "/images/research-presentations.jpg",
@@ -91,8 +157,8 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
 
   const activeAnnouncements = (announcements || []).filter(a => a.active);
   const activeFeed = (feed || []).filter(f => f.active);
-  const annBg    = { info: "#E5EAF3", warning: "#fdf3e0", success: "#e3f5eb" };
-  const annColor = { info: "#1B3A6B", warning: "#b5700a", success: "#1B6B3A" };
+  const annBg: Record<string, string>    = { info: "#E5EAF3", warning: "#fdf3e0", success: "#e3f5eb" };
+  const annColor: Record<string, string> = { info: "#1B3A6B", warning: "#b5700a", success: "#1B6B3A" };
   const heroTitle = splitHeroTitle(event?.title);
   const heroSubtitle = home.heroSubtitle || "Department of Computer Science · SPMS · University of Ghana";
   const heroDesc = home.heroDesc || "MSc, MPhil & PhD students present cutting-edge thesis research. Outstanding papers are considered for the CBAS Journal.";

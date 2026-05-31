@@ -1,8 +1,63 @@
-// @ts-nocheck
-import { useState } from "react";
+import React, { useState } from "react";
 import { CreditCard, Smartphone, Check, ArrowRight, AlertCircle, Sparkles, Shield } from "lucide-react";
 
-const PAYMENT_METHODS = [
+declare global {
+  interface Window {
+    PaystackPop?: {
+      setup: (opts: Record<string, unknown>) => { openIframe: () => void };
+    };
+  }
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface PaymentMethod {
+  id: string;
+  label: string;
+  desc: string;
+  icon: React.ReactNode;
+}
+
+interface Participant {
+  email: string;
+  studentId: string | number;
+  name?: string;
+  fullName?: string;
+  programme?: string;
+  payment?: string;
+}
+
+interface FoundRegistrant {
+  email: string;
+  studentId: string | number;
+  name: string;
+  programme: string;
+  status: string;
+  [key: string]: unknown;
+}
+
+interface PaymentOptions {
+  paymentStatus: string;
+  paymentReference: string;
+  method: string;
+  amount: number;
+}
+
+interface EventData {
+  fee?: number;
+  paystackKey?: string;
+  edition?: string;
+  dates?: string;
+  title?: string;
+}
+
+interface PaymentPageProps {
+  navigate: (page: string) => void;
+  event?: EventData;
+  participants?: Participant[];
+  onRegister?: (registrant: FoundRegistrant, options: PaymentOptions) => void;
+}
+
+const PAYMENT_METHODS: PaymentMethod[] = [
   {
     id: "momo",
     label: "Mobile Money",
@@ -17,19 +72,19 @@ const PAYMENT_METHODS = [
   },
 ];
 
-export default function PaymentPage({ navigate, event = {}, participants = [], onRegister }) {
+export default function PaymentPage({ navigate, event = {}, participants = [], onRegister }: PaymentPageProps) {
   const fee = event.fee || 100;
 
   const [step, setStep] = useState("lookup"); // lookup | pay | done
   const [lookup, setLookup] = useState({ email: "", studentId: "" });
   const [lookupError, setLookupError] = useState("");
-  const [foundRegistrant, setFoundRegistrant] = useState(null);
+  const [foundRegistrant, setFoundRegistrant] = useState<FoundRegistrant | null>(null);
   const [method, setMethod] = useState("momo");
   const [paying, setPaying] = useState(false);
   const [payRef, setPayRef] = useState("");
   const [paymentError, setPaymentError] = useState("");
 
-  const handleLookup = (e) => {
+  const handleLookup = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     setLookupError("");
     if (!lookup.email.includes("@")) {

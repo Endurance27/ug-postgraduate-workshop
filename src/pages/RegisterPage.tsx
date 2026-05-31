@@ -1,6 +1,52 @@
-// @ts-nocheck
-import { useState } from "react";
+import React, { useState } from "react";
 import { Lock, Sparkles, Check, ArrowRight, ArrowLeft } from "lucide-react";
+
+declare global {
+  interface Window {
+    PaystackPop?: {
+      setup: (opts: Record<string, unknown>) => { openIframe: () => void };
+    };
+  }
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface RegistrationForm {
+  fullName: string;
+  email: string;
+  phone: string;
+  studentId: string;
+  department: string;
+  programme: string;
+  level: string;
+  attendanceMode: string;
+  participationType: string;
+  presentationType: string;
+}
+
+type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
+
+interface PaymentOptions {
+  paymentStatus: string;
+  paymentReference: string;
+  method: string;
+  amount: number;
+}
+
+interface EventData {
+  fee?: number;
+  paystackKey?: string;
+  edition?: string;
+  dates?: string;
+  title?: string;
+  registrationOpen?: boolean;
+}
+
+interface RegisterPageProps {
+  navigate: (page: string) => void;
+  setRegistrant?: (data: Record<string, unknown>) => void;
+  event?: EventData;
+  onRegister?: (form: RegistrationForm, options: PaymentOptions) => Record<string, unknown>;
+}
 
 const PROGRAMMES = [
   "MSc Computer Science",
@@ -16,27 +62,27 @@ const PRESENTATION_TYPES = ["Poster Presentation", "Regular Paper", "Short Paper
 
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
-export default function RegisterPage({ navigate, setRegistrant, event = {}, onRegister }) {
+export default function RegisterPage({ navigate, setRegistrant, event = {}, onRegister }: RegisterPageProps) {
   const fee = event.fee || 100;
 
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
+  const [step, setStep] = useState<number>(0);
+  const [form, setForm] = useState<RegistrationForm>({
     fullName: "", email: "", phone: "", studentId: "",
     department: "", programme: "", level: "Master's",
     attendanceMode: "Physical", participationType: "Presenter",
     presentationType: "Regular Paper",
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [confirmationRef, setConfirmationRef] = useState("");
   const [registrationError, setRegistrationError] = useState("");
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: keyof RegistrationForm, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const validate = () => {
-    const e = {};
+  const validate = (): boolean => {
+    const e: FormErrors = {};
     if (step === 0) {
       if (!form.fullName.trim()) e.fullName = "Full name is required.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
@@ -54,7 +100,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
   const next = () => { if (validate()) setStep(s => Math.min(s + 1, 3)); };
   const back = () => setStep(s => Math.max(s - 1, 0));
 
-  const saveRegistrationRecord = (paymentStatus, reference = "", method = "paystack") => {
+  const saveRegistrationRecord = (paymentStatus: string, reference = "", method = "paystack") => {
     const saved = onRegister?.(form, {
       paymentStatus,
       paymentReference: reference,
@@ -65,7 +111,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     return saved;
   };
 
-  const finishRegistration = (paymentStatus, reference = "", method = "paystack") => {
+  const finishRegistration = (paymentStatus: string, reference = "", method = "paystack") => {
     saveRegistrationRecord(paymentStatus, reference, method);
     setPaymentConfirmed(paymentStatus === "Confirmed");
     setConfirmationRef(reference);
@@ -113,7 +159,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     }
   };
 
-  const field = (label, key, type = "text", required = true) => (
+  const field = (label: string, key: keyof RegistrationForm, type = "text", required = true) => (
     <div className="form-group">
       <label>{label}{required && <span className="req">*</span>}</label>
       <input

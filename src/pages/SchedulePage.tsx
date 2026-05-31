@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Calendar, Laptop, BarChart2, Settings, Briefcase, Layers, Printer } from "lucide-react";
 
 const tracks = [

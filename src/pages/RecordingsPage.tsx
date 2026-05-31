@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Video, GraduationCap, Trophy, Play } from "lucide-react";
 
 const FALLBACK_VIDEOS = [

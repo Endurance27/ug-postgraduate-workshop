@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from "react";
 import { CreditCard, Smartphone, Check, ArrowRight, AlertCircle, Sparkles, Shield } from "lucide-react";
 

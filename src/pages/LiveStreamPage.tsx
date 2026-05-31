@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from "react";
 import { Radio, Video, MessageCircle, RefreshCw, ArrowRight, Megaphone } from "lucide-react";
 

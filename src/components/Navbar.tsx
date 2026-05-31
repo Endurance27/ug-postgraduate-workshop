@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";

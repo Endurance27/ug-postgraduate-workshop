@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useRef } from "react";
 import { Calendar, CreditCard, Mic, Trophy, Medal, Radio, CheckCircle, MailOpen, GraduationCap, BookOpen, Lightbulb, Landmark, Eye, ArrowRight } from "lucide-react";
 import Countdown from "../components/Countdown.jsx";

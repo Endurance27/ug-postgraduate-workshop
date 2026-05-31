@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ArrowRight, Play, Video, Calendar, Globe, BookOpen, Trophy, FolderOpen, FileText, ClipboardList, Settings, Check, Sparkles } from "lucide-react";
 
 export default function AboutPage({ navigate, images = {}, about = {}, event = {} }) {

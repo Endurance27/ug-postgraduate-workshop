@@ -1,10 +1,25 @@
 import { useState, useEffect } from "react";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface TimeLeft {
+  d: number;
+  h: number;
+  m: number;
+  s: number;
+}
+
+interface BoxProps {
+  n: number;
+  label: string;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function Countdown() {
   const target = new Date("2026-08-27T08:00:00");
-  const calc = () => {
-    const diff = target - new Date();
-    if (diff <= 0) return { d:0, h:0, m:0, s:0 };
+
+  const calc = (): TimeLeft => {
+    const diff = target.getTime() - new Date().getTime();
+    if (diff <= 0) return { d: 0, h: 0, m: 0, s: 0 };
     return {
       d: Math.floor(diff / 86400000),
       h: Math.floor((diff % 86400000) / 3600000),
@@ -12,10 +27,15 @@ export default function Countdown() {
       s: Math.floor((diff % 60000) / 1000),
     };
   };
-  const [t, setT] = useState(calc());
-  useEffect(() => { const id = setInterval(() => setT(calc()), 1000); return () => clearInterval(id); }, []);
 
-  const Box = ({ n, label }) => (
+  const [t, setT] = useState<TimeLeft>(calc());
+
+  useEffect(() => {
+    const id = setInterval(() => setT(calc()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const Box = ({ n, label }: BoxProps) => (
     <div style={{ textAlign: "center" }}>
       <div style={{
         background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)",

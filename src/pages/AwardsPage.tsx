@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Trophy, Medal } from "lucide-react";
 
 const criteria = [

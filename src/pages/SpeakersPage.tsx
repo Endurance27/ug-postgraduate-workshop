@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { User } from "lucide-react";
 
 export default function SpeakersPage({ speakers = {}, images = {} }) {

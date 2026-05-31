@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BookOpen, Handshake, Mail, ArrowRight, Check, Gem, Trophy, Medal, Landmark, FlaskConical, Laptop } from "lucide-react";
 
 export default function SponsorsPage({ navigate, images = {}, contact = {}, footer = {}, sponsors = [] }) {

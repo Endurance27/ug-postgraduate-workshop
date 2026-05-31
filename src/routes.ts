@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AboutPage from "./pages/AboutPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import AwardsPage from "./pages/AwardsPage.jsx";

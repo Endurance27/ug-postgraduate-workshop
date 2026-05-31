@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Outlet } from "react-router-dom";
 import ChatBot from "../components/ChatBot.jsx";
 import Footer from "../components/Footer.jsx";

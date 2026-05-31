@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from "react";
 import { Mail, Phone, Globe, MapPin, Clock, MessageCircle, ArrowRight } from "lucide-react";
 

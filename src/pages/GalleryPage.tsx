@@ -100,7 +100,7 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
             columnGap: 16,
           }}
         >
-          {/* {PHOTOS.map((p, i) => (
+          {PHOTOS.map((p, i) => (
             <div
               key={i}
               onClick={() => setLightbox(i)}
@@ -164,7 +164,7 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
                 </div>
               </div>
             </div>
-          ))} */}
+          ))}
         </div>
       </div>
 

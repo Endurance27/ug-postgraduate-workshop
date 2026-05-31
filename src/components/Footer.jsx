@@ -43,10 +43,12 @@ export default function Footer({ footer = {} }) {
                 { key: "about",      label: "About"       },
                 { key: "schedule",   label: "Schedule"    },
                 { key: "speakers",   label: "Speakers"    },
+                { key: "awards",     label: "Awards"      },
                 { key: "stream",     label: "Livestream"  },
                 { key: "gallery",    label: "Gallery"     },
                 { key: "recordings", label: "Recordings"  },
                 { key: "sponsors",   label: "Sponsors"    },
+                { key: "support",    label: "Support"     },
                 { key: "contact",    label: "Contact"     },
                 { key: "register",   label: "Register Now"},
               ].map(({ key, label }) => (

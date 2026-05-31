@@ -38,17 +38,18 @@ interface FirebaseConfig {
   messagingSenderId: string;
   appId: string;
   measurementId?: string;
+  databaseURL?: string;
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const firebaseConfig: FirebaseConfig = {
-  apiKey: "AIzaSyAErAF_udUNbnc8wyMJibylino3ZuNBDPQ",
-  authDomain: "ug-postgrad-workshop-d6919.firebaseapp.com",
-  projectId: "ug-postgrad-workshop-d6919",
-  storageBucket: "ug-postgrad-workshop-d6919.firebasestorage.app",
-  messagingSenderId: "33431380873",
-  appId: "1:33431380873:web:46b1590188489e69463758",
-  measurementId: "G-T3H3K0X7FH",
+  apiKey: "AIzaSyDyjd30AFI5giahRMU62665BXAZWCDBTYw",
+  authDomain: "dcs-workshop-2026.firebaseapp.com",
+  projectId: "dcs-workshop-2026",
+  storageBucket: "dcs-workshop-2026.firebasestorage.app",
+  messagingSenderId: "56910798748",
+  appId: "1:56910798748:web:ba41e621f3fbb76790b259",
+  measurementId: "G-BGCT3W4PP6",
 };
 
 // ─── Initialize ───────────────────────────────────────────────────────────────

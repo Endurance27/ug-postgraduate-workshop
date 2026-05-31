@@ -213,6 +213,14 @@ const INIT_CONTENT = {
     { id: 2, name: "School of Physical & Mathematical Sciences", role: "Faculty Sponsor",        desc: "SPMS provides direct academic and logistical support for the workshop through its faculty committee, enabling the Department of Computer Science to host this landmark postgraduate event.",               tier: "gold",    logo: "🔬" },
     { id: 3, name: "Department of Computer Science",             role: "Organising Department",  desc: "The Department of Computer Science at UG is the primary organiser of the workshop, coordinating all academic, logistical, and publication activities for the three-day event.",                          tier: "primary", logo: "💻" },
   ],
+  payments: [
+    { id: 1, transactionId: "UGPGW2026-PAY-1715234567890", studentId: "10827641", name: "Kwame Asante",   email: "k.asante@ug.edu.gh",   programme: "MSc Computer Science",   amount: 100, method: "mobile_money", date: "2026-05-09T11:57:00", status: "Confirmed" },
+    { id: 2, transactionId: "UGPGW2026-PAY-1715134567890", studentId: "10834512", name: "Abena Mensah",   email: "a.mensah@ug.edu.gh",   programme: "MPhil Data Science",     amount: 100, method: "mobile_money", date: "2026-05-08T18:47:00", status: "Confirmed" },
+    { id: 3, transactionId: "UGPGW2026-PAY-1715034567890", studentId: "10819073", name: "Kofi Boateng",   email: "k.boateng@ug.edu.gh",  programme: "PhD Computer Science",   amount: 100, method: "card",         date: "2026-05-08T16:16:00", status: "Pending"   },
+    { id: 4, transactionId: "UGPGW2026-PAY-1714934567890", studentId: "10845209", name: "Ama Owusu",      email: "a.owusu@ug.edu.gh",    programme: "MSc IT for Business",    amount: 100, method: "mobile_money", date: "2026-05-08T15:28:00", status: "Confirmed" },
+    { id: 5, transactionId: "UGPGW2026-PAY-1714834567890", studentId: "10823187", name: "Yaw Darko",      email: "y.darko@ug.edu.gh",    programme: "MPhil Computer Science", amount: 100, method: "card",         date: "2026-05-07T10:30:00", status: "Confirmed" },
+    { id: 6, transactionId: "UGPGW2026-PAY-1714734567890", studentId: "10856394", name: "Efua Amponsah",  email: "e.amponsah@ug.edu.gh", programme: "MSc Data Science",       amount: 100, method: "mobile_money", date: "2026-05-07T09:15:00", status: "Pending"   },
+  ],
 };
 
 function mergeRemote(base, remote) {

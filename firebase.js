@@ -11,7 +11,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import {
   getStorage,
   ref as _ref,
@@ -47,7 +47,7 @@ try {
 } catch (e) {
   console.warn("Firestore init failed:", e.message);
 }
-export { _db as db, doc, getDoc, setDoc };
+export { _db as db, doc, getDoc, setDoc, collection, getDocs };
 
 // Storage — protected so a missing bucket can't crash the app
 let _storage = null;

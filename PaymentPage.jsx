@@ -16,7 +16,7 @@ const PAYMENT_METHODS = [
   },
 ];
 
-export default function PaymentPage({ navigate, event = {} }) {
+export default function PaymentPage({ navigate, event = {}, participants = [], onRegister }) {
   const fee = event.fee || 100;
 
   const [step, setStep] = useState("lookup"); // lookup | pay | done
@@ -26,6 +26,7 @@ export default function PaymentPage({ navigate, event = {} }) {
   const [method, setMethod] = useState("momo");
   const [paying, setPaying] = useState(false);
   const [payRef, setPayRef] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   const handleLookup = (e) => {
     e.preventDefault();
@@ -38,45 +39,77 @@ export default function PaymentPage({ navigate, event = {} }) {
       setLookupError("Please enter your Student ID.");
       return;
     }
-    // Simulate a found registration — in production, query Firestore
+    const email = lookup.email.trim().toLowerCase();
+    const studentId = lookup.studentId.trim().toLowerCase();
+    const match = participants.find(p =>
+      (p.email || "").trim().toLowerCase() === email &&
+      String(p.studentId || "").trim().toLowerCase() === studentId
+    );
+
+    if (!match) {
+      setLookupError("No registration found for those details. Please register first.");
+      return;
+    }
+
     setFoundRegistrant({
-      name: "Registered Participant",
-      email: lookup.email,
-      studentId: lookup.studentId,
-      programme: "Postgraduate Programme",
-      status: "Pending",
+      ...match,
+      name: match.name || match.fullName || "Registered Participant",
+      email: match.email,
+      studentId: match.studentId,
+      programme: match.programme || "Postgraduate Programme",
+      status: match.payment || "Pending",
     });
     setStep("pay");
   };
 
   const initPaystack = () => {
+    setPaymentError("");
+    const paystackKey = (event.paystackKey || "").trim();
+    if (!foundRegistrant) {
+      setPaymentError("Please verify your registration details first.");
+      return;
+    }
     if (typeof window.PaystackPop === "undefined") {
-      alert(
-        "Paystack not loaded. Add the Paystack script to your index.html:\n" +
-        "<script src='https://js.paystack.co/v1/inline.js'></script>"
-      );
+      setPaymentError("Paystack could not load. Please try again or contact the workshop team.");
+      return;
+    }
+    if (!paystackKey || paystackKey.includes("YOUR_PAYSTACK")) {
+      setPaymentError("Payment is not configured yet. Please contact the workshop team.");
       return;
     }
     setPaying(true);
-    const handler = window.PaystackPop.setup({
-      key: event.paystackKey || "pk_live_YOUR_PAYSTACK_PUBLIC_KEY",
-      email: foundRegistrant.email,
-      amount: fee * 100,
-      currency: "GHS",
-      ref: `UGPGW2026-PAY-${Date.now()}`,
-      channels: method === "momo" ? ["mobile_money"] : ["card"],
-      metadata: {
-        name: foundRegistrant.name,
-        studentId: foundRegistrant.studentId,
-      },
-      callback: (response) => {
-        setPaying(false);
-        setPayRef(response.reference);
-        setStep("done");
-      },
-      onClose: () => setPaying(false),
-    });
-    handler.openIframe();
+    try {
+      const paymentMethod = method === "momo" ? "mobile_money" : "card";
+      const handler = window.PaystackPop.setup({
+        key: paystackKey,
+        email: foundRegistrant.email,
+        amount: fee * 100,
+        currency: "GHS",
+        ref: `UGPGW2026-PAY-${Date.now()}`,
+        channels: method === "momo" ? ["mobile_money"] : ["card"],
+        metadata: {
+          name: foundRegistrant.name,
+          studentId: foundRegistrant.studentId,
+        },
+        callback: (response) => {
+          setPaying(false);
+          setPayRef(response.reference);
+          onRegister?.(foundRegistrant, {
+            paymentStatus: "Confirmed",
+            paymentReference: response.reference,
+            method: paymentMethod,
+            amount: fee,
+          });
+          setStep("done");
+        },
+        onClose: () => setPaying(false),
+      });
+      handler.openIframe();
+    } catch (error) {
+      console.error("Paystack setup failed:", error);
+      setPaying(false);
+      setPaymentError("Payment could not start. Please try again.");
+    }
   };
 
   /* ─── DONE ─── */
@@ -253,6 +286,11 @@ export default function PaymentPage({ navigate, event = {} }) {
                 <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#555", fontSize: 12, marginBottom: 20 }}>
                   <Shield size={13} /> Secured and processed by Paystack
                 </div>
+                {paymentError && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#c0392b", fontSize: 13, marginBottom: 16 }}>
+                    <AlertCircle size={14} /> {paymentError}
+                  </div>
+                )}
 
                 <button
                   className="btn-gold"

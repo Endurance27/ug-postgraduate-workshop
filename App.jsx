@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { db, doc, getDoc, setDoc } from "./firebase.js";
+import { auth, db, doc, getDoc, setDoc, collection, getDocs, onAuthStateChanged } from "./firebase.js";
 import HomePage from "./HomePage";
 import RegisterPage from "./RegisterPage";
 import SchedulePage from "./SchedulePage";
@@ -236,6 +236,40 @@ function mergeRemote(base, remote) {
   };
 }
 
+function normalizeEmail(email = "") {
+  return email.trim().toLowerCase();
+}
+
+function makeDocId(...parts) {
+  const id = parts
+    .filter(Boolean)
+    .map(part => String(part).trim())
+    .filter(Boolean)
+    .join("_")
+    .replace(/[^\w.-]/g, "_");
+  return id || String(Date.now());
+}
+
+function participantKey(item = {}) {
+  const email = normalizeEmail(item.email);
+  const studentId = String(item.studentId || "").trim().toLowerCase();
+  return email || studentId ? `${email}|${studentId}` : String(item.id || Date.now());
+}
+
+function paymentKey(item = {}) {
+  return String(item.transactionId || item.id || Date.now());
+}
+
+function mergeRecords(existing = [], incoming = [], getKey) {
+  const map = new Map();
+  existing.forEach(item => map.set(getKey(item), item));
+  incoming.forEach(item => {
+    const key = getKey(item);
+    map.set(key, { ...(map.get(key) || {}), ...item });
+  });
+  return Array.from(map.values());
+}
+
 export default function App() {
   const [page, setPage] = useState("home");
   const [registrant, setRegistrant] = useState(null);
@@ -257,12 +291,47 @@ export default function App() {
   useEffect(() => {
     if (!db || !doc || !getDoc) return;
     let alive = true;
+
+    const loadFirebaseRecords = () => {
+      if (!collection || !getDocs) return;
+      Promise.all([
+        getDocs(collection(db, "registrations")),
+        getDocs(collection(db, "payments")),
+      ])
+        .then(([registrationSnap, paymentSnap]) => {
+          if (!alive) return;
+          const firebaseParticipants = registrationSnap.docs.map(snap => ({
+            id: snap.data().id || snap.id,
+            ...snap.data(),
+          }));
+          const firebasePayments = paymentSnap.docs.map(snap => ({
+            id: snap.data().id || snap.id,
+            ...snap.data(),
+          }));
+          setSiteContent(c => ({
+            ...c,
+            participants: mergeRecords(c.participants || [], firebaseParticipants, participantKey),
+            payments: mergeRecords(c.payments || [], firebasePayments, paymentKey),
+          }));
+        })
+        .catch(() => {});
+    };
+
     getDoc(doc(db, "workshop", "siteContent"))
       .then(snap => {
         if (alive && snap.exists()) setSiteContent(c => mergeRemote(c, snap.data()));
       })
       .catch(() => {}); // rules not set yet or offline — silently keep localStorage data
-    return () => { alive = false; };
+
+    loadFirebaseRecords();
+    const unsubAuth = auth && onAuthStateChanged
+      ? onAuthStateChanged(auth, user => { if (user) loadFirebaseRecords(); })
+      : null;
+
+    return () => {
+      alive = false;
+      if (unsubAuth) unsubAuth();
+    };
   }, []);
 
   // 3. On every change: save to localStorage immediately + Firestore (debounced 800 ms)
@@ -292,6 +361,85 @@ export default function App() {
         : { ...c, [section]: value }
     ));
 
+  const saveRegistration = (registration, options = {}) => {
+    const now = new Date().toISOString();
+    const email = normalizeEmail(registration.email);
+    const studentId = String(registration.studentId || "").trim();
+    const fullName = (registration.fullName || registration.name || "").trim();
+    const paymentStatus = options.paymentStatus || registration.payment || "Pending";
+    const participantId = registration.id || makeDocId(studentId, email, now);
+    const participantRecord = {
+      id: participantId,
+      name: fullName || email,
+      fullName: fullName || email,
+      email,
+      phone: registration.phone || "",
+      studentId,
+      department: registration.department || "",
+      programme: registration.programme || "",
+      level: registration.level || "",
+      type: registration.participationType || registration.type || "Presenter",
+      participationType: registration.participationType || registration.type || "Presenter",
+      payment: paymentStatus,
+      mode: registration.attendanceMode || registration.mode || "Physical",
+      attendanceMode: registration.attendanceMode || registration.mode || "Physical",
+      presentationType: registration.presentationType || "",
+      registeredAt: registration.registeredAt || now,
+      updatedAt: now,
+    };
+
+    if (options.paymentReference) participantRecord.payRef = options.paymentReference;
+
+    const paymentRecord = options.paymentReference ? {
+      id: makeDocId(options.paymentReference),
+      transactionId: options.paymentReference,
+      studentId,
+      name: participantRecord.name,
+      email,
+      programme: participantRecord.programme,
+      amount: Number(options.amount || siteContent.event?.fee || 100),
+      method: options.method || "paystack",
+      date: now,
+      status: paymentStatus === "Confirmed" ? "Confirmed" : "Pending",
+    } : null;
+
+    setRegistrant({ ...participantRecord, payRef: options.paymentReference || "" });
+    setSiteContent(c => {
+      const participants = c.participants || [];
+      const existing = participants.find(p => participantKey(p) === participantKey(participantRecord));
+      const nextPaymentStatus = paymentStatus === "Confirmed" || existing?.payment !== "Confirmed"
+        ? paymentStatus
+        : existing.payment;
+      const nextParticipant = {
+        ...(existing || {}),
+        ...participantRecord,
+        id: existing?.id || participantRecord.id,
+        payment: nextPaymentStatus,
+        registeredAt: existing?.registeredAt || participantRecord.registeredAt,
+      };
+      const nextParticipants = existing
+        ? participants.map(p => participantKey(p) === participantKey(participantRecord) ? nextParticipant : p)
+        : [nextParticipant, ...participants];
+      const nextPayments = paymentRecord
+        ? mergeRecords(c.payments || [], [paymentRecord], paymentKey)
+        : c.payments || [];
+
+      return { ...c, participants: nextParticipants, payments: nextPayments };
+    });
+
+    if (db && doc && setDoc) {
+      const registrationDocId = makeDocId(studentId, email);
+      setDoc(doc(db, "registrations", registrationDocId), participantRecord, { merge: true })
+        .catch(e => console.warn("Registration save failed:", e.message));
+      if (paymentRecord) {
+        setDoc(doc(db, "payments", makeDocId(paymentRecord.transactionId)), paymentRecord, { merge: true })
+          .catch(e => console.warn("Payment save failed:", e.message));
+      }
+    }
+
+    return participantRecord;
+  };
+
 
   const isAdmin = page === "admin";
 
@@ -303,7 +451,7 @@ export default function App() {
 
       {page === "home"       && <HomePage navigate={navigate} event={siteContent.event} announcements={siteContent.announcements} feed={siteContent.feed} images={siteContent.images} home={siteContent.home} />}
       {page === "about"      && <AboutPage navigate={navigate} images={siteContent.images} about={siteContent.about} event={siteContent.event} />}
-      {page === "register"   && <RegisterPage navigate={navigate} setRegistrant={setRegistrant} event={siteContent.event} />}
+      {page === "register"   && <RegisterPage navigate={navigate} setRegistrant={setRegistrant} event={siteContent.event} onRegister={saveRegistration} />}
       {page === "schedule"   && <SchedulePage schedule={siteContent.schedule} images={siteContent.images} />}
       {page === "stream"     && <LiveStreamPage event={siteContent.event} navigate={navigate} stream={siteContent.stream} />}
       {page === "recordings" && <RecordingsPage recordings={siteContent.recordings} />}
@@ -313,7 +461,7 @@ export default function App() {
       {page === "gallery"    && <GalleryPage gallery={siteContent.gallery} />}
       {page === "sponsors"   && <SponsorsPage navigate={navigate} images={siteContent.images} contact={siteContent.contact} footer={siteContent.footer} sponsors={siteContent.sponsors} />}
       {page === "contact"    && <ContactPage contact={siteContent.contact} images={siteContent.images} />}
-      {page === "payment"    && <PaymentPage navigate={navigate} event={siteContent.event} />}
+      {page === "payment"    && <PaymentPage navigate={navigate} event={siteContent.event} participants={siteContent.participants} onRegister={saveRegistration} />}
       {isAdmin && (
         <AdminPage
           siteContent={siteContent}

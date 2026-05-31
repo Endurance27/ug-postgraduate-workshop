@@ -15,8 +15,114 @@ const PRESENTATION_TYPES = ["Poster Presentation", "Regular Paper", "Short Paper
 
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
-export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
+export default function RegisterPage({ navigate, setRegistrant, event = {}, onRegister }) {
   const fee = event.fee || 100;
+
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({
+    fullName: "", email: "", phone: "", studentId: "",
+    department: "", programme: "", level: "Master's",
+    attendanceMode: "Physical", participationType: "Presenter",
+    presentationType: "Regular Paper",
+  });
+  const [errors, setErrors] = useState({});
+  const [paying, setPaying] = useState(false);
+  const [done, setDone] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [confirmationRef, setConfirmationRef] = useState("");
+  const [registrationError, setRegistrationError] = useState("");
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const validate = () => {
+    const e = {};
+    if (step === 0) {
+      if (!form.fullName.trim()) e.fullName = "Full name is required.";
+      if (!form.email.includes("@")) e.email = "Valid email required.";
+      if (!form.phone.trim()) e.phone = "Phone number is required.";
+      if (!form.studentId.trim()) e.studentId = "Student ID is required.";
+    }
+    if (step === 1) {
+      if (!form.department.trim()) e.department = "Department is required.";
+      if (!form.programme) e.programme = "Programme is required.";
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const next = () => { if (validate()) setStep(s => Math.min(s + 1, 3)); };
+  const back = () => setStep(s => Math.max(s - 1, 0));
+
+  const saveRegistrationRecord = (paymentStatus, reference = "", method = "paystack") => {
+    const saved = onRegister?.(form, {
+      paymentStatus,
+      paymentReference: reference,
+      method,
+      amount: fee,
+    }) || { ...form, payment: paymentStatus, payRef: reference };
+    setRegistrant?.({ ...form, ...saved, payment: paymentStatus, payRef: reference });
+    return saved;
+  };
+
+  const finishRegistration = (paymentStatus, reference = "", method = "paystack") => {
+    saveRegistrationRecord(paymentStatus, reference, method);
+    setPaymentConfirmed(paymentStatus === "Confirmed");
+    setConfirmationRef(reference);
+    setDone(true);
+  };
+
+  const initPaystack = () => {
+    setRegistrationError("");
+    const paystackKey = (event.paystackKey || "").trim();
+
+    if (typeof window.PaystackPop === "undefined") {
+      finishRegistration("Pending");
+      return;
+    }
+
+    if (!paystackKey || paystackKey.includes("YOUR_PAYSTACK")) {
+      finishRegistration("Pending");
+      return;
+    }
+
+    saveRegistrationRecord("Pending");
+    setPaying(true);
+    try {
+      const handler = window.PaystackPop.setup({
+        key: paystackKey,
+        email: form.email,
+        amount: fee * 100,
+        currency: "GHS",
+        ref: `UGPGW2026-${Date.now()}`,
+        metadata: { name: form.fullName, studentId: form.studentId, programme: form.programme },
+        callback: (response) => {
+          setPaying(false);
+          finishRegistration("Confirmed", response.reference, "paystack");
+        },
+        onClose: () => {
+          setPaying(false);
+          setRegistrationError("Your registration has been saved. Payment was not completed yet.");
+        },
+      });
+      handler.openIframe();
+    } catch (error) {
+      console.error("Paystack setup failed:", error);
+      setPaying(false);
+      finishRegistration("Pending");
+    }
+  };
+
+  const field = (label, key, type = "text", required = true) => (
+    <div className="form-group">
+      <label>{label}{required && <span className="req">*</span>}</label>
+      <input
+        type={type} value={form[key]}
+        onChange={e => set(key, e.target.value)}
+        placeholder={`Enter your ${label.toLowerCase()}`}
+      />
+      {errors[key] && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors[key]}</p>}
+    </div>
+  );
 
   if (event.registrationOpen === false) return (
     <main>
@@ -43,75 +149,6 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
     </main>
   );
 
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
-    fullName: "", email: "", phone: "", studentId: "",
-    department: "", programme: "", level: "Master's",
-    attendanceMode: "Physical", participationType: "Presenter",
-    presentationType: "Regular Paper",
-  });
-  const [errors, setErrors] = useState({});
-  const [paying, setPaying] = useState(false);
-  const [done, setDone] = useState(false);
-
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const validate = () => {
-    const e = {};
-    if (step === 0) {
-      if (!form.fullName.trim()) e.fullName = "Full name is required.";
-      if (!form.email.includes("@")) e.email = "Valid email required.";
-      if (!form.phone.trim()) e.phone = "Phone number is required.";
-      if (!form.studentId.trim()) e.studentId = "Student ID is required.";
-    }
-    if (step === 1) {
-      if (!form.department.trim()) e.department = "Department is required.";
-      if (!form.programme) e.programme = "Programme is required.";
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const next = () => { if (validate()) setStep(s => Math.min(s + 1, 3)); };
-  const back = () => setStep(s => Math.max(s - 1, 0));
-
-  const initPaystack = () => {
-    if (typeof window.PaystackPop === "undefined") {
-      alert("Paystack not loaded. In production, add the Paystack script to your index.html:\n<script src='https://js.paystack.co/v1/inline.js'></script>");
-      return;
-    }
-    setPaying(true);
-    const handler = window.PaystackPop.setup({
-      key: event.paystackKey || "pk_live_YOUR_PAYSTACK_PUBLIC_KEY",
-      email: form.email,
-      amount: fee * 100,
-      currency: "GHS",
-      ref: `UGPGW2026-${Date.now()}`,
-      metadata: { name: form.fullName, studentId: form.studentId, programme: form.programme },
-      callback: (response) => {
-        setPaying(false);
-        setRegistrant({ ...form, payRef: response.reference });
-        setDone(true);
-      },
-      onClose: () => {
-        setPaying(false);
-      },
-    });
-    handler.openIframe();
-  };
-
-  const field = (label, key, type = "text", required = true) => (
-    <div className="form-group">
-      <label>{label}{required && <span className="req">*</span>}</label>
-      <input
-        type={type} value={form[key]}
-        onChange={e => set(key, e.target.value)}
-        placeholder={`Enter your ${label.toLowerCase()}`}
-      />
-      {errors[key] && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors[key]}</p>}
-    </div>
-  );
-
   if (done) return (
     <main>
       <div className="page-hero"><div className="container"><h1>Registration Complete!</h1></div></div>
@@ -120,13 +157,19 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
           <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Sparkles size={64} color="#C9A84C" /></div>
           <h2 style={{ marginBottom: 12 }}>You're registered, {form.fullName.split(" ")[0]}!</h2>
           <p style={{ color: "#555", marginBottom: 24, lineHeight: 1.7 }}>
-            Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete. A confirmation email has been sent to <strong>{form.email}</strong>.
+            {paymentConfirmed ? (
+              <>Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete.</>
+            ) : (
+              <>Your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> has been saved. Your payment is still pending.</>
+            )}
           </p>
           <div className="alert alert-success" style={{ textAlign: "left" }}>
-            <strong>Next step:</strong> Submit your paper or abstract using the Paper Submission page.
+            {paymentConfirmed && confirmationRef
+              ? <><strong>Payment reference:</strong> {confirmationRef}</>
+              : <><strong>Next step:</strong> Complete your workshop payment to confirm your place.</>}
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
-            <button className="btn-primary" onClick={() => navigate("submit")}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Submit Your Paper <ArrowRight size={14} /></span></button>
+            {!paymentConfirmed && <button className="btn-primary" onClick={() => navigate("payment")}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Pay Registration Fee <ArrowRight size={14} /></span></button>}
             <button className="btn-outline" onClick={() => navigate("home")}>Back to Home</button>
           </div>
         </div>
@@ -319,6 +362,11 @@ export default function RegisterPage({ navigate, setRegistrant, event = {} }) {
                 <div className="alert alert-info" style={{ marginBottom: 20 }}>
                   <strong>Payment via Paystack:</strong> You will be redirected to a secure Paystack checkout to complete payment by Mobile Money or debit/credit card.
                 </div>
+                {registrationError && (
+                  <div className="alert alert-info" style={{ marginBottom: 20 }}>
+                    {registrationError}
+                  </div>
+                )}
                 <button
                   className="btn-gold"
                   onClick={initPaystack}

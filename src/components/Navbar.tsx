@@ -1,11 +1,11 @@
-// @ts-nocheck
 import { useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { navRoutes } from "../routes.js";
 
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const links = navRoutes;
 
   return (

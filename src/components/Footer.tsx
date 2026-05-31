@@ -1,8 +1,21 @@
-// @ts-nocheck
 import { Link } from "react-router-dom";
 import { getRoutePath } from "../routes.js";
 
-export default function Footer({ footer = {} }) {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface FooterData {
+  tagline?: string;
+  dates?: string;
+  organizers?: string[];
+  sponsors?: string[];
+  publication?: string;
+}
+
+interface FooterProps {
+  footer?: FooterData;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function Footer({ footer = {} }: FooterProps) {
   const tagline     = footer.tagline     || "2nd Annual Postgraduate Students Workshop";
   const dates       = footer.dates       || "27–29 August 2026 · Hybrid Format";
   const organizers  = footer.organizers  || ["Department of Computer Science, UG", "Workshop Planning Committee"];

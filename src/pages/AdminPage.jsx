@@ -66,7 +66,7 @@ import {
   storageRef,
   uploadBytesResumable,
   getDownloadURL,
-} from "./firebase.js";
+} from "../firebase.js";
 
 // Upload a file to Firebase Storage and return the public download URL
 async function uploadToStorage(file) {

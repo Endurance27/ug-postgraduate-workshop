@@ -1,4 +1,7 @@
-export default function Footer({ navigate, footer = {} }) {
+import { Link } from "react-router-dom";
+import { getRoutePath } from "../routes.js";
+
+export default function Footer({ footer = {} }) {
   const tagline     = footer.tagline     || "2nd Annual Postgraduate Students Workshop";
   const dates       = footer.dates       || "27–29 August 2026 · Hybrid Format";
   const organizers  = footer.organizers  || ["Department of Computer Science, UG", "Workshop Planning Committee"];
@@ -47,11 +50,11 @@ export default function Footer({ navigate, footer = {} }) {
                 { key: "contact",    label: "Contact"     },
                 { key: "register",   label: "Register Now"},
               ].map(({ key, label }) => (
-                <button key={key} onClick={() => navigate(key)} style={{
+                <Link key={key} to={getRoutePath(key)} style={{
                   display: "block", background: "none", border: "none",
                   color: "#ccc", fontSize: 13, padding: "4px 0",
                   cursor: "pointer", textAlign: "left",
-                }}>{label}</button>
+                }}>{label}</Link>
               ))}
             </div>
 
@@ -80,10 +83,10 @@ export default function Footer({ navigate, footer = {} }) {
           <p style={{ fontSize: 14.5, color: "#aaa", marginLeft: 0 }}>© 2026 University of Ghana · Department of Computer Science · All rights reserved.</p>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <p style={{ fontSize: 14.5, color: "#aaa" }}>Registration Fee: GHS 100 · Hybrid Event · 27–29 Aug 2026</p>
-            <button onClick={() => navigate("admin")} style={{
+            <Link to={getRoutePath("admin")} style={{
               background: "none", border: "none", color: "#aaa", fontSize: 14.5,
               cursor: "pointer", padding: 0, textDecoration: "underline",
-            }}>Admin</button>
+            }}>Admin</Link>
           </div>
         </div>
       </div>

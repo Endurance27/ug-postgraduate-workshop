@@ -1,22 +1,16 @@
 import { useState, useEffect, useRef } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { auth, db, doc, getDoc, setDoc, collection, getDocs, onAuthStateChanged } from "./firebase.js";
-import HomePage from "./HomePage";
-import RegisterPage from "./RegisterPage";
-import SchedulePage from "./SchedulePage";
-import AwardsPage from "./AwardsPage";
-import AdminPage from "./AdminPage";
-import AboutPage from "./AboutPage";
-import LiveStreamPage from "./LiveStreamPage";
-import RecordingsPage from "./RecordingsPage";
-import SupportPage from "./SupportPage";
-import SpeakersPage from "./SpeakersPage";
-import GalleryPage from "./GalleryPage";
-import SponsorsPage from "./SponsorsPage";
-import ContactPage from "./ContactPage";
-import PaymentPage from "./PaymentPage";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
-import ChatBot from "./ChatBot";
+import AdminLayout from "./layouts/AdminLayout.jsx";
+import MainLayout from "./layouts/MainLayout.jsx";
+import {
+  adminRoutes,
+  getChildRoutePath,
+  getRoutePath,
+  getRouteProps,
+  mainRoutes,
+  routeMap,
+} from "./routes.js";
 import "./index.css";
 
 function stripBase64(obj) {
@@ -271,8 +265,9 @@ function mergeRecords(existing = [], incoming = [], getKey) {
 }
 
 export default function App() {
-  const [page, setPage] = useState("home");
-  const [registrant, setRegistrant] = useState(null);
+  const routerNavigate = useNavigate();
+  const location = useLocation();
+  const [, setRegistrant] = useState(null);
   const saveTimer = useRef(null);
 
   // 1. Initialise from localStorage instantly (fast, works offline)
@@ -353,7 +348,14 @@ export default function App() {
   }, [siteContent]);
 
 
-  const navigate = (p) => { setPage(p); window.scrollTo(0, 0); };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  const navigate = (routeKeyOrPath) => {
+    routerNavigate(getRoutePath(routeKeyOrPath));
+  };
+
   const updateContent = (section, value) =>
     setSiteContent(c => (
       section && typeof section === "object"
@@ -441,58 +443,51 @@ export default function App() {
   };
 
 
-  const isAdmin = page === "admin";
+  const renderPage = (route) => {
+    const Page = route.component;
+    return (
+      <Page
+        {...getRouteProps(route.key, {
+          siteContent,
+          navigate,
+          setRegistrant,
+          saveRegistration,
+          updateContent,
+        })}
+      />
+    );
+  };
 
   return (
-    <div className="app">
+    <Routes>
+      <Route
+        element={
+          <MainLayout
+            footer={siteContent.footer}
+          />
+        }
+      >
+        {mainRoutes.map((route) => (
+          <Route
+            key={route.key}
+            index={route.index}
+            path={getChildRoutePath(route)}
+            element={renderPage(route)}
+          />
+        ))}
+      </Route>
 
-      {/* Main Navbar — hidden in admin so no accidental navigation */}
-      {!isAdmin && <Navbar page={page} navigate={navigate} registrant={registrant} />}
+      <Route element={<AdminLayout />}>
+        {adminRoutes.map((route) => (
+          <Route
+            key={route.key}
+            path={getChildRoutePath(route)}
+            element={renderPage(route)}
+          />
+        ))}
+      </Route>
 
-      {page === "home"       && <HomePage navigate={navigate} event={siteContent.event} announcements={siteContent.announcements} feed={siteContent.feed} images={siteContent.images} home={siteContent.home} />}
-      {page === "about"      && <AboutPage navigate={navigate} images={siteContent.images} about={siteContent.about} event={siteContent.event} />}
-      {page === "register"   && <RegisterPage navigate={navigate} setRegistrant={setRegistrant} event={siteContent.event} onRegister={saveRegistration} />}
-      {page === "schedule"   && <SchedulePage schedule={siteContent.schedule} images={siteContent.images} />}
-      {page === "stream"     && <LiveStreamPage event={siteContent.event} navigate={navigate} stream={siteContent.stream} />}
-      {page === "recordings" && <RecordingsPage recordings={siteContent.recordings} />}
-      {page === "awards"     && <AwardsPage awards={siteContent.awards} pastWinners={siteContent.pastWinners} event={siteContent.event} />}
-      {page === "speakers"   && <SpeakersPage speakers={siteContent.speakers} images={siteContent.images} />}
-      {page === "support"    && <SupportPage contact={siteContent.contact} />}
-      {page === "gallery"    && <GalleryPage gallery={siteContent.gallery} />}
-      {page === "sponsors"   && <SponsorsPage navigate={navigate} images={siteContent.images} contact={siteContent.contact} footer={siteContent.footer} sponsors={siteContent.sponsors} />}
-      {page === "contact"    && <ContactPage contact={siteContent.contact} images={siteContent.images} />}
-      {page === "payment"    && <PaymentPage navigate={navigate} event={siteContent.event} participants={siteContent.participants} onRegister={saveRegistration} />}
-      {isAdmin && (
-        <AdminPage
-          siteContent={siteContent}
-          updateContent={updateContent}
-          navigate={navigate}
-        />
-      )}
-
-      {/* Main Footer — hidden in admin */}
-      {!isAdmin && <Footer navigate={navigate} footer={siteContent.footer} />}
-
-      {/* Floating action buttons — hidden in admin */}
-      {!isAdmin && (
-        <>
-          <ChatBot />
-          <a href="https://wa.me/233536909471?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
-            target="_blank" rel="noreferrer"
-            title="Chat on WhatsApp"
-            style={{
-              position: "fixed", bottom: 28, right: 28, zIndex: 999,
-              width: 56, height: 56, borderRadius: "50%",
-              background: "#25D366", color: "#fff",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 28, boxShadow: "0 4px 20px rgba(37,211,102,0.45)",
-              textDecoration: "none", transition: "transform 0.2s, box-shadow 0.2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-          >💬</a>
-        </>
-      )}
-    </div>
+      <Route path="*" element={<Navigate to={routeMap.home.path} replace />} />
+    </Routes>
   );
 }

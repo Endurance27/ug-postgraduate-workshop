@@ -1,10 +1,23 @@
-// @ts-nocheck
 import { Outlet } from "react-router-dom";
 import ChatBot from "../components/ChatBot.jsx";
 import Footer from "../components/Footer.jsx";
 import Navbar from "../components/Navbar.jsx";
 
-export default function MainLayout({ footer }) {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface FooterData {
+  tagline?: string;
+  dates?: string;
+  organizers?: string[];
+  sponsors?: string[];
+  publication?: string;
+}
+
+interface MainLayoutProps {
+  footer?: FooterData;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function MainLayout({ footer }: MainLayoutProps) {
   return (
     <div className="app">
       <Navbar />

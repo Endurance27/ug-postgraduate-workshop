@@ -81,44 +81,30 @@ export function storageErrorMsg(error) {
 
 export function ToggleRow({ label, desc, value, onChange }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "12px 0",
-        borderBottom: "1px solid #f0f0f0",
-      }}
-    >
+    <div className="flex justify-between items-center py-3 border-b border-[#f2f2f2] last:border-b-0">
       <div>
-        <div style={{ fontSize: 14, fontWeight: 500 }}>{label}</div>
-        <div style={{ fontSize: 12, color: "#888" }}>{desc}</div>
+        <div className="text-[14px] font-medium text-[#1a1a1a]">{label}</div>
+        {desc && <div className="text-[12px] text-[#999] mt-[1px]">{desc}</div>}
       </div>
       <button
         onClick={() => onChange(!value)}
+        aria-pressed={value}
+        className="relative shrink-0 cursor-pointer border-none p-0 transition-colors duration-200"
         style={{
-          width: 44,
-          height: 24,
+          width: 42,
+          height: 23,
           borderRadius: 12,
-          border: "none",
-          cursor: "pointer",
-          background: value ? "#1B6B3A" : "#ccc",
-          position: "relative",
-          transition: "background 0.2s",
-          flexShrink: 0,
+          background: value ? "#1B6B3A" : "#d0d5dd",
         }}
       >
         <div
+          className="absolute top-[2.5px] rounded-full bg-white"
           style={{
             width: 18,
             height: 18,
-            borderRadius: "50%",
-            background: "#fff",
-            position: "absolute",
-            top: 3,
-            left: value ? 23 : 3,
-            transition: "left 0.2s",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+            left: value ? 22 : 3,
+            transition: "left 0.18s ease",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.22)",
           }}
         />
       </button>

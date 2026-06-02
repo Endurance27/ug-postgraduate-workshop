@@ -675,108 +675,157 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
   const { event } = siteContent;
 
+  // Derive current section label + icon for breadcrumb
+  const allNavItems = [...SIDEBAR_TOOLS, ...SIDEBAR_PAGES];
+  const currentNavItem = allNavItems.find(s => s.key === activeSection);
+  const SectionIcon = currentNavItem?.icon ?? LayoutDashboard;
+  const sectionLabel = currentNavItem?.label ?? "Dashboard";
+
+  // User display
+  const userEmail = fireUser?.email ?? "";
+  const userHandle = userEmail.split("@")[0];
+  const userInitial = userEmail.charAt(0).toUpperCase() || "A";
+
   return (
     <AdminContext.Provider value={{ siteContent, updateContent, navigate }}>
     <div className="flex flex-col min-h-screen bg-ug-admin-bg">
-      {/* ── ADMIN TOP BAR ────────────────────────────────────────── */}
-      <div className="bg-[#0A1A35] border-b border-[rgba(201,168,76,0.25)] px-6 py-[10px] flex justify-between items-center shrink-0 z-10">
-        <div className="flex items-center gap-3.5">
-          <span className="text-ug-gold font-bold text-[13px] tracking-[0.08em] uppercase">
-            DCS Admin Console
-          </span>
-          <span className="text-white/25 text-xs">|</span>
-          <span className="text-white/45 text-[13px]">
+
+      {/* ── TOP BAR ─────────────────────────────────────────────── */}
+      <div className="bg-[#07152A] border-b border-[rgba(201,168,76,0.2)] px-5 h-[50px] flex justify-between items-center shrink-0 z-10">
+        {/* Left: brand */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-[5px] bg-ug-gold flex items-center justify-center">
+              <Shield size={13} color="#0A1A35" />
+            </div>
+            <span className="text-white font-bold text-[13px] tracking-[0.03em]">
+              DCS Admin Console
+            </span>
+          </div>
+          <span className="text-white/20 text-[10px]">|</span>
+          <span className="text-white/40 text-[12px] hidden sm:block">
             {event.edition}
           </span>
         </div>
-        <div className="flex items-center gap-2.5">
+
+        {/* Right: user + website link */}
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 bg-white/[0.06] rounded-lg px-3 py-1.5">
+            <div className="w-5 h-5 rounded-full bg-ug-gold/80 flex items-center justify-center text-[10px] font-bold text-ug-navy shrink-0">
+              {userInitial}
+            </div>
+            <span className="text-white/60 text-[12px] max-w-[120px] truncate">{userHandle}</span>
+          </div>
           <button
             onClick={() => navigate && navigate("home")}
-            className="bg-ug-gold text-ug-navy border-none rounded-lg px-[18px] py-[7px] text-[13px] font-bold cursor-pointer"
+            className="bg-ug-gold text-ug-navy border-none rounded-lg px-4 py-[6px] text-[12px] font-bold cursor-pointer hover:bg-ug-gold-dark transition-colors duration-150"
           >
             <span className="inline-flex items-center gap-1.5">
-              <ArrowLeft size={14} /> View Website
+              <ArrowLeft size={13} /> Website
             </span>
           </button>
         </div>
       </div>
 
       {/* ── SIDEBAR + CONTENT ────────────────────────────────────── */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
+
         {/* ── SIDEBAR ──────────────────────────────────────────────── */}
-        <aside className="w-[220px] bg-ug-navy flex flex-col shrink-0">
-          <div className="px-5 pt-6 pb-4">
-            <div className="text-[11px] text-white/40 tracking-[0.1em] uppercase mb-1">
-              Console
-            </div>
-            <div className="text-sm font-semibold text-ug-gold">
-              DCS Workshop Admin
-            </div>
+        <aside
+          className="w-[232px] bg-ug-navy flex flex-col shrink-0 overflow-y-auto"
+          style={{ boxShadow: "2px 0 12px rgba(0,0,0,0.18)" }}
+        >
+          {/* Workspace header */}
+          <div className="px-4 pt-5 pb-3 border-b border-white/[0.07]">
+            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase mb-0.5">Workspace</div>
+            <div className="text-[13px] font-semibold text-white/90 truncate">DCS Workshop 2026</div>
           </div>
 
-          <nav className="flex-1 px-3 py-2 overflow-y-auto">
-            <div className="text-[10px] text-white/30 tracking-[0.1em] uppercase px-1 pt-1.5 pb-1 mb-0.5">
-              Pages
+          {/* Nav */}
+          <nav className="flex-1 px-2.5 py-3">
+
+            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5 pt-0.5">
+              Site Pages
             </div>
-            {SIDEBAR_PAGES.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => adminNav('/admin/' + s.key)}
-                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-[9px] mb-[3px] text-[13px] cursor-pointer text-left transition-all duration-150 border${
-                  activeSection === s.key
-                    ? " bg-[rgba(201,168,76,0.18)] border-[rgba(201,168,76,0.3)] text-ug-gold font-semibold"
-                    : " bg-transparent border-transparent text-white/65 font-normal"
-                }`}
-              >
-                <s.icon size={15} />
-                {s.label}
-              </button>
-            ))}
-            <div className="h-px bg-white/10 my-2 mx-1" />
-            <div className="text-[10px] text-white/30 tracking-[0.1em] uppercase px-1 py-1 mb-0.5">
+            {SIDEBAR_PAGES.map((s) => {
+              const active = activeSection === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => adminNav('/admin/' + s.key)}
+                  style={{
+                    borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
+                    paddingLeft: active ? 10 : 12,
+                  }}
+                  className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
+                    active
+                      ? " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
+                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
+                  }`}
+                >
+                  <s.icon size={14} className="shrink-0" />
+                  {s.label}
+                </button>
+              );
+            })}
+
+            <div className="h-px bg-white/[0.08] my-2.5 mx-1" />
+
+            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5">
               Admin Tools
             </div>
-            {SIDEBAR_TOOLS.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => adminNav('/admin/' + s.key)}
-                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-[9px] mb-[3px] text-[13px] cursor-pointer text-left transition-all duration-150 border${
-                  activeSection === s.key
-                    ? " bg-[rgba(201,168,76,0.18)] border-[rgba(201,168,76,0.3)] text-ug-gold font-semibold"
-                    : " bg-transparent border-transparent text-white/65 font-normal"
-                }`}
-              >
-                <s.icon size={15} />
-                {s.label}
-              </button>
-            ))}
+            {SIDEBAR_TOOLS.map((s) => {
+              const active = activeSection === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => adminNav('/admin/' + s.key)}
+                  style={{
+                    borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
+                    paddingLeft: active ? 10 : 12,
+                  }}
+                  className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
+                    active
+                      ? " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
+                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
+                  }`}
+                >
+                  <s.icon size={14} className="shrink-0" />
+                  {s.label}
+                </button>
+              );
+            })}
           </nav>
 
-          <div className="px-3 py-4">
+          {/* Bottom: status + user + sign out */}
+          <div className="px-2.5 py-3 border-t border-white/[0.07] space-y-2">
+            {/* Registration status pill */}
             <div
-              className={`rounded-lg px-3 py-2.5 mb-2${
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]${
                 event.registrationOpen
-                  ? " bg-[rgba(50,180,100,0.15)]"
-                  : " bg-[rgba(220,50,50,0.15)]"
+                  ? " bg-[rgba(50,180,100,0.12)] text-[#5dbb7a]"
+                  : " bg-[rgba(220,50,50,0.12)] text-[#f07070]"
               }`}
             >
-              <div className="text-[11px] text-white/50">
-                Registration
+              <span className="text-[8px] leading-none">●</span>
+              <span className="font-medium">Registration {event.registrationOpen ? "Open" : "Closed"}</span>
+            </div>
+
+            {/* User row */}
+            <div className="flex items-center gap-2.5 px-2 py-1.5">
+              <div className="w-7 h-7 rounded-full bg-ug-gold/20 border border-ug-gold/30 flex items-center justify-center text-[11px] font-bold text-ug-gold shrink-0">
+                {userInitial}
               </div>
-              <div
-                className={`text-[13px] font-semibold${
-                  event.registrationOpen ? " text-[#5dbb7a]" : " text-[#f07070]"
-                }`}
-              >
-                {event.registrationOpen ? "● Open" : "● Closed"}
+              <div className="flex-1 min-w-0">
+                <div className="text-[12px] font-medium text-white/80 truncate">{userHandle}</div>
+                <div className="text-[10px] text-white/35">Administrator</div>
               </div>
             </div>
+
+            {/* Sign out */}
             <button
-              onClick={() => {
-                signOut(auth);
-                navigate && navigate("home");
-              }}
-              className="w-full bg-white/[0.07] text-white/60 border border-white/[0.12] rounded-lg py-2 text-[13px] cursor-pointer"
+              onClick={() => { signOut(auth); navigate && navigate("home"); }}
+              className="w-full bg-white/[0.06] hover:bg-white/[0.1] text-white/50 hover:text-white/75 border border-white/[0.1] rounded-lg py-2 text-[12px] cursor-pointer transition-all duration-150"
             >
               Sign Out
             </button>
@@ -784,11 +833,22 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
         </aside>
 
         {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-        <div className="flex-1 px-9 py-8 overflow-y-auto">
-          <Outlet />
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          {/* Breadcrumb bar */}
+          <div className="bg-white border-b border-[#ebebef] px-8 py-2.5 flex items-center gap-1.5 text-[12px] shrink-0">
+            <SectionIcon size={13} style={{ color: "#aaa", flexShrink: 0 }} />
+            <span className="text-[#bbb]">Admin</span>
+            <span className="text-[#ddd] mx-0.5">/</span>
+            <span className="text-[#555] font-semibold">{sectionLabel}</span>
+          </div>
+
+          {/* Panel content */}
+          <div className="flex-1 px-8 py-7">
+            <Outlet />
+          </div>
         </div>
+
       </div>
-      {/* end sidebar+content flex row */}
     </div>
     </AdminContext.Provider>
   );

@@ -25,7 +25,10 @@ export const uid = () => ++_nextId;
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
-export async function uploadToStorage(file) {
+export async function uploadToStorage(
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<string> {
   if (!storage || !storageRef || !uploadBytesResumable || !getDownloadURL) {
     throw new Error(
       "Firebase Storage is not configured. Enable it in the Firebase console and set security rules.",
@@ -34,8 +37,8 @@ export async function uploadToStorage(file) {
   if (!auth.currentUser) {
     throw new Error("Please sign in before uploading images.");
   }
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Please choose an image file.");
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type.toLowerCase())) {
+    throw new Error("Please choose a JPG, PNG, WebP, or GIF image file.");
   }
   if (file.size > 10 * 1024 * 1024) {
     throw new Error("Please choose an image smaller than 10 MB.");
@@ -45,7 +48,15 @@ export async function uploadToStorage(file) {
   const ref = storageRef(storage, path);
   const task = uploadBytesResumable(ref, file);
   await new Promise<void>((resolve, reject) =>
-    task.on("state_changed", null, reject, () => resolve()),
+    task.on(
+      "state_changed",
+      (snap) => {
+        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        onProgress?.(pct);
+      },
+      reject,
+      () => resolve(),
+    ),
   );
   return getDownloadURL(task.snapshot.ref);
 }
@@ -120,19 +131,25 @@ export function ToggleRow({ label, desc, value, onChange }) {
 export function ImageUploadField({ value, onChange, label, placeholder = "" }) {
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const isBase64 = value && value.startsWith("data:");
 
   const handleFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = "";
+    setUploadError(null);
+    setProgress(0);
     setUploading(true);
     try {
-      const url = await uploadToStorage(file);
+      const url = await uploadToStorage(file, (pct) => setProgress(pct));
       onChange(url);
+      setProgress(0);
     } catch (err) {
       console.error("Storage upload failed:", err);
-      alert(storageErrorMsg(err));
+      setUploadError(storageErrorMsg(err));
+      setProgress(0);
     } finally {
       setUploading(false);
     }
@@ -221,16 +238,26 @@ export function ImageUploadField({ value, onChange, label, placeholder = "" }) {
             <span
               style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
             >
-              <Upload size={13} /> {uploading ? "Uploading…" : "Upload Image"}
+              <Upload size={13} /> {uploading ? `Uploading… ${progress}%` : "Upload Image"}
             </span>
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             style={{ display: "none" }}
             onChange={handleFile}
           />
+          {uploading && progress > 0 && (
+            <div style={{ marginTop: 6, height: 6, background: "#e0e7f0", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: progress + "%", background: "#1B3A6B", borderRadius: 3, transition: "width 0.2s" }} />
+            </div>
+          )}
+          {uploadError && (
+            <div style={{ marginTop: 6, fontSize: 12, color: "#c0392b", padding: "4px 8px", background: "#fdecea", borderRadius: 5 }}>
+              {uploadError}
+            </div>
+          )}
         </div>
       </div>
     </div>

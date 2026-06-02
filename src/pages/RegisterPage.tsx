@@ -318,7 +318,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                 <h3 style={{ marginBottom: 24 }}>Personal Details</h3>
                 <div className="form-row">
                   {field("Surname", "surname")}
-                  {field("Other Names", "otherNames")}
+                  {field("Othername(s)", "otherNames")}
                 </div>
                 <div className="form-group">
                   <label>Gender<span className="req">*</span></label>

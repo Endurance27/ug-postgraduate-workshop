@@ -5,6 +5,7 @@ import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import {
   adminRoutes,
+  adminChildRoutes,
   getChildRoutePath,
   getRoutePath,
   getRouteProps,
@@ -547,13 +548,18 @@ export default function App() {
       </Route>
 
       <Route element={<AdminLayout />}>
-        {adminRoutes.map((route) => (
-          <Route
-            key={route.key}
-            path={getChildRoutePath(route)}
-            element={renderPage(route)}
-          />
-        ))}
+        <Route
+          path="admin/*"
+          element={renderPage(adminRoutes[0])}
+        >
+          <Route index element={<Navigate to="overview" replace />} />
+          {adminChildRoutes.map((child) => {
+            const Component = child.component;
+            return (
+              <Route key={child.key} path={child.path} element={<Component />} />
+            );
+          })}
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to={routeMap.home.path} replace />} />

@@ -75,7 +75,7 @@ export const routes: Route[] = [
     showInNav: true,
     gold: true,
   },
-  { key: "admin", path: "/admin", label: "Admin", component: AdminPage, layout: "admin" },
+  { key: "admin", path: "/admin/*", label: "Admin", component: AdminPage, layout: "admin" },
 ];
 
 export const navRoutes = routes.filter((route) => route.showInNav);
@@ -104,6 +104,60 @@ export function getRouteByPathname(pathname: string): Route {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
   return routes.find((route) => route.path === normalizedPath) || routeMap.home;
 }
+
+// ─── Admin child routes ───────────────────────────────────────────────────────
+import OverviewRoute from "./pages/admin/OverviewRoute.jsx";
+import HomeRoute from "./pages/admin/HomeRoute.jsx";
+import AboutRoute from "./pages/admin/AboutRoute.jsx";
+import ScheduleRoute from "./pages/admin/ScheduleRoute.jsx";
+import StreamRoute from "./pages/admin/StreamRoute.jsx";
+import SpeakersRoute from "./pages/admin/SpeakersRoute.jsx";
+import AwardsRoute from "./pages/admin/AwardsRoute.jsx";
+import SponsorsRoute from "./pages/admin/SponsorsRoute.jsx";
+import ContactRoute from "./pages/admin/ContactRoute.jsx";
+import RegisterRoute from "./pages/admin/RegisterRoute.jsx";
+import GalleryRoute from "./pages/admin/GalleryRoute.jsx";
+import RecordingsRoute from "./pages/admin/RecordingsRoute.jsx";
+import SupportRoute from "./pages/admin/SupportRoute.jsx";
+import ParticipantsRoute from "./pages/admin/ParticipantsRoute.jsx";
+import PaymentsRoute from "./pages/admin/PaymentsRoute.jsx";
+import SubmissionsRoute from "./pages/admin/SubmissionsRoute.jsx";
+import AnnouncementsRoute from "./pages/admin/AnnouncementsRoute.jsx";
+import FeedRoute from "./pages/admin/FeedRoute.jsx";
+import ImagesRoute from "./pages/admin/ImagesRoute.jsx";
+import FooterRoute from "./pages/admin/FooterRoute.jsx";
+import SecurityRoute from "./pages/admin/SecurityRoute.jsx";
+
+export interface AdminChildRoute {
+  key: string;
+  path: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentType<any>;
+}
+
+export const adminChildRoutes: AdminChildRoute[] = [
+  { key: "overview",      path: "overview",      component: OverviewRoute },
+  { key: "home",          path: "home",          component: HomeRoute },
+  { key: "about",         path: "about",         component: AboutRoute },
+  { key: "schedule",      path: "schedule",      component: ScheduleRoute },
+  { key: "stream",        path: "stream",        component: StreamRoute },
+  { key: "speakers",      path: "speakers",      component: SpeakersRoute },
+  { key: "awards",        path: "awards",        component: AwardsRoute },
+  { key: "sponsors",      path: "sponsors",      component: SponsorsRoute },
+  { key: "contact",       path: "contact",       component: ContactRoute },
+  { key: "register",      path: "register",      component: RegisterRoute },
+  { key: "gallery",       path: "gallery",       component: GalleryRoute },
+  { key: "recordings",    path: "recordings",    component: RecordingsRoute },
+  { key: "support",       path: "support",       component: SupportRoute },
+  { key: "participants",  path: "participants",  component: ParticipantsRoute },
+  { key: "payments",      path: "payments",      component: PaymentsRoute },
+  { key: "submissions",   path: "submissions",   component: SubmissionsRoute },
+  { key: "announcements", path: "announcements", component: AnnouncementsRoute },
+  { key: "feed",          path: "feed",          component: FeedRoute },
+  { key: "images",        path: "images",        component: ImagesRoute },
+  { key: "footer",        path: "footer",        component: FooterRoute },
+  { key: "security",      path: "security",      component: SecurityRoute },
+];
 
 export function getRouteProps(routeKey: string, context: RouteContext): Record<string, unknown> {
   const {

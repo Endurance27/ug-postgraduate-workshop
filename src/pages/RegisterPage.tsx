@@ -273,7 +273,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
         </div>
       </section>
 
-      <div className="container section">
+      <div className="container section" style={{ minHeight: "60vh" }}>
         <div className="max-w-[680px] mx-auto">
           {/* STEPPER */}
           <div className="flex gap-0 mb-10 bg-ug-surface rounded-xl p-1 border border-[#eee]">

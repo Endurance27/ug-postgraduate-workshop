@@ -46,48 +46,22 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
   return (
     <main>
       {/* HERO */}
-      <section
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "linear-gradient(135deg, #0F2347, #1B3A6B)",
-          color: "#fff",
-          padding: "72px 0 56px",
-        }}
-      >
+      <section className="relative overflow-hidden bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: "url('/images/collaboration-networking.jpeg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.2,
-          }}
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{ backgroundImage: "url('/images/collaboration-networking.jpeg')" }}
         />
-        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+        <div className="container relative z-10">
           <span
-            className="badge"
-            style={{
-              background: "rgba(201,168,76,0.25)",
-              color: "#C9A84C",
-              marginBottom: 14,
-              display: "inline-block",
-            }}
+            className="badge inline-block mb-[14px]"
+            style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}
           >
             Maiden Workshop · 2025
           </span>
-          <h1
-            style={{
-              color: "#fff",
-              fontFamily: "Playfair Display, serif",
-              fontSize: "clamp(2rem, 4.5vw, 3rem)",
-              marginBottom: 12,
-            }}
-          >
+          <h1 className="text-white font-serif text-[clamp(2rem,4.5vw,3rem)] mb-3">
             Photo Gallery
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 16 }}>
+          <p className="text-white/75 text-base">
             Moments from the 1st DCS Postgraduate Workshop
           </p>
         </div>
@@ -104,61 +78,25 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
             <div
               key={i}
               onClick={() => setLightbox(i)}
-              style={{
-                breakInside: "avoid",
-                marginBottom: 16,
-                borderRadius: 12,
-                overflow: "hidden",
-                cursor: "zoom-in",
-                position: "relative",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.02)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
+              className="break-inside-avoid mb-4 rounded-xl overflow-hidden cursor-zoom-in relative transition-transform duration-200 hover:scale-[1.02]"
             >
               <img
                 src={p.src}
                 alt={p.caption}
-                style={{ width: "100%", display: "block", borderRadius: 12 }}
+                className="w-full block rounded-xl"
               />
               <div
+                className="absolute inset-0 rounded-xl flex items-end p-[14px_16px] opacity-0 hover:opacity-100 transition-opacity duration-200"
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 12,
                   background:
                     "linear-gradient(transparent 55%, rgba(15,35,71,0.82))",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  padding: "14px 16px",
-                  opacity: 0,
-                  transition: "opacity 0.2s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}
               >
                 <div>
-                  <p
-                    style={{
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      margin: 0,
-                    }}
-                  >
+                  <p className="text-white text-[13px] font-semibold m-0">
                     {p.caption}
                   </p>
-                  <p
-                    style={{
-                      color: "rgba(255,255,255,0.65)",
-                      fontSize: 11,
-                      margin: 0,
-                    }}
-                  >
+                  <p className="text-white/65 text-[11px] m-0">
                     {p.year} Workshop
                   </p>
                 </div>
@@ -172,71 +110,31 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
       {lightbox !== null && (
         <div
           onClick={() => setLightbox(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.92)",
-            zIndex: 2000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
+          className="fixed inset-0 bg-black/[0.92] z-[2000] flex items-center justify-center p-6"
         >
           <button
             onClick={(e) => {
               e.stopPropagation();
               prev();
             }}
-            style={{
-              position: "absolute",
-              left: 20,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              fontSize: 28,
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              cursor: "pointer",
-            }}
+            className="absolute left-5 top-1/2 -translate-y-1/2 bg-white/15 border-none text-white text-[28px] w-12 h-12 rounded-full cursor-pointer"
           >
             ‹
           </button>
 
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 900, width: "100%", textAlign: "center" }}
+            className="max-w-[900px] w-full text-center"
           >
             <img
               src={PHOTOS[lightbox].src}
               alt={PHOTOS[lightbox].caption}
-              style={{
-                maxWidth: "100%",
-                maxHeight: "75vh",
-                borderRadius: 12,
-                objectFit: "contain",
-              }}
+              className="max-w-full max-h-[75vh] rounded-xl object-contain"
             />
-            <p
-              style={{
-                color: "#fff",
-                marginTop: 14,
-                fontSize: 15,
-                fontWeight: 600,
-              }}
-            >
+            <p className="text-white mt-[14px] text-[15px] font-semibold">
               {PHOTOS[lightbox].caption}
             </p>
-            <p
-              style={{
-                color: "rgba(255,255,255,0.5)",
-                fontSize: 12,
-                marginTop: 4,
-              }}
-            >
+            <p className="text-white/50 text-xs mt-1">
               {lightbox + 1} / {PHOTOS.length}
             </p>
           </div>
@@ -246,42 +144,14 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
               e.stopPropagation();
               next();
             }}
-            style={{
-              position: "absolute",
-              right: 20,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              fontSize: 28,
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              cursor: "pointer",
-            }}
+            className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/15 border-none text-white text-[28px] w-12 h-12 rounded-full cursor-pointer"
           >
             ›
           </button>
 
           <button
             onClick={() => setLightbox(null)}
-            style={{
-              position: "absolute",
-              top: 20,
-              right: 20,
-              background: "rgba(255,255,255,0.15)",
-              border: "none",
-              color: "#fff",
-              fontSize: 20,
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            className="absolute top-5 right-5 bg-white/15 border-none text-white text-xl w-10 h-10 rounded-full cursor-pointer flex items-center justify-center"
           >
             <X size={18} />
           </button>

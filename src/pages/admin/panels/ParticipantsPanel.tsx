@@ -42,23 +42,12 @@ export default function ParticipantsPanel() {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 24,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
+      <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
         <div>
-          <h2
-            style={{ marginBottom: 4, fontFamily: "Playfair Display, serif" }}
-          >
+          <h2 className="mb-1 font-serif">
             Participants
           </h2>
-          <p style={{ color: "#666", fontSize: 14 }}>
+          <p className="text-[#666] text-sm">
             {participants.length} registered ·{" "}
             {participants.filter((p) => p.payment === "Confirmed").length}{" "}
             confirmed
@@ -66,58 +55,27 @@ export default function ParticipantsPanel() {
         </div>
         <button
           onClick={exportCSV}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            background: "#1B3A6B",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            padding: "9px 18px",
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="flex items-center gap-1.5 bg-ug-blue text-white border-none rounded-lg px-[18px] py-[9px] text-[13px] font-semibold cursor-pointer"
         >
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             <Download size={14} /> Export CSV
           </span>
         </button>
       </div>
 
-      <div
-        style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}
-      >
+      <div className="flex gap-3 mb-5 flex-wrap">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or email…"
-          style={{
-            flex: 1,
-            minWidth: 220,
-            padding: "8px 14px",
-            border: "1.5px solid #ddd",
-            borderRadius: 8,
-            fontSize: 14,
-          }}
+          className="flex-1 min-w-[220px] px-3.5 py-2 border-[1.5px] border-[#ddd] rounded-lg text-sm"
         />
-        <div style={{ display: "flex", gap: 6 }}>
+        <div className="flex gap-1.5">
           {["All", "Confirmed", "Pending"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              style={{
-                background: filter === f ? "#1B3A6B" : "#fff",
-                color: filter === f ? "#fff" : "#555",
-                border: "1px solid #ddd",
-                padding: "6px 14px",
-                borderRadius: 20,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              className={`border border-[#ddd] px-3.5 py-1.5 rounded-[20px] text-[13px] cursor-pointer${filter === f ? " bg-ug-blue text-white" : " bg-white text-[#555]"}`}
             >
               {f}
             </button>
@@ -125,31 +83,15 @@ export default function ParticipantsPanel() {
         </div>
       </div>
 
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 12,
-          border: "1px solid #e0e0e0",
-          overflowX: "auto",
-        }}
-      >
-        <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
-        >
+      <div className="bg-white rounded-xl border border-[#e0e0e0] overflow-x-auto">
+        <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr style={{ background: "#f8f9fa" }}>
+            <tr className="bg-ug-surface">
               {["Name", "Email", "Programme", "Mode", "Payment", "Actions"].map(
                 (h) => (
                   <th
                     key={h}
-                    style={{
-                      padding: "12px 16px",
-                      textAlign: "left",
-                      fontWeight: 600,
-                      color: "#555",
-                      borderBottom: "1px solid #eee",
-                      whiteSpace: "nowrap",
-                    }}
+                    className="px-4 py-3 text-left font-semibold text-[#555] border-b border-[#eee] whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -159,39 +101,30 @@ export default function ParticipantsPanel() {
           </thead>
           <tbody>
             {filtered.map((p) => (
-              <tr key={p.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
-                <td style={{ padding: "12px 16px", fontWeight: 500 }}>
+              <tr key={p.id} className="border-b border-[#f5f5f5]">
+                <td className="px-4 py-3 font-medium">
                   {p.name}
                 </td>
-                <td style={{ padding: "12px 16px", color: "#666" }}>
+                <td className="px-4 py-3 text-[#666]">
                   {p.email}
                 </td>
-                <td style={{ padding: "12px 16px", color: "#555" }}>
+                <td className="px-4 py-3 text-[#555]">
                   {p.programme}
                 </td>
-                <td style={{ padding: "12px 16px" }}>{p.mode}</td>
-                <td style={{ padding: "12px 16px" }}>
+                <td className="px-4 py-3">{p.mode}</td>
+                <td className="px-4 py-3">
                   <span
                     className={`badge ${p.payment === "Confirmed" ? "badge-green" : "badge-red"}`}
                   >
                     {p.payment}
                   </span>
                 </td>
-                <td style={{ padding: "12px 16px" }}>
-                  <div style={{ display: "flex", gap: 6 }}>
+                <td className="px-4 py-3">
+                  <div className="flex gap-1.5">
                     {p.payment !== "Confirmed" && (
                       <button
                         onClick={() => setPayment(p.id, "Confirmed")}
-                        style={{
-                          background: "#e3f5eb",
-                          color: "#1B6B3A",
-                          border: "1px solid #a8d5b8",
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          fontWeight: 600,
-                        }}
+                        className="bg-[#e3f5eb] text-[#1B6B3A] border border-[#a8d5b8] rounded-md px-2.5 py-1 text-[11px] cursor-pointer font-semibold"
                       >
                         Confirm
                       </button>
@@ -199,15 +132,7 @@ export default function ParticipantsPanel() {
                     {p.payment !== "Pending" && (
                       <button
                         onClick={() => setPayment(p.id, "Pending")}
-                        style={{
-                          background: "#fdecea",
-                          color: "#c0392b",
-                          border: "1px solid #f5b7b1",
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          fontSize: 11,
-                          cursor: "pointer",
-                        }}
+                        className="bg-[#fdecea] text-[#c0392b] border border-[#f5b7b1] rounded-md px-2.5 py-1 text-[11px] cursor-pointer"
                       >
                         Revoke
                       </button>
@@ -219,14 +144,7 @@ export default function ParticipantsPanel() {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "32px",
-              color: "#888",
-              fontSize: 14,
-            }}
-          >
+          <div className="text-center p-8 text-[#888] text-sm">
             No participants match the current filter.
           </div>
         )}

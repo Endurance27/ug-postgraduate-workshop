@@ -40,20 +40,20 @@ export default function SupportAdminPanel() {
     );
 
   return (
-    <div style={{ maxWidth: 700 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>Support Page</h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+    <div className="max-w-[700px]">
+      <h2 className="mb-1.5 font-serif">Support Page</h2>
+      <p className="text-[#666] text-sm mb-6">
         Edit FAQ content and the contact details shown on the Support page.
       </p>
 
       {/* ── Contact Details ── */}
-      <h3 style={{ fontSize: 15, fontFamily: "Playfair Display, serif", marginBottom: 12 }}>Contact Details</h3>
+      <h3 className="text-[15px] font-serif mb-3">Contact Details</h3>
       {contactSaved && (
-        <div className="alert alert-success" style={{ marginBottom: 16 }}>
-          <Check size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Saved — contact info updated.
+        <div className="alert alert-success mb-4">
+          <Check size={14} className="inline align-middle mr-1" /> Saved — contact info updated.
         </div>
       )}
-      <div className="card" style={{ marginBottom: 32 }}>
+      <div className="card mb-8">
         <div className="form-row">
           <div className="form-group">
             <label>Email Address</label>
@@ -80,94 +80,94 @@ export default function SupportAdminPanel() {
         </div>
         <div className="form-group">
           <label>Location / Address</label>
-          <textarea value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} style={{ minHeight: 70 }} />
+          <textarea value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} className="min-h-[70px]" />
         </div>
         <button className="btn-primary" onClick={saveContact}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Save Contact Details <ArrowRight size={14} /></span>
+          <span className="inline-flex items-center gap-[6px]">Save Contact Details <ArrowRight size={14} /></span>
         </button>
       </div>
 
       {/* ── FAQ Editor ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <h3 style={{ fontSize: 15, fontFamily: "Playfair Display, serif" }}>FAQ Editor</h3>
-        <button onClick={addCategory} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>+ Add Category</button>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-[15px] font-serif">FAQ Editor</h3>
+        <button onClick={addCategory} className="bg-ug-blue text-white border-none rounded-lg px-[14px] py-[6px] text-[13px] cursor-pointer">+ Add Category</button>
       </div>
-      <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+      <p className="text-[#666] text-[13px] mb-4">
         Add FAQ categories and questions. Leave empty to keep the built-in default FAQs on the Support page.
       </p>
       {faqSaved && (
-        <div className="alert alert-success" style={{ marginBottom: 16 }}>
-          <Check size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> FAQs saved.
+        <div className="alert alert-success mb-4">
+          <Check size={14} className="inline align-middle mr-1" /> FAQs saved.
         </div>
       )}
       {faqItems.length === 0 && (
-        <div className="alert alert-info" style={{ marginBottom: 16, fontSize: 13 }}>
+        <div className="alert alert-info mb-4 text-[13px]">
           Currently using built-in default FAQs. Add a category above to create custom FAQs.
         </div>
       )}
 
       {faqItems.map((cat, ci) => (
-        <div key={ci} className="card" style={{ marginBottom: 16 }}>
+        <div key={ci} className="card mb-4">
           {/* Category header */}
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 14 }}>
-            <div className="form-group" style={{ width: 72, marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Icon (emoji)</label>
+          <div className="flex gap-[10px] items-end mb-[14px]">
+            <div className="form-group w-[72px] mb-0">
+              <label className="text-xs">Icon (emoji)</label>
               <input
                 value={cat.icon}
                 onChange={(e) => updateCategory(ci, "icon", e.target.value)}
-                style={{ padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 20, textAlign: "center", width: "100%" }}
+                className="p-[6px_8px] border border-[#ddd] rounded-md text-[20px] text-center w-full"
               />
             </div>
-            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Category Name</label>
+            <div className="form-group flex-1 mb-0">
+              <label className="text-xs">Category Name</label>
               <input
                 value={cat.category}
                 onChange={(e) => updateCategory(ci, "category", e.target.value)}
-                style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
               />
             </div>
-            <button onClick={() => removeCategory(ci)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "7px 14px", fontSize: 12, cursor: "pointer", marginBottom: 0 }}>
+            <button onClick={() => removeCategory(ci)} className="bg-[#fdecea] text-[#c0392b] border-none rounded-md py-[7px] px-[14px] text-xs cursor-pointer mb-0">
               Remove Category
             </button>
           </div>
 
           {/* Q&A items */}
           {cat.items.map((item, qi) => (
-            <div key={qi} style={{ border: "1px solid #e8e8e8", borderRadius: 8, padding: "12px 14px", marginBottom: 8, background: "#fafafa" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: "#888", fontWeight: 500 }}>Q&A {qi + 1}</span>
-                <button onClick={() => removeItem(ci, qi)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 5, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Remove</button>
+            <div key={qi} className="border border-[#e8e8e8] rounded-lg p-[12px_14px] mb-2 bg-[#fafafa]">
+              <div className="flex justify-between mb-2">
+                <span className="text-xs text-[#888] font-medium">Q&A {qi + 1}</span>
+                <button onClick={() => removeItem(ci, qi)} className="bg-[#fdecea] text-[#c0392b] border-none rounded-[5px] px-2 py-[2px] text-[11px] cursor-pointer">Remove</button>
               </div>
-              <div className="form-group" style={{ marginBottom: 8 }}>
-                <label style={{ fontSize: 12 }}>Question</label>
+              <div className="form-group mb-2">
+                <label className="text-xs">Question</label>
                 <input
                   value={item.q}
                   onChange={(e) => updateItem(ci, qi, "q", e.target.value)}
                   placeholder="e.g. Who can register for the workshop?"
-                  style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Answer</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Answer</label>
                 <textarea
                   value={item.a}
                   onChange={(e) => updateItem(ci, qi, "a", e.target.value)}
                   placeholder="Full answer text…"
-                  style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13, minHeight: 70, resize: "vertical" }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px] min-h-[70px] resize-y"
                 />
               </div>
             </div>
           ))}
 
-          <button onClick={() => addItem(ci)} style={{ background: "#E5EAF3", color: "#1B3A6B", border: "none", borderRadius: 7, padding: "7px 14px", fontSize: 13, cursor: "pointer", marginTop: 4 }}>
+          <button onClick={() => addItem(ci)} className="bg-ug-blue-light text-ug-blue border-none rounded-[7px] py-[7px] px-[14px] text-[13px] cursor-pointer mt-1">
             + Add Question
           </button>
         </div>
       ))}
 
       {faqItems.length > 0 && (
-        <button className="btn-primary" onClick={saveFaqs} style={{ marginBottom: 8 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Save FAQs <ArrowRight size={14} /></span>
+        <button className="btn-primary mb-2" onClick={saveFaqs}>
+          <span className="inline-flex items-center gap-[6px]">Save FAQs <ArrowRight size={14} /></span>
         </button>
       )}
     </div>

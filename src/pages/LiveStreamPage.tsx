@@ -89,169 +89,153 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
   return (
     <main>
       {/* HERO */}
-      <section style={{
-        position: "relative", overflow: "hidden",
-        background: "linear-gradient(135deg, #0F2347, #1B3A6B)",
-        color: "#fff", padding: "72px 0 56px",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "url('/images/workshop-sessions.jpg')",
-          backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15,
-        }} />
-        <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <span className="badge" style={{
-            background: isLive ? "rgba(220,50,50,0.35)" : "rgba(201,168,76,0.25)",
-            color: isLive ? "#ff6b6b" : "#C9A84C",
-            marginBottom: 14, display: "inline-flex", alignItems: "center", gap: 7,
-          }}>
+      <section
+        className="relative overflow-hidden text-white py-[72px] pb-14"
+        style={{ background: "linear-gradient(135deg, #0F2347, #1B3A6B)" }}
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-15"
+          style={{ backgroundImage: "url('/images/workshop-sessions.jpg')" }}
+        />
+        <div className="container relative z-10">
+          <span
+            className="badge inline-flex items-center gap-[7px] mb-[14px]"
+            style={{
+              background: isLive ? "rgba(220,50,50,0.35)" : "rgba(201,168,76,0.25)",
+              color: isLive ? "#ff6b6b" : "#C9A84C",
+            }}
+          >
             {isLive
-              ? <><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff4444", display: "inline-block", animation: "pulse 1.2s infinite" }} />LIVE NOW</>
-              : <><Radio size={14} style={{ marginRight: 5 }} />Live Stream · Aug 2026</>}
+              ? <><span className="w-2 h-2 rounded-full bg-[#ff4444] inline-block animate-pulse" />LIVE NOW</>
+              : <><Radio size={14} className="mr-[5px]" />Live Stream · Aug 2026</>}
           </span>
-          <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem, 4.5vw, 3rem)", marginBottom: 12 }}>
+          <h1 className="text-white font-serif text-[clamp(2rem,4.5vw,3rem)] mb-3">
             Live Stream
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 16 }}>
+          <p className="text-white/75 text-base">
             Watch the {event?.edition || "2nd DCS Postgraduate Workshop"} live online · {event?.dates || "27–29 August 2026"}
           </p>
         </div>
       </section>
 
       <div className="container section">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h2 style={{ fontFamily: "Playfair Display, serif", marginBottom: 4 }}>2026 Workshop Live Stream</h2>
-            <p style={{ color: "#666", fontSize: 14 }}>Stream links will be activated when each day goes live</p>
+            <h2 className="font-serif mb-1">2026 Workshop Live Stream</h2>
+            <p className="text-[#666] text-sm">Stream links will be activated when each day goes live</p>
           </div>
           {isLive && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "#fdecea", color: "#c0392b",
-              border: "1.5px solid #f5b7b1", borderRadius: 8,
-              padding: "7px 16px", fontSize: 13, fontWeight: 700,
-            }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#c0392b", display: "inline-block" }} />
+            <span className="inline-flex items-center gap-2 bg-[#fdecea] text-[#c0392b] border-[1.5px] border-[#f5b7b1] rounded-lg px-4 py-[7px] text-[13px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-[#c0392b] inline-block" />
               LIVE NOW
             </span>
           )}
         </div>
 
-        {/* Day tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+        {/* Day tabs — active bg/border are dynamic per-day color */}
+        <div className="flex gap-2 mb-5 flex-wrap">
           {STREAM_DAYS.map((d, i) => (
-            <button key={i} onClick={() => setActiveDay(i)} style={{
-              background: activeDay === i ? d.color : "#fff",
-              color: activeDay === i ? "#fff" : "#555",
-              border: `2px solid ${activeDay === i ? d.color : "#ddd"}`,
-              borderRadius: 8, padding: "8px 22px", fontSize: 13,
-              fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
-            }}>{d.day}</button>
+            <button
+              key={i}
+              onClick={() => setActiveDay(i)}
+              className="rounded-lg px-[22px] py-2 text-[13px] font-semibold cursor-pointer transition-all duration-150"
+              style={{
+                background: activeDay === i ? d.color : "#fff",
+                color: activeDay === i ? "#fff" : "#555",
+                border: `2px solid ${activeDay === i ? d.color : "#ddd"}`,
+              }}
+            >{d.day}</button>
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }} className="stream-grid">
+        <div className="grid grid-cols-[1fr_280px] gap-6 items-start stream-grid">
           {/* Player */}
           <div>
-            <div style={{
-              background: "#0d1117", borderRadius: 14, overflow: "hidden",
-              position: "relative", boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-            }}>
+            <div className="bg-[#0d1117] rounded-2xl overflow-hidden relative shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
               {current.youtubeId && isLive ? (
-                <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
+                <div className="relative pb-[56.25%] h-0">
                   <iframe
                     src={`https://www.youtube.com/embed/${current.youtubeId}?autoplay=1`}
                     title={`Live Stream ${current.day}`}
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                    className="absolute top-0 left-0 w-full h-full"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 </div>
               ) : (
-                <div style={{
-                  aspectRatio: "16/9", display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", padding: 40,
-                }}>
-                  <div style={{ marginBottom: 16, color: "#C9A84C" }}><Radio size={52} /></div>
-                  <h3 style={{ color: "#fff", fontFamily: "Playfair Display, serif", marginBottom: 8, textAlign: "center" }}>
+                <div className="aspect-video flex flex-col items-center justify-center p-10">
+                  <div className="mb-4 text-ug-gold"><Radio size={52} /></div>
+                  <h3 className="text-white font-serif mb-2 text-center">
                     {current.day} Stream
                   </h3>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, textAlign: "center", maxWidth: 360, lineHeight: 1.75, marginBottom: 20 }}>
-                    Goes live on <strong style={{ color: "#C9A84C" }}>{current.date}</strong>.<br />
+                  <p className="text-white/50 text-sm text-center max-w-[360px] leading-[1.75] mb-5">
+                    Goes live on <strong className="text-ug-gold">{current.date}</strong>.<br />
                     Register to receive the stream link by email.
                   </p>
-                  <div style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)",
-                    borderRadius: 8, padding: "9px 18px",
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#555" }} />
-                    <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Offline · Goes live {current.date}</span>
+                  <div className="inline-flex items-center gap-2 rounded-lg px-[18px] py-[9px]"
+                    style={{ background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)" }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#555]" />
+                    <span className="text-white/50 text-[13px]">Offline · Goes live {current.date}</span>
                   </div>
                 </div>
               )}
-              <div style={{
-                position: "absolute", top: 12, left: 12,
-                background: current.color, borderRadius: 6,
-                padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#fff",
-                pointerEvents: "none",
-              }}>{current.day}</div>
+              {/* Day label badge — dynamic color from data */}
+              <div
+                className="absolute top-3 left-3 rounded-md px-3 py-1 text-xs font-bold text-white pointer-events-none"
+                style={{ background: current.color }}
+              >{current.day}</div>
             </div>
-            <div style={{ marginTop: 12, padding: "12px 16px", background: "#f8f9fa", borderRadius: 10, fontSize: 13, color: "#666" }}>
-              <strong style={{ color: "#1B3A6B" }}>{current.date}</strong> · Stream link sent to registered virtual participants before the event.
+            <div className="mt-3 px-4 py-3 bg-ug-surface rounded-[10px] text-[13px] text-[#666]">
+              <strong className="text-ug-blue">{current.date}</strong> · Stream link sent to registered virtual participants before the event.
             </div>
             {stream.note && (
-              <div style={{
-                marginTop: 10, padding: "12px 18px", borderRadius: 10,
-                background: "#fffbf0", border: "1.5px solid #e8c96e",
-                fontSize: 13, color: "#7a5800", lineHeight: 1.6,
-              }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Megaphone size={16} /><strong>Notice:</strong></span> {stream.note}
+              <div className="mt-[10px] px-[18px] py-3 rounded-[10px] bg-[#fffbf0] border-[1.5px] border-[#e8c96e] text-[13px] text-[#7a5800] leading-relaxed">
+                <span className="inline-flex items-center gap-1.5"><Megaphone size={16} /><strong>Notice:</strong></span> {stream.note}
               </div>
             )}
           </div>
 
-          {/* Schedule sidebar */}
-          <div className="card" style={{ padding: "18px 20px" }}>
-            <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 14, fontSize: "1rem", color: current.color }}>
+          {/* Schedule sidebar — dynamic heading color from data */}
+          <div className="card px-5 py-[18px]">
+            <h4 className="font-serif mb-[14px] text-base" style={{ color: current.color }}>
               {current.day} Schedule
             </h4>
             {current.schedule.map((s, i) => (
-              <div key={i} style={{
-                display: "flex", gap: 10, padding: "9px 0",
-                borderBottom: i < current.schedule.length - 1 ? "1px solid #f5f5f5" : "none",
-              }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#888", whiteSpace: "nowrap", marginTop: 2, minWidth: 58 }}>{s.time}</span>
-                <span style={{ fontSize: 13, color: "#333", lineHeight: 1.4 }}>{s.title}</span>
+              <div key={i}
+                className={`flex gap-[10px] py-[9px] ${i < current.schedule.length - 1 ? "border-b border-[#f5f5f5]" : ""}`}
+              >
+                <span className="text-[11px] font-semibold text-[#888] whitespace-nowrap mt-0.5 min-w-[58px]">{s.time}</span>
+                <span className="text-[13px] text-[#333] leading-snug">{s.title}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Info cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginTop: 32 }}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mt-8">
           {[
             { icon: <Radio size={24} />,          title: "Stream Link",  body: "Emailed to all registered virtual and hybrid participants before each day." },
             { icon: <Video size={24} />,          title: "YouTube Live", body: "No login required. Watch directly in your browser or on the YouTube app."   },
             { icon: <MessageCircle size={24} />,  title: "Live Q&A",     body: "Submit questions via YouTube chat during panel sessions and Q&A blocks."    },
             { icon: <RefreshCw size={24} />,      title: "Recordings",   body: "Session recordings made available to registered participants after each day."},
           ].map((c, i) => (
-            <div key={i} className="card" style={{ display: "flex", gap: 14 }}>
-              <span style={{ flexShrink: 0, color: "#1B3A6B" }}>{c.icon}</span>
+            <div key={i} className="card flex gap-[14px]">
+              <span className="flex-shrink-0 text-ug-blue">{c.icon}</span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{c.title}</div>
-                <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, margin: 0 }}>{c.body}</p>
+                <div className="font-semibold text-sm mb-1">{c.title}</div>
+                <p className="text-[13px] text-[#666] leading-relaxed m-0">{c.body}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="alert alert-info" style={{ marginTop: 24, fontSize: 14 }}>
+        <div className="alert alert-info mt-6 text-sm">
           <strong>Registration required:</strong> You must register as a virtual or hybrid participant to receive the stream link.{" "}
           {navigate && (
-            <button onClick={() => navigate("register")} style={{ background: "none", border: "none", color: "#1B3A6B", fontWeight: 600, cursor: "pointer", padding: 0, fontSize: 14 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Register now <ArrowRight size={14} /></span>
+            <button onClick={() => navigate("register")} className="bg-transparent border-0 text-ug-blue font-semibold cursor-pointer p-0 text-sm">
+              <span className="inline-flex items-center gap-1.5">Register now <ArrowRight size={14} /></span>
             </button>
           )}
         </div>

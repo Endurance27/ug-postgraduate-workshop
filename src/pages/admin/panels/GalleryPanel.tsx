@@ -57,23 +57,19 @@ export default function GalleryPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[800px]">
+      <h2 className="mb-1.5 font-serif">
         Gallery
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         Manage photos shown on the Gallery page. Upload images or paste URLs.
         Each photo shows with a caption and year label.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Gallery saved.
         </div>
@@ -82,86 +78,43 @@ export default function GalleryPanel() {
         ref={fileRef}
         type="file"
         accept="image/*"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={handleFile}
       />
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          marginBottom: 20,
-        }}
-      >
+      <div className="flex flex-col gap-[14px] mb-5">
         {items.map((p, i) => {
           const isUploading = uploadingIdx === i;
           return (
             <div
               key={i}
-              style={{
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 12,
-                padding: "16px 18px",
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-              }}
+              className="bg-white border border-[#e0e0e0] rounded-xl px-[18px] py-4 flex gap-4 items-start"
             >
               <div
-                style={{
-                  width: 120,
-                  height: 84,
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  border: "1px solid #eee",
-                  flexShrink: 0,
-                  background: "#f5f5f5",
-                }}
+                className="w-[120px] h-[84px] rounded-lg overflow-hidden border border-[#eee] shrink-0 bg-[#f5f5f5]"
               >
                 {p.src ? (
                   <img
                     src={p.src}
                     alt={p.caption}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
+                    className="w-full h-full object-cover block"
                   />
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "100%",
-                    }}
-                  >
+                  <div className="flex items-center justify-center h-full">
                     <Image size={24} color="#ccc" />
                   </div>
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 100px 70px",
-                    gap: 10,
-                    marginBottom: 8,
-                    alignItems: "end",
-                  }}
-                >
-                  <div className="form-group" style={{ marginBottom: 0 }}>
+              <div className="flex-1 min-w-0">
+                <div className="grid grid-cols-[1fr_100px_70px] gap-[10px] mb-2 items-end">
+                  <div className="form-group mb-0">
                     <label>Caption</label>
                     <input
                       value={p.caption}
                       onChange={(e) => update(i, "caption", e.target.value)}
                     />
                   </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
+                  <div className="form-group mb-0">
                     <label>Year</label>
                     <input
                       value={p.year}
@@ -170,65 +123,27 @@ export default function GalleryPanel() {
                   </div>
                   <button
                     onClick={() => remove(i)}
-                    style={{
-                      background: "#fdecea",
-                      color: "#c0392b",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "8px 10px",
-                      fontSize: 13,
-                      cursor: "pointer",
-                      marginBottom: 20,
-                    }}
+                    className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-2 text-[13px] cursor-pointer mb-5"
                   >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
+                    <span className="inline-flex items-center gap-1">
                       <X size={12} /> Remove
                     </span>
                   </button>
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div className="flex gap-2 items-center">
                   <input
                     value={p.src || ""}
                     onChange={(e) => update(i, "src", e.target.value)}
                     placeholder="/images/... or https://..."
-                    style={{
-                      flex: 1,
-                      padding: "7px 10px",
-                      border: "1.5px solid #ddd",
-                      borderRadius: 7,
-                      fontSize: 13,
-                    }}
+                    className="flex-1 px-2.5 py-[7px] border-[1.5px] border-[#ddd] rounded-[7px] text-[13px]"
                   />
                   <button
                     type="button"
                     onClick={() => triggerUpload(i)}
                     disabled={uploadingIdx !== null}
-                    style={{
-                      background: "#E5EAF3",
-                      color: "#1B3A6B",
-                      border: "1px solid #b0bdd8",
-                      borderRadius: 7,
-                      padding: "7px 14px",
-                      fontSize: 12,
-                      cursor: uploadingIdx !== null ? "not-allowed" : "pointer",
-                      fontWeight: 500,
-                      flexShrink: 0,
-                      opacity: uploadingIdx !== null ? 0.65 : 1,
-                    }}
+                    className={`bg-ug-blue-light text-ug-blue border border-[#b0bdd8] rounded-[7px] px-3.5 py-[7px] text-xs font-medium shrink-0 transition-opacity${uploadingIdx !== null ? " opacity-65 cursor-not-allowed" : " cursor-pointer"}`}
                   >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 5,
-                      }}
-                    >
+                    <span className="inline-flex items-center gap-[5px]">
                       <Upload size={13} />{" "}
                       {isUploading ? "Uploading…" : "Upload"}
                     </span>
@@ -240,25 +155,15 @@ export default function GalleryPanel() {
         })}
       </div>
 
-      <div style={{ display: "flex", gap: 12 }}>
+      <div className="flex gap-3">
         <button
           onClick={add}
-          style={{
-            background: "#fff",
-            border: "2px dashed #C9A84C",
-            color: "#b5700a",
-            borderRadius: 10,
-            padding: "10px 20px",
-            fontSize: 13,
-            cursor: "pointer",
-          }}
+          className="bg-white border-2 border-dashed border-ug-gold text-[#b5700a] rounded-[10px] px-5 py-2.5 text-[13px] cursor-pointer"
         >
           + Add Photo
         </button>
         <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Save Gallery <ArrowRight size={14} />
           </span>
         </button>

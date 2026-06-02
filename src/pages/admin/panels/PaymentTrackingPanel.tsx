@@ -158,7 +158,7 @@ export default function PaymentTrackingPanel() {
 
   const SortIcon = ({ k }) => {
     if (sortKey !== k)
-      return <span style={{ color: "#ccc", fontSize: 11 }}>↕</span>;
+      return <span className="text-[#ccc] text-[11px]">↕</span>;
     return sortDir === "asc" ? (
       <ChevronUp size={13} color="#1B3A6B" />
     ) : (
@@ -168,20 +168,11 @@ export default function PaymentTrackingPanel() {
 
   const methodBadge = (m) => (
     <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: m === "card" ? "#E5EAF3" : "#e8f5ee",
-        color: m === "card" ? "#1B3A6B" : "#1B6B3A",
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "4px 10px",
-        borderRadius: 20,
-        whiteSpace: "nowrap",
-        minWidth: 100,
-        textAlign: "center",
-      }}
+      className={`inline-flex items-center justify-center text-[11px] font-semibold px-[10px] py-1 rounded-[20px] whitespace-nowrap min-w-[100px] text-center ${
+        m === "card"
+          ? "bg-ug-blue-light text-ug-blue"
+          : "bg-[#e8f5ee] text-[#1B6B3A]"
+      }`}
     >
       {m === "card" ? "Card" : "Mobile Money"}
     </span>
@@ -189,14 +180,11 @@ export default function PaymentTrackingPanel() {
 
   const statusBadge = (s) => (
     <span
-      style={{
-        background: s === "Confirmed" ? "#e8f5ee" : "#fdf3e0",
-        color: s === "Confirmed" ? "#1B6B3A" : "#b5700a",
-        fontSize: 11,
-        fontWeight: 700,
-        padding: "3px 10px",
-        borderRadius: 20,
-      }}
+      className={`text-[11px] font-bold px-[10px] py-[3px] rounded-[20px] ${
+        s === "Confirmed"
+          ? "bg-[#e8f5ee] text-[#1B6B3A]"
+          : "bg-[#fdf3e0] text-[#b5700a]"
+      }`}
     >
       {s}
     </span>
@@ -239,60 +227,25 @@ export default function PaymentTrackingPanel() {
   return (
     <div>
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 24,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
+      <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
         <div>
-          <h2
-            style={{ marginBottom: 4, fontFamily: "Playfair Display, serif" }}
-          >
+          <h2 className="mb-1 font-serif">
             Payment Tracking
           </h2>
-          <p style={{ color: "#666", fontSize: 14 }}>
+          <p className="text-[#666] text-sm">
             Monitor and manage all transaction records
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="flex gap-[10px]">
           <button
             onClick={exportCSV}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#fff",
-              color: "#1B3A6B",
-              border: "1.5px solid #b0bdd8",
-              borderRadius: 8,
-              padding: "8px 16px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="flex items-center gap-[6px] bg-white text-ug-blue border-[1.5px] border-[#b0bdd8] rounded-lg px-4 py-2 text-[13px] font-semibold cursor-pointer"
           >
             <Download size={14} /> Export CSV
           </button>
           <button
             onClick={() => setShowAdd((s) => !s)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 16px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="flex items-center gap-[6px] bg-ug-blue text-white border-none rounded-lg px-4 py-2 text-[13px] font-semibold cursor-pointer"
           >
             <Plus size={14} /> Add Payment
           </button>
@@ -300,65 +253,31 @@ export default function PaymentTrackingPanel() {
       </div>
 
       {/* Stat cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))",
-          gap: 16,
-          marginBottom: 28,
-        }}
-      >
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-[16px] mb-7">
         {cards.map((c, i) => (
           <div
             key={i}
-            style={{
-              background: "#fff",
-              border: "1px solid #e8eaf0",
-              borderRadius: 14,
-              padding: "20px 22px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
+            className="bg-white border border-[#e8eaf0] rounded-[14px] p-[20px_22px] flex justify-between items-start"
           >
             <div>
-              <div style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
+              <div className="text-[13px] text-[#888] mb-2">
                 {c.label}
               </div>
-              <div
-                style={{
-                  fontSize: 26,
-                  fontWeight: 800,
-                  color: "#0F2347",
-                  fontFamily: "Playfair Display, serif",
-                }}
-              >
+              <div className="text-[26px] font-extrabold text-ug-navy font-serif">
                 {c.value}
               </div>
               {c.sub && (
                 <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: c.subColor,
-                    marginTop: 4,
-                  }}
+                  className="text-[13px] font-semibold mt-1"
+                  style={{ color: c.subColor }}
                 >
                   {c.sub}
                 </div>
               )}
             </div>
             <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background: c.iconBg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
+              className="w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: c.iconBg }}
             >
               {c.icon}
             </div>
@@ -368,13 +287,8 @@ export default function PaymentTrackingPanel() {
 
       {/* Add payment form */}
       {showAdd && (
-        <div
-          className="card"
-          style={{ marginBottom: 20, border: "2px solid #C9A84C" }}
-        >
-          <h4
-            style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}
-          >
+        <div className="card mb-5 border-2 border-ug-gold">
+          <h4 className="mb-4 font-serif">
             Add Manual Payment Record
           </h4>
           <div className="form-row">
@@ -459,24 +373,15 @@ export default function PaymentTrackingPanel() {
               </select>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+          <div className="flex gap-[10px] mt-1">
             <button className="btn-primary" onClick={addPayment}>
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-              >
+              <span className="inline-flex items-center gap-[6px]">
                 <Check size={14} /> Save Record
               </span>
             </button>
             <button
               onClick={() => setShowAdd(false)}
-              style={{
-                background: "#f0f0f0",
-                border: "none",
-                borderRadius: 8,
-                padding: "9px 16px",
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              className="bg-[#f0f0f0] border-none rounded-lg px-4 py-[9px] text-[13px] cursor-pointer"
             >
               Cancel
             </button>
@@ -485,57 +390,30 @@ export default function PaymentTrackingPanel() {
       )}
 
       {/* Search + filter */}
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginBottom: 20,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ position: "relative", flex: 1, minWidth: 240 }}>
+      <div className="flex gap-3 mb-5 flex-wrap items-center">
+        <div className="relative flex-1 min-w-[240px]">
           <Search
             size={15}
             color="#aaa"
-            style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by transaction ID, name, email, booking code…"
-            style={{
-              width: "100%",
-              paddingLeft: 36,
-              paddingRight: 12,
-              paddingTop: 9,
-              paddingBottom: 9,
-              border: "1.5px solid #ddd",
-              borderRadius: 10,
-              fontSize: 13,
-            }}
+            className="w-full pl-9 pr-3 pt-[9px] pb-[9px] border-[1.5px] border-[#ddd] rounded-[10px] text-[13px]"
           />
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div className="flex gap-[6px]">
           {["All", "Confirmed", "Pending"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              style={{
-                background: filter === f ? "#1B3A6B" : "#fff",
-                color: filter === f ? "#fff" : "#555",
-                border: "1.5px solid #ddd",
-                borderRadius: 20,
-                padding: "6px 16px",
-                fontSize: 13,
-                cursor: "pointer",
-                fontWeight: filter === f ? 600 : 400,
-              }}
+              className={`border-[1.5px] border-[#ddd] rounded-[20px] px-4 py-[6px] text-[13px] cursor-pointer ${
+                filter === f
+                  ? "bg-ug-blue text-white font-semibold"
+                  : "bg-white text-[#555] font-normal"
+              }`}
             >
               {f}
             </button>
@@ -544,25 +422,11 @@ export default function PaymentTrackingPanel() {
       </div>
 
       {/* Table */}
-      <div
-        style={{
-          background: "#fff",
-          border: "1px solid #e0e0e0",
-          borderRadius: 14,
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
-          >
+      <div className="bg-white border border-[#e0e0e0] rounded-[14px] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr
-                style={{
-                  background: "#f8f9fa",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
+              <tr className="bg-ug-surface border-b border-[#eee]">
                 {[
                   { label: "Transaction ID", key: "transactionId" },
                   { label: "Student ID", key: "studentId" },
@@ -576,24 +440,9 @@ export default function PaymentTrackingPanel() {
                   <th
                     key={i}
                     onClick={col.key ? () => toggle(col.key) : undefined}
-                    style={{
-                      padding: "13px 16px",
-                      textAlign: "left",
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: "#555",
-                      whiteSpace: "nowrap",
-                      cursor: col.key ? "pointer" : "default",
-                      userSelect: "none",
-                    }}
+                    className={`px-4 py-[13px] text-left font-semibold text-xs text-[#555] whitespace-nowrap select-none ${col.key ? "cursor-pointer" : "cursor-default"}`}
                   >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
+                    <span className="inline-flex items-center gap-1">
                       {col.label} {col.key && <SortIcon k={col.key} />}
                     </span>
                   </th>
@@ -605,11 +454,7 @@ export default function PaymentTrackingPanel() {
                 <tr>
                   <td
                     colSpan={8}
-                    style={{
-                      textAlign: "center",
-                      padding: "40px",
-                      color: "#888",
-                    }}
+                    className="text-center p-[40px] text-[#888]"
                   >
                     No payment records found.
                   </td>
@@ -618,46 +463,25 @@ export default function PaymentTrackingPanel() {
               {visible.map((p, i) => (
                 <tr
                   key={p.id}
-                  style={{
-                    borderBottom: "1px solid #f5f5f5",
-                    background: i % 2 === 0 ? "#fff" : "#fafafa",
-                  }}
+                  className={`border-b border-[#f5f5f5] ${i % 2 === 0 ? "bg-white" : "bg-[#fafafa]"}`}
                 >
-                  <td style={{ padding: "13px 16px", maxWidth: 200 }}>
+                  <td className="px-4 py-[13px] max-w-[200px]">
                     <span
-                      style={{
-                        color: "#1B3A6B",
-                        fontFamily: "monospace",
-                        fontSize: 11,
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                      }}
+                      className="text-ug-blue font-mono text-[11px] cursor-pointer underline"
                       onClick={() => setSelected(p)}
                     >
                       {(p.transactionId || "—").slice(0, 28)}
                       {(p.transactionId || "").length > 28 ? "…" : ""}
                     </span>
                   </td>
-                  <td
-                    style={{
-                      padding: "13px 16px",
-                      color: "#555",
-                      fontWeight: 500,
-                    }}
-                  >
+                  <td className="px-4 py-[13px] text-[#555] font-medium">
                     {p.studentId || "—"}
                   </td>
-                  <td style={{ padding: "13px 16px" }}>
-                    <div style={{ fontWeight: 500 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "#888" }}>{p.email}</div>
+                  <td className="px-4 py-[13px]">
+                    <div className="font-medium">{p.name}</div>
+                    <div className="text-[11px] text-[#888]">{p.email}</div>
                   </td>
-                  <td
-                    style={{
-                      padding: "13px 16px",
-                      color: "#555",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                  <td className="px-4 py-[13px] text-[#555] whitespace-nowrap">
                     <div>
                       {p.date
                         ? new Date(p.date).toLocaleDateString("en-GB", {
@@ -667,7 +491,7 @@ export default function PaymentTrackingPanel() {
                           })
                         : "—"}
                     </div>
-                    <div style={{ fontSize: 11, color: "#aaa" }}>
+                    <div className="text-[11px] text-[#aaa]">
                       {p.date
                         ? new Date(p.date).toLocaleTimeString("en-GB", {
                             hour: "2-digit",
@@ -676,37 +500,19 @@ export default function PaymentTrackingPanel() {
                         : ""}
                     </div>
                   </td>
-                  <td
-                    style={{
-                      padding: "13px 16px",
-                      fontWeight: 700,
-                      color: "#0F2347",
-                    }}
-                  >
+                  <td className="px-4 py-[13px] font-bold text-ug-navy">
                     GH₵ {fmt(Number(p.amount) || 0)}
                   </td>
-                  <td style={{ padding: "13px 16px", whiteSpace: "nowrap" }}>
+                  <td className="px-4 py-[13px] whitespace-nowrap">
                     {methodBadge(p.method)}
                   </td>
-                  <td style={{ padding: "13px 16px" }}>
+                  <td className="px-4 py-[13px]">
                     {statusBadge(p.status)}
                   </td>
-                  <td style={{ padding: "13px 16px" }}>
+                  <td className="px-4 py-[13px]">
                     <button
                       onClick={() => setSelected(p)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 5,
-                        background: "#f4f6fb",
-                        color: "#1B3A6B",
-                        border: "1px solid #b0bdd8",
-                        borderRadius: 8,
-                        padding: "5px 12px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                      }}
+                      className="inline-flex items-center gap-[5px] bg-[#f4f6fb] text-ug-blue border border-[#b0bdd8] rounded-lg px-3 py-[5px] text-xs font-semibold cursor-pointer"
                     >
                       <Eye size={13} /> View Details
                     </button>
@@ -716,14 +522,7 @@ export default function PaymentTrackingPanel() {
             </tbody>
           </table>
         </div>
-        <div
-          style={{
-            padding: "12px 20px",
-            borderTop: "1px solid #eee",
-            fontSize: 12,
-            color: "#888",
-          }}
-        >
+        <div className="px-5 py-3 border-t border-[#eee] text-xs text-[#888]">
           Showing {visible.length} of {payments.length} records
         </div>
       </div>
@@ -731,48 +530,20 @@ export default function PaymentTrackingPanel() {
       {/* Details modal */}
       {selected && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            zIndex: 999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
+          className="fixed inset-0 bg-black/45 z-[999] flex items-center justify-center p-6"
           onClick={() => setSelected(null)}
         >
           <div
-            style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: 32,
-              maxWidth: 520,
-              width: "100%",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-            }}
+            className="bg-white rounded-2xl p-8 max-w-[520px] w-full shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 24,
-              }}
-            >
-              <h3 style={{ fontFamily: "Playfair Display, serif", margin: 0 }}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-serif m-0">
                 Payment Details
               </h3>
               <button
                 onClick={() => setSelected(null)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#888",
-                }}
+                className="bg-transparent border-none cursor-pointer text-[#888]"
               >
                 <X size={20} />
               </button>
@@ -781,13 +552,7 @@ export default function PaymentTrackingPanel() {
             {[
               [
                 "Transaction ID",
-                <span
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 12,
-                    wordBreak: "break-all",
-                  }}
-                >
+                <span className="font-mono text-xs break-all">
                   {selected.transactionId}
                 </span>,
               ],
@@ -806,53 +571,34 @@ export default function PaymentTrackingPanel() {
             ].map(([label, val]) => (
               <div
                 key={label}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "10px 0",
-                  borderBottom: "1px solid #f0f0f0",
-                  fontSize: 14,
-                }}
+                className="flex justify-between py-[10px] border-b border-[#f0f0f0] text-sm"
               >
-                <span style={{ color: "#666", flexShrink: 0, marginRight: 16 }}>
+                <span className="text-[#666] shrink-0 mr-4">
                   {label}
                 </span>
-                <span style={{ fontWeight: 500, textAlign: "right" }}>
+                <span className="font-medium text-right">
                   {val}
                 </span>
               </div>
             ))}
 
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>
+            <div className="mt-5">
+              <div className="text-[13px] font-semibold mb-[10px]">
                 Update Status
               </div>
-              <div style={{ display: "flex", gap: 10 }}>
+              <div className="flex gap-[10px]">
                 <button
                   onClick={() => {
                     updateStatus(selected.id, "Confirmed");
                     setSelected((p) => ({ ...p, status: "Confirmed" }));
                   }}
-                  style={{
-                    flex: 1,
-                    background:
-                      selected.status === "Confirmed" ? "#e8f5ee" : "#f5f5f5",
-                    color: selected.status === "Confirmed" ? "#1B6B3A" : "#555",
-                    border: `1.5px solid ${selected.status === "Confirmed" ? "#a8d5b8" : "#ddd"}`,
-                    borderRadius: 8,
-                    padding: "9px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  className={`flex-1 border-[1.5px] rounded-lg p-[9px] text-[13px] font-semibold cursor-pointer ${
+                    selected.status === "Confirmed"
+                      ? "bg-[#e8f5ee] text-[#1B6B3A] border-[#a8d5b8]"
+                      : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
+                  }`}
                 >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
-                  >
+                  <span className="inline-flex items-center gap-[5px]">
                     <Check size={14} /> Confirmed
                   </span>
                 </button>
@@ -861,26 +607,13 @@ export default function PaymentTrackingPanel() {
                     updateStatus(selected.id, "Pending");
                     setSelected((p) => ({ ...p, status: "Pending" }));
                   }}
-                  style={{
-                    flex: 1,
-                    background:
-                      selected.status === "Pending" ? "#fdf3e0" : "#f5f5f5",
-                    color: selected.status === "Pending" ? "#b5700a" : "#555",
-                    border: `1.5px solid ${selected.status === "Pending" ? "#e8d5a0" : "#ddd"}`,
-                    borderRadius: 8,
-                    padding: "9px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  className={`flex-1 border-[1.5px] rounded-lg p-[9px] text-[13px] font-semibold cursor-pointer ${
+                    selected.status === "Pending"
+                      ? "bg-[#fdf3e0] text-[#b5700a] border-[#e8d5a0]"
+                      : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
+                  }`}
                 >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
-                  >
+                  <span className="inline-flex items-center gap-[5px]">
                     <AlertTriangle size={14} /> Pending
                   </span>
                 </button>
@@ -889,15 +622,7 @@ export default function PaymentTrackingPanel() {
                     removePayment(selected.id);
                     setSelected(null);
                   }}
-                  style={{
-                    background: "#fdecea",
-                    color: "#c0392b",
-                    border: "1px solid #f5b7b1",
-                    borderRadius: 8,
-                    padding: "9px 14px",
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
+                  className="bg-[#fdecea] text-[#c0392b] border border-[#f5b7b1] rounded-lg px-[14px] py-[9px] text-[13px] cursor-pointer"
                 >
                   <Trash2 size={14} />
                 </button>

@@ -12,25 +12,16 @@ export default function OverviewPanel() {
 
   return (
     <div>
-      <h2
-        style={{
-          marginBottom: 6,
-          fontFamily: "Playfair Display, serif",
-        }}
-      >
+      <h2 className="mb-[6px] font-serif">
         Dashboard
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>
+      <p className="text-[#666] text-sm mb-7">
         {event.edition} · {event.dates}
       </p>
 
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: 16,
-          marginBottom: 32,
-        }}
+        className="grid gap-4 mb-8"
+        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}
       >
         {[
           {
@@ -72,30 +63,21 @@ export default function OverviewPanel() {
         ].map((s, i) => (
           <div
             key={i}
+            className="rounded-xl py-[18px] px-5"
             style={{
               background: s.bg,
-              borderRadius: 12,
-              padding: "18px 20px",
               border: `1px solid ${s.color}20`,
             }}
           >
             <div
-              style={{
-                fontSize: 12,
-                color: s.color,
-                fontWeight: 500,
-                marginBottom: 4,
-              }}
+              className="text-xs font-medium mb-1"
+              style={{ color: s.color }}
             >
               {s.label}
             </div>
             <div
-              style={{
-                fontFamily: "Playfair Display, serif",
-                fontSize: 28,
-                fontWeight: 700,
-                color: s.color,
-              }}
+              className="font-serif text-[28px] font-bold"
+              style={{ color: s.color }}
             >
               {s.value}
             </div>
@@ -103,20 +85,9 @@ export default function OverviewPanel() {
         ))}
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-        }}
-      >
+      <div className="grid grid-cols-2 gap-5">
         <div className="card">
-          <h4
-            style={{
-              marginBottom: 14,
-              fontFamily: "Playfair Display, serif",
-            }}
-          >
+          <h4 className="mb-[14px] font-serif">
             Quick Toggles
           </h4>
           <ToggleRow
@@ -137,36 +108,24 @@ export default function OverviewPanel() {
           />
         </div>
         <div className="card">
-          <h4
-            style={{
-              marginBottom: 14,
-              fontFamily: "Playfair Display, serif",
-            }}
-          >
+          <h4 className="mb-[14px] font-serif">
             Recent Registrations
           </h4>
           {participants.slice(0, 4).map((p) => (
             <div
               key={p.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 0",
-                borderBottom: "1px solid #f5f5f5",
-              }}
+              className="flex justify-between items-center py-2 border-b border-[#f5f5f5]"
             >
               <div>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>
+                <div className="text-[13px] font-medium">
                   {p.name}
                 </div>
-                <div style={{ fontSize: 11, color: "#888" }}>
+                <div className="text-[11px] text-[#888]">
                   {p.programme}
                 </div>
               </div>
               <span
-                className={`badge ${p.payment === "Confirmed" ? "badge-green" : "badge-red"}`}
-                style={{ fontSize: 11 }}
+                className={`badge ${p.payment === "Confirmed" ? "badge-green" : "badge-red"} text-[11px]`}
               >
                 {p.payment}
               </span>

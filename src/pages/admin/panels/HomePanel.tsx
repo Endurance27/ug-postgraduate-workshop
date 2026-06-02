@@ -161,31 +161,27 @@ export default function HomePanel() {
     }));
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[760px]">
+      <h2 className="mb-1.5 font-serif">
         Home Page
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>
+      <p className="text-[#666] text-sm mb-7">
         Edit all sections shown on the Home page — hero, dates, sessions, and
         testimonials.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved — all Home page changes are live.
         </div>
       )}
 
       {/* ── Hero ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <h4 className="mb-4 font-serif">
           Hero Section
         </h4>
         <div className="form-row">
@@ -247,11 +243,11 @@ export default function HomePanel() {
             onChange={(e) =>
               setHomeForm((f) => ({ ...f, heroDesc: e.target.value }))
             }
-            style={{ minHeight: 80 }}
+            className="min-h-[80px]"
             placeholder="Brief description shown below the title in the hero…"
           />
         </div>
-        <div className="form-group" style={{ maxWidth: 200 }}>
+        <div className="form-group max-w-[200px]">
           <label>Registration Fee (GHS)</label>
           <input
             type="number"
@@ -277,146 +273,66 @@ export default function HomePanel() {
       </div>
 
       {/* ── Important Dates ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">
             Important Dates
           </h4>
           <button
             onClick={addDate}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
           >
             + Add Date
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-3.5">
           These date cards appear in the dark navy strip on the Home page.
         </p>
         {homeForm.importantDates.map((d, i) => (
           <div
             key={d.id || i}
-            style={{
-              border: "1px solid #e0e0e0",
-              borderRadius: 10,
-              padding: "14px 16px",
-              marginBottom: 10,
-              background: d.done ? "#f0fff5" : "#fafafa",
-            }}
+            className={`border border-[#e0e0e0] rounded-[10px] px-4 py-3.5 mb-2.5${d.done ? " bg-[#f0fff5]" : " bg-[#fafafa]"}`}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 1fr 1fr 60px auto",
-                gap: 10,
-                alignItems: "end",
-              }}
-            >
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Icon</label>
+            <div className="grid grid-cols-[60px_1fr_1fr_60px_auto] gap-[10px] items-end">
+              <div className="form-group mb-0">
+                <label className="text-xs">Icon</label>
                 <input
                   value={d.icon}
                   onChange={(e) => updateDate(i, "icon", e.target.value)}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 18,
-                    textAlign: "center",
-                  }}
+                  className="px-2 py-1.5 border border-[#ddd] rounded-md text-lg text-center"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Label</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Label</label>
                 <input
                   value={d.label}
                   onChange={(e) => updateDate(i, "label", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Date / Status</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Date / Status</label>
                 <input
                   value={d.date}
                   onChange={(e) => updateDate(i, "date", e.target.value)}
                   placeholder="e.g. 31 Jul 2026"
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <label style={{ fontSize: 11, color: "#888" }}>Done</label>
+              <div className="flex flex-col items-center gap-1">
+                <label className="text-[11px] text-[#888]">Done</label>
                 <button
                   onClick={() => updateDate(i, "done", !d.done)}
-                  style={{
-                    width: 36,
-                    height: 22,
-                    borderRadius: 11,
-                    border: "none",
-                    cursor: "pointer",
-                    background: d.done ? "#1B6B3A" : "#ccc",
-                    position: "relative",
-                    transition: "background 0.2s",
-                  }}
+                  className={`w-9 h-[22px] rounded-[11px] border-none cursor-pointer relative transition-colors${d.done ? " bg-[#1B6B3A]" : " bg-[#ccc]"}`}
                 >
                   <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "50%",
-                      background: "#fff",
-                      position: "absolute",
-                      top: 3,
-                      left: d.done ? 17 : 3,
-                      transition: "left 0.2s",
-                    }}
+                    className={`w-4 h-4 rounded-full bg-white absolute top-[3px] transition-[left]${d.done ? " left-[17px]" : " left-[3px]"}`}
                   />
                 </button>
               </div>
               <button
                 onClick={() => removeDate(i)}
-                style={{
-                  background: "#fdecea",
-                  color: "#c0392b",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "6px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                  marginBottom: 20,
-                }}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-1.5 text-xs cursor-pointer mb-5"
               >
                 <X size={14} />
               </button>
@@ -426,184 +342,100 @@ export default function HomePanel() {
       </div>
 
       {/* ── Featured Sessions ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">
             Featured Sessions
           </h4>
           <button
             onClick={addSession}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
           >
             + Add Session
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-3.5">
           Speaker / session cards in the "Programme Highlights" section on the
           Home page.
         </p>
         {homeForm.featuredSessions.map((s, i) => (
           <div
             key={s.id || i}
-            style={{
-              border: "1px solid #e0e0e0",
-              borderRadius: 10,
-              padding: "16px",
-              marginBottom: 12,
-            }}
+            className="border border-[#e0e0e0] rounded-[10px] p-4 mb-3"
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ fontWeight: 600, fontSize: 14 }}>
+            <div className="flex justify-between mb-2.5">
+              <span className="font-semibold text-sm">
                 {s.session || `Session ${i + 1}`}
               </span>
               <button
                 onClick={() => removeSession(i)}
-                style={{
-                  background: "#fdecea",
-                  color: "#c0392b",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "3px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-[3px] text-xs cursor-pointer"
               >
                 Remove
               </button>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 1fr 1fr",
-                gap: 10,
-                marginBottom: 10,
-              }}
-            >
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Icon</label>
+            <div className="grid grid-cols-[60px_1fr_1fr] gap-[10px] mb-2.5">
+              <div className="form-group mb-0">
+                <label className="text-xs">Icon</label>
                 <input
                   value={s.icon}
                   onChange={(e) => updateSession(i, "icon", e.target.value)}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 18,
-                    textAlign: "center",
-                    width: "100%",
-                  }}
+                  className="px-2 py-1.5 border border-[#ddd] rounded-md text-lg text-center w-full"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Tag (shown as badge)</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Tag (shown as badge)</label>
                 <input
                   value={s.tag}
                   onChange={(e) => updateSession(i, "tag", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                   placeholder="e.g. Keynote"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Accent Colour</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Accent Colour</label>
                 <input
                   value={s.accent}
                   onChange={(e) => updateSession(i, "accent", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                   placeholder="#1B3A6B"
                 />
               </div>
             </div>
-            <div className="form-row" style={{ marginBottom: 10 }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Session Title</label>
+            <div className="form-row mb-2.5">
+              <div className="form-group mb-0">
+                <label className="text-xs">Session Title</label>
                 <input
                   value={s.session}
                   onChange={(e) => updateSession(i, "session", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Speaker / Role</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Speaker / Role</label>
                 <input
                   value={s.role}
                   onChange={(e) => updateSession(i, "role", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                   placeholder="TBA — Keynote Speaker"
                 />
               </div>
             </div>
             <div className="form-row">
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Status / Affiliation</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Status / Affiliation</label>
                 <input
                   value={s.status}
                   onChange={(e) => updateSession(i, "status", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Topic / Theme</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Topic / Theme</label>
                 <input
                   value={s.topic}
                   onChange={(e) => updateSession(i, "topic", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
             </div>
@@ -612,112 +444,58 @@ export default function HomePanel() {
       </div>
 
       {/* ── Testimonials ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">
             Testimonials
           </h4>
           <button
             onClick={addTestimonial}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
           >
             + Add
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-3.5">
           Participant quotes in the "What Participants Say" section. Photos use
           the global site images.
         </p>
         {homeForm.testimonials.map((t, i) => (
           <div
             key={t.id || i}
-            style={{
-              border: "1px solid #e0e0e0",
-              borderRadius: 10,
-              padding: "14px 16px",
-              marginBottom: 10,
-            }}
+            className="border border-[#e0e0e0] rounded-[10px] px-4 py-3.5 mb-2.5"
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                marginBottom: 8,
-              }}
-            >
+            <div className="flex justify-end mb-2">
               <button
                 onClick={() => removeTestimonial(i)}
-                style={{
-                  background: "#fdecea",
-                  color: "#c0392b",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "3px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-[3px] text-xs cursor-pointer"
               >
                 Remove
               </button>
             </div>
-            <div className="form-group" style={{ marginBottom: 10 }}>
-              <label style={{ fontSize: 12 }}>Quote</label>
+            <div className="form-group mb-2.5">
+              <label className="text-xs">Quote</label>
               <textarea
                 value={t.quote}
                 onChange={(e) => updateTestimonial(i, "quote", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  minHeight: 70,
-                  resize: "vertical",
-                }}
+                className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px] min-h-[70px] resize-y"
               />
             </div>
             <div className="form-row">
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Name</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Name</label>
                 <input
                   value={t.name}
                   onChange={(e) => updateTestimonial(i, "name", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Programme</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Programme</label>
                 <input
                   value={t.prog}
                   onChange={(e) => updateTestimonial(i, "prog", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
                   placeholder="MSc Computer Science"
                 />
               </div>
@@ -727,13 +505,13 @@ export default function HomePanel() {
       </div>
 
       {/* ── Stats Bar ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 8, fontFamily: "Playfair Display, serif" }}>Stats Bar</h4>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>
+      <div className="card mb-5">
+        <h4 className="mb-2 font-serif">Stats Bar</h4>
+        <p className="text-[13px] text-[#888] mb-4">
           Numbers shown in the strip below the hero. Registration Fee is set by the fee field above.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-          <div className="form-group" style={{ marginBottom: 0 }}>
+        <div className="grid grid-cols-[1fr_1fr_1fr] gap-[16px]">
+          <div className="form-group mb-0">
             <label>Workshop Days</label>
             <input
               type="number" min="1"
@@ -741,7 +519,7 @@ export default function HomePanel() {
               onChange={(e) => setHomeForm((f) => ({ ...f, workshopDays: Number(e.target.value) }))}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group mb-0">
             <label>Presentation Tracks</label>
             <input
               type="number" min="1"
@@ -749,7 +527,7 @@ export default function HomePanel() {
               onChange={(e) => setHomeForm((f) => ({ ...f, presentationTracks: Number(e.target.value) }))}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group mb-0">
             <label>Award Positions</label>
             <input
               type="number" min="1"
@@ -761,102 +539,130 @@ export default function HomePanel() {
       </div>
 
       {/* ── Research Tracks ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Research Tracks</h4>
-          <button onClick={addTrack} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">Research Tracks</h4>
+          <button
+            onClick={addTrack}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
+          >
             + Add Track
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-3.5">
           Presentation tracks in the "How to Participate" section. Leave empty to use the built-in defaults.
         </p>
         {homeForm.tracks.length === 0 && (
-          <p style={{ fontSize: 13, color: "#aaa", fontStyle: "italic", marginBottom: 8 }}>Using built-in defaults. Add a track to override all of them.</p>
+          <p className="text-[13px] text-[#aaa] italic mb-2">Using built-in defaults. Add a track to override all of them.</p>
         )}
         {homeForm.tracks.map((t, i) => (
-          <div key={i} style={{ border: "1px solid #e0e0e0", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontWeight: 600, fontSize: 14 }}>{t.title || `Track ${i + 1}`}</span>
-              <button onClick={() => removeTrack(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "3px 10px", fontSize: 12, cursor: "pointer" }}>Remove</button>
+          <div key={i} className="border border-[#e0e0e0] rounded-[10px] px-4 py-3.5 mb-2.5">
+            <div className="flex justify-between mb-2.5">
+              <span className="font-semibold text-sm">{t.title || `Track ${i + 1}`}</span>
+              <button
+                onClick={() => removeTrack(i)}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-[3px] text-xs cursor-pointer"
+              >
+                Remove
+              </button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 90px", gap: 10, marginBottom: 10 }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Track Title</label>
-                <input value={t.title} onChange={(e) => updateTrack(i, "title", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            <div className="grid grid-cols-[1fr_90px] gap-[10px] mb-2.5">
+              <div className="form-group mb-0">
+                <label className="text-xs">Track Title</label>
+                <input
+                  value={t.title}
+                  onChange={(e) => updateTrack(i, "title", e.target.value)}
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
+                />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Colour</label>
-                <input value={t.color} onChange={(e) => updateTrack(i, "color", e.target.value)} placeholder="#1B3A6B" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+              <div className="form-group mb-0">
+                <label className="text-xs">Colour</label>
+                <input
+                  value={t.color}
+                  onChange={(e) => updateTrack(i, "color", e.target.value)}
+                  placeholder="#1B3A6B"
+                  className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
+                />
               </div>
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Description</label>
-              <input value={t.desc} onChange={(e) => updateTrack(i, "desc", e.target.value)} placeholder="Brief description of this track…" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            <div className="form-group mb-0">
+              <label className="text-xs">Description</label>
+              <input
+                value={t.desc}
+                onChange={(e) => updateTrack(i, "desc", e.target.value)}
+                placeholder="Brief description of this track…"
+                className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
+              />
             </div>
           </div>
         ))}
       </div>
 
       {/* ── Eligible Programmes ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Eligible Programmes</h4>
-          <button onClick={addProgramme} style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 13, cursor: "pointer" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">Eligible Programmes</h4>
+          <button
+            onClick={addProgramme}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
+          >
             + Add Programme
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-3.5">
           Eligibility table in the "Who Can Participate" section. Leave empty to use built-in defaults.
         </p>
         {homeForm.programmes.length === 0 && (
-          <p style={{ fontSize: 13, color: "#aaa", fontStyle: "italic", marginBottom: 8 }}>Using built-in defaults. Add a programme to override all of them.</p>
+          <p className="text-[13px] text-[#aaa] italic mb-2">Using built-in defaults. Add a programme to override all of them.</p>
         )}
         {homeForm.programmes.map((p, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 140px auto auto", gap: 10, alignItems: "end", marginBottom: 10 }}>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Programme Name</label>
-              <input value={p.name} onChange={(e) => updateProgramme(i, "name", e.target.value)} style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+          <div key={i} className="grid grid-cols-[1fr_140px_auto_auto] gap-[10px] items-end mb-2.5">
+            <div className="form-group mb-0">
+              <label className="text-xs">Programme Name</label>
+              <input
+                value={p.name}
+                onChange={(e) => updateProgramme(i, "name", e.target.value)}
+                className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
+              />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Role</label>
-              <input value={p.role} onChange={(e) => updateProgramme(i, "role", e.target.value)} placeholder="Presenter" style={{ width: "100%", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 13 }} />
+            <div className="form-group mb-0">
+              <label className="text-xs">Role</label>
+              <input
+                value={p.role}
+                onChange={(e) => updateProgramme(i, "role", e.target.value)}
+                placeholder="Presenter"
+                className="w-full px-2 py-1.5 border border-[#ddd] rounded-md text-[13px]"
+              />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, paddingBottom: 2 }}>
-              <label style={{ fontSize: 11, color: "#888" }}>Required</label>
+            <div className="flex flex-col items-center gap-1 pb-0.5">
+              <label className="text-[11px] text-[#888]">Required</label>
               <button
                 onClick={() => updateProgramme(i, "required", !p.required)}
-                style={{ width: 36, height: 22, borderRadius: 11, border: "none", cursor: "pointer", background: p.required ? "#1B6B3A" : "#ccc", position: "relative", transition: "background 0.2s" }}
+                className={`w-9 h-[22px] rounded-[11px] border-none cursor-pointer relative transition-colors${p.required ? " bg-[#1B6B3A]" : " bg-[#ccc]"}`}
               >
-                <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: p.required ? 17 : 3, transition: "left 0.2s" }} />
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-[3px] transition-[left]${p.required ? " left-[17px]" : " left-[3px]"}`} />
               </button>
             </div>
-            <button onClick={() => removeProgramme(i)} style={{ background: "#fdecea", color: "#c0392b", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 0 }}>
+            <button
+              onClick={() => removeProgramme(i)}
+              className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-1.5 text-xs cursor-pointer"
+            >
               <X size={14} />
             </button>
           </div>
         ))}
       </div>
 
-      <div
-        style={{
-          background: "#f8f9fa",
-          borderRadius: 12,
-          padding: "14px 18px",
-          marginBottom: 20,
-          fontSize: 13,
-          color: "#666",
-        }}
-      >
-        <strong style={{ color: "#1B3A6B" }}>Announcements & Live Feed</strong>{" "}
+      <div className="bg-ug-surface rounded-xl px-[18px] py-3.5 mb-5 text-[13px] text-[#666]">
+        <strong className="text-ug-blue">Announcements & Live Feed</strong>{" "}
         — manage via Admin Tools sidebar.
         <br />
-        <strong style={{ color: "#1B3A6B" }}>Homepage photos</strong> — change
+        <strong className="text-ug-blue">Homepage photos</strong> — change
         via <strong>Site Images</strong> in Admin Tools.
       </div>
 
       <button className="btn-primary" onClick={saveAll}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span className="inline-flex items-center gap-1.5">
           Save All Home Page Changes <ArrowRight size={14} />
         </span>
       </button>

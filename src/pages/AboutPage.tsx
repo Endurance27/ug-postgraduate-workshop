@@ -68,14 +68,11 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
 
   // ── Loading skeleton ──
   if (loading) return (
-    <main style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{
-          width: 40, height: 40, border: "3px solid #e0e0e0",
-          borderTopColor: "#1B3A6B", borderRadius: "50%",
-          animation: "spin 0.9s linear infinite", margin: "0 auto 16px",
-        }} />
-        <p style={{ color: "#888", fontSize: 14 }}>Loading about content…</p>
+    <main className="min-h-[60vh] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-10 h-10 border-[3px] border-[#e0e0e0] border-t-ug-blue rounded-full mx-auto mb-4"
+          style={{ animation: "spin 0.9s linear infinite" }} />
+        <p className="text-[#888] text-[14px]">Loading about content…</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </main>
@@ -83,13 +80,8 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
 
   // ── Fetch error notice (non-blocking — still shows content from prop) ──
   const errorBanner = fetchError ? (
-    <div style={{
-      background: "#fff8e1", border: "1px solid #f5c842",
-      borderRadius: 8, padding: "10px 16px", margin: "16px 0",
-      fontSize: 13, color: "#856404",
-      display: "flex", alignItems: "center", gap: 8,
-    }}>
-      <AlertCircle size={14} style={{ flexShrink: 0 }} />
+    <div className="bg-[#fff8e1] border border-[#f5c842] rounded-lg py-[10px] px-4 my-4 text-[13px] text-[#856404] flex items-center gap-2">
+      <AlertCircle size={14} className="shrink-0" />
       Could not fetch the latest content from the server. Showing cached version.
     </div>
   ) : null;
@@ -99,77 +91,66 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       {errorBanner && <div className="container">{errorBanner}</div>}
 
       {/* ── HERO ── */}
-      <section style={{
-        position: "relative", overflow: "hidden",
-        background: "linear-gradient(135deg, #0F2347, #1B3A6B)",
-        color: "#fff", padding: "72px 0 56px",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url('${images.research || "/images/research-presentations.jpg"}')`,
-          backgroundSize: "cover", backgroundPosition: "center", opacity: 0.13,
-        }} />
-        <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <span className="badge" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C", marginBottom: 14, display: "inline-block" }}>
+      <section className="relative overflow-hidden text-white py-[72px_0_56px]"
+        style={{ background: "linear-gradient(135deg, #0F2347, #1B3A6B)" }}>
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.13]"
+          style={{ backgroundImage: `url('${images.research || "/images/research-presentations.jpg"}')` }} />
+        <div className="container relative z-[1] py-[72px] pb-[56px]">
+          <span className="badge inline-block mb-[14px]"
+            style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
             {a.badge}
           </span>
-          <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem, 4.5vw, 3rem)", marginBottom: 10 }}>
+          <h1 className="text-white font-serif mb-[10px]"
+            style={{ fontSize: "clamp(2rem, 4.5vw, 3rem)" }}>
             About the Workshop
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 15, maxWidth: 540 }}>
+          <p className="text-white/65 text-[15px] max-w-[540px]">
             Department of Computer Science · SPMS · University of Ghana, Legon
           </p>
         </div>
       </section>
 
       {/* ── OVERVIEW ── */}
-      <section className="section" style={{ background: "#fff" }}>
+      <section className="section bg-white">
         <div className="container">
-          <div style={{ marginBottom: 14 }}>
-            <span className="badge badge-blue" style={{ marginBottom: 10 }}>Overview</span>
+          <div className="mb-[14px]">
+            <span className="badge badge-blue mb-[10px]">Overview</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "start" }} className="about-grid">
+          <div className="about-grid grid grid-cols-2 gap-14 items-start">
 
             <div>
-              <h2 className="about-heading" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", lineHeight: 1.3, marginBottom: 20 }}>
+              <h2 className="about-heading leading-[1.3] mb-5" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)" }}>
                 {a.title}
               </h2>
-              <p style={{ color: "#555", lineHeight: 1.85, marginBottom: 16, fontSize: 15 }}>{a.desc1}</p>
-              <p style={{ color: "#555", lineHeight: 1.85, fontSize: 15, marginBottom: 20 }}>{a.desc2}</p>
-              <p style={{ fontSize: 13, color: "#888", fontStyle: "italic", marginBottom: 16 }}>
+              <p className="text-[#555] leading-[1.85] mb-4 text-[15px]">{a.desc1}</p>
+              <p className="text-[#555] leading-[1.85] text-[15px] mb-5">{a.desc2}</p>
+              <p className="text-[13px] text-[#888] italic mb-4">
                 Workshop theme announcement coming soon
               </p>
-              <button onClick={() => navigate("recordings")} style={{
-                background: "#C9A84C", color: "#0F2347", border: "none",
-                borderRadius: 8, padding: "10px 22px", fontSize: 13,
-                fontWeight: 700, cursor: "pointer",
-              }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}>Watch Highlights<ArrowRight size={14} /></span></button>
+              <button onClick={() => navigate("recordings")}
+                className="bg-ug-gold text-ug-navy border-none rounded-lg py-[10px] px-[22px] text-[13px] font-bold cursor-pointer">
+                <span className="inline-flex items-center gap-[6px]">Watch Highlights<ArrowRight size={14} /></span>
+              </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ borderRadius: 16, overflow: "hidden", position: "relative" }}>
+            <div className="flex flex-col gap-[18px]">
+              <div className="rounded-2xl overflow-hidden relative">
                 <img src={images.research || "/images/research-presentations.jpg"} alt="Workshop"
-                  style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(transparent 40%, rgba(15,35,71,0.88))",
-                  display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "18px 20px",
-                }}>
-                  <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0 }}>{a.imageCaption1}</p>
-                  <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, margin: "3px 0 0" }}>{a.imageCaption2}</p>
+                  className="w-full object-cover block" style={{ height: 220 }} />
+                <div className="absolute inset-0 flex flex-col justify-end p-[18px_20px]"
+                  style={{ background: "linear-gradient(transparent 40%, rgba(15,35,71,0.88))" }}>
+                  <p className="text-white font-bold text-[14px] m-0">{a.imageCaption1}</p>
+                  <p className="text-white/65 text-[12px] mt-[3px] mb-0">{a.imageCaption2}</p>
                 </div>
               </div>
 
-              <div style={{
-                background: "#1B3A6B", borderRadius: 14, padding: "18px 22px",
-                display: "flex", alignItems: "center", gap: 18,
-              }}>
-                <div style={{ flexShrink: 0 }}>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginBottom: 2 }}>Registration Fee</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "#C9A84C", lineHeight: 1 }}>GHC {fee}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>Snacks, water & materials</div>
+              <div className="bg-ug-blue rounded-[14px] p-[18px_22px] flex items-center gap-[18px]">
+                <div className="shrink-0">
+                  <div className="text-[11px] text-white/55 mb-[2px]">Registration Fee</div>
+                  <div className="text-[28px] font-extrabold text-ug-gold leading-none">GHC {fee}</div>
+                  <div className="text-[11px] text-white/50 mt-[3px]">Snacks, water & materials</div>
                 </div>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.75, margin: 0 }}>
+                <p className="text-[13px] text-white/75 leading-[1.75] m-0">
                   {a.cardText}
                 </p>
               </div>
@@ -179,91 +160,84 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       </section>
 
       {/* ── VIDEO HIGHLIGHTS ── */}
-      <section className="section" style={{ background: "#f8f9fa" }}>
+      <section className="section bg-ug-surface">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <span className="badge badge-gold" style={{ marginBottom: 10 }}>Watch Highlights</span>
-            <h2 className="about-heading" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", marginBottom: 8 }}>
+          <div className="text-center mb-9">
+            <span className="badge badge-gold mb-[10px]">Watch Highlights</span>
+            <h2 className="about-heading mb-2" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)" }}>
               Maiden Workshop 2025 — Video Highlights
             </h2>
-            <p style={{ color: "#666", fontSize: 14, maxWidth: 520, margin: "0 auto" }}>
+            <p className="text-[#666] text-[14px] max-w-[520px] mx-auto">
               Experience the energy and academic rigor of our inaugural workshop. Watch highlights from the 2025 edition.
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="video-grid">
+          <div className="video-grid grid grid-cols-3 gap-5">
             {[
               { day: "DAY 1", label: "Opening Ceremony & First Day Sessions",       color: "#1B3A6B", id: "BWErDrKoRS4", start: 0    },
               { day: "DAY 2", label: "Technical Presentations & Panel Discussions",  color: "#C9A84C", id: "1KWiyZnJFmw", start: 9624 },
               { day: "DAY 3", label: "Closing Ceremony & Awards Announcement",       color: "#7b1fa2", id: "NUAZDcQ_lJs", start: 6    },
             ].map((v, i) => (
-              <div key={i} style={{ borderRadius: 14, overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.09)", border: "1px solid #eee", background: "#fff" }}>
-                <div style={{ background: v.color, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontWeight: 800, fontSize: 13, color: "#fff", letterSpacing: "0.05em" }}>{v.day}</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)" }}>August 2025</span>
+              <div key={i} className="rounded-[14px] overflow-hidden border border-[#eee] bg-white"
+                style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.09)" }}>
+                <div className="py-[10px] px-4 flex justify-between items-center" style={{ background: v.color }}>
+                  <span className="font-extrabold text-[13px] text-white tracking-[0.05em]">{v.day}</span>
+                  <span className="text-[11px] text-white/65">August 2025</span>
                 </div>
                 {v.id ? (
-                  <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
+                  <div className="relative pb-[56.25%] h-0 overflow-hidden">
                     <iframe
                       src={`https://www.youtube.com/embed/${v.id}?start=${v.start}`}
                       title={`Workshop 2025 ${v.day}`}
-                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                      className="absolute top-0 left-0 w-full h-full"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
                   </div>
                 ) : (
-                  <div style={{ aspectRatio: "16/9", background: "#111", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div className="bg-[#111] flex items-center justify-center" style={{ aspectRatio: "16/9" }}>
                     <Video size={32} color="rgba(255,255,255,0.4)" />
                   </div>
                 )}
-                <div style={{ padding: "12px 16px" }}>
-                  <p style={{ fontSize: 13, color: "#444", lineHeight: 1.55, margin: "0 0 10px", fontWeight: 500 }}>{v.label}</p>
+                <div className="p-[12px_16px]">
+                  <p className="text-[13px] text-[#444] leading-[1.55] m-0 mb-[10px] font-medium">{v.label}</p>
                   {v.id ? (
                     <a href={`https://www.youtube.com/watch?v=${v.id}&t=${v.start}s`} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 12, color: "#1B3A6B", fontWeight: 700, textDecoration: "none" }}>
-                      <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Play size={12} /> Watch on YouTube <ArrowRight size={12} /></span>
+                      className="text-[12px] text-ug-blue font-bold no-underline">
+                      <span className="inline-flex items-center gap-1"><Play size={12} /> Watch on YouTube <ArrowRight size={12} /></span>
                     </a>
                   ) : (
-                    <span style={{ fontSize: 12, color: "#aaa" }}>Recording coming soon</span>
+                    <span className="text-[12px] text-[#aaa]">Recording coming soon</span>
                   )}
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={{
-            marginTop: 24, background: "#e3f5eb", border: "1px solid #a8d5b8",
-            borderRadius: 10, padding: "12px 20px", textAlign: "center",
-            fontSize: 13, color: "#1B6B3A", fontWeight: 500,
-          }}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Sparkles size={14} /> Complete coverage from all 3 days of the maiden 2025 workshop is now available!</span>
+          <div className="mt-6 bg-[#e3f5eb] border border-[#a8d5b8] rounded-[10px] py-3 px-5 text-center text-[13px] text-[#1B6B3A] font-medium">
+            <span className="inline-flex items-center gap-[6px]"><Sparkles size={14} /> Complete coverage from all 3 days of the maiden 2025 workshop is now available!</span>
           </div>
         </div>
       </section>
 
       {/* ── HIGHLIGHTS CARDS ── */}
-      <section style={{ background: "#fff", padding: "52px 0", borderTop: "1px solid #eee" }}>
+      <section className="bg-white py-[52px] border-t border-[#eee]">
         <div className="container">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }} className="highlights-grid">
+          <div className="highlights-grid grid grid-cols-4 gap-5">
             {[
               { icon: <Calendar size={28} color="#1B3A6B" />, title: "3-Day Event",          body: "27–29 August 2026 — three full days of research presentations, panel discussions, and academic networking." },
               { icon: <Globe size={28} color="#1B3A6B" />,    title: "Hybrid Format",         body: "Attend physically on the UG campus or join virtually. Parallel tracks run across CS, Data Science, and IT for Business." },
               { icon: <BookOpen size={28} color="#1B3A6B" />, title: "CBAS Publication",      body: "Accepted papers may be considered for publication in the College of Basic and Applied Sciences (CBAS) Journal." },
               { icon: <Trophy size={28} color="#1B3A6B" />,   title: "Awards & Recognition",  body: "1st, 2nd, and 3rd place awards per presentation track, evaluated by an academic faculty review panel." },
             ].map((h, i) => (
-              <div key={i} style={{
-                background: "#f7f9fc", borderRadius: 14, padding: "28px 22px",
-                border: "1px solid #e8eef6", borderTop: "3px solid #1B3A6B",
-                transition: "box-shadow 0.2s, transform 0.2s",
-              }}
+              <div key={i} className="bg-[#f7f9fc] rounded-[14px] p-[28px_22px] border border-[#e8eef6] border-t-[3px] border-t-ug-blue transition-[box-shadow,transform] duration-200"
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(27,58,107,0.1)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{ marginBottom: 14 }}>{h.icon}</div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "#1B3A6B", marginBottom: 10 }}>{h.title}</div>
-                <p style={{ fontSize: 13, color: "#666", lineHeight: 1.75, margin: 0 }}>{h.body}</p>
+                <div className="mb-[14px]">{h.icon}</div>
+                <div className="font-bold text-[14px] text-ug-blue mb-[10px]">{h.title}</div>
+                <p className="text-[13px] text-[#666] leading-[1.75] m-0">{h.body}</p>
               </div>
             ))}
           </div>
@@ -271,14 +245,15 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       </section>
 
       {/* ── EVENT DETAILS ── */}
-      <section style={{ background: "#0F2347", padding: "52px 0" }}>
-        <div className="container" style={{ maxWidth: 960 }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <span className="badge" style={{ background: "rgba(201,168,76,0.2)", color: "#C9A84C", border: "1px solid rgba(201,168,76,0.35)", marginBottom: 10 }}>
+      <section className="bg-ug-navy py-[52px]">
+        <div className="container max-w-[960px]">
+          <div className="text-center mb-9">
+            <span className="badge border border-ug-gold/35 mb-[10px]"
+              style={{ background: "rgba(201,168,76,0.2)", color: "#C9A84C" }}>
               Event Details
             </span>
           </div>
-          <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="rounded-[14px] overflow-hidden border border-white/10">
             {[
               [
                 { label: "Event Name",       value: "2nd Annual DCS Postgraduate Students Workshop" },
@@ -296,18 +271,16 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 { label: "Session Format",   value: "Parallel Track Sessions across multiple categories" },
               ],
             ].map((row, ri) => (
-              <div key={ri} style={{
-                display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-                borderBottom: ri < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
-                background: ri % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.06)",
-              }} className="details-row">
+              <div key={ri} className="details-row grid grid-cols-3"
+                style={{
+                  borderBottom: ri < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                  background: ri % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.06)",
+                }}>
                 {row.map((cell, ci) => (
-                  <div key={ci} style={{
-                    padding: "20px 24px",
-                    borderRight: ci < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
-                  }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#C9A84C", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{cell.label}</div>
-                    <div style={{ fontSize: 14, color: "#fff", fontWeight: 500, lineHeight: 1.5 }}>{cell.value}</div>
+                  <div key={ci} className="p-[20px_24px]"
+                    style={{ borderRight: ci < 2 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                    <div className="text-[10px] font-bold text-ug-gold uppercase tracking-[0.1em] mb-[6px]">{cell.label}</div>
+                    <div className="text-[14px] text-white font-medium leading-[1.5]">{cell.value}</div>
                   </div>
                 ))}
               </div>
@@ -317,51 +290,47 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       </section>
 
       {/* ── CALL FOR PAPERS ── */}
-      <section className="section" style={{ background: "#fff" }}>
+      <section className="section bg-white">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 12 }}>
-            <span className="badge badge-blue" style={{ marginBottom: 10 }}>Submissions</span>
-            <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", marginBottom: 10, color: "#1B3A6B" }}>
+          <div className="text-center mb-3">
+            <span className="badge badge-blue mb-[10px]">Submissions</span>
+            <h2 className="mb-[10px] text-ug-blue" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)" }}>
               Call for Papers
             </h2>
-            <p style={{ color: "#666", fontSize: 14, maxWidth: 580, margin: "0 auto 36px", lineHeight: 1.8 }}>
+            <p className="text-[#666] text-[14px] max-w-[580px] mx-auto mb-9 leading-[1.8]">
               We invite postgraduate students to submit original research for presentation at the workshop. All submissions undergo peer review by the academic faculty panel.
             </p>
           </div>
 
           {/* Paper type cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 36 }} className="cfp-grid">
+          <div className="cfp-grid grid grid-cols-4 gap-4 mb-9">
             {[
               { icon: <FolderOpen size={24} color="#56d364" />,    type: "Poster Presentation", pages: "1–2 pages", desc: "Visual display with Q&A interaction. Ideal for early-stage research.",             color: "#56d364", bg: "#eafbee" },
               { icon: <FileText size={24} color="#1B3A6B" />,      type: "Regular Paper",        pages: "3–5 pages", desc: "Full-length research with methodology, results and discussion.",                    color: "#1B3A6B", bg: "#e8eef6" },
               { icon: <ClipboardList size={24} color="#79c0ff" />, type: "Short Paper",          pages: "4–6 pages", desc: "Focused presentation of work-in-progress or preliminary findings.",                color: "#79c0ff", bg: "#e8f4ff" },
               { icon: <Settings size={24} color="#f78166" />,      type: "Technical Paper",      pages: "6–8 pages", desc: "System demonstration or technical implementation report.",                          color: "#f78166", bg: "#fff0ed" },
             ].map((c, i) => (
-              <div key={i} style={{
-                background: c.bg, borderRadius: 14,
-                padding: "22px 18px", borderTop: `3px solid ${c.color}`,
-                border: `1px solid ${c.color}30`,
-                transition: "box-shadow 0.2s",
-              }}
+              <div key={i} className="rounded-[14px] p-[22px_18px] border transition-shadow duration-200"
+                style={{
+                  background: c.bg,
+                  borderTop: `3px solid ${c.color}`,
+                  border: `1px solid ${c.color}30`,
+                }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = `0 6px 20px ${c.color}25`}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
-                <div style={{ marginBottom: 10 }}>{c.icon}</div>
-                <div style={{ fontWeight: 700, fontSize: 13, color: c.color, marginBottom: 8 }}>{c.type}</div>
-                <div style={{
-                  display: "inline-block", fontSize: 16, fontWeight: 800,
-                  color: "#1a1a1a", fontFamily: "monospace",
-                  background: "rgba(0,0,0,0.06)", borderRadius: 6, padding: "3px 10px", marginBottom: 10,
-                }}>{c.pages}</div>
-                <p style={{ fontSize: 12, color: "#555", lineHeight: 1.7, margin: 0 }}>{c.desc}</p>
+                <div className="mb-[10px]">{c.icon}</div>
+                <div className="font-bold text-[13px] mb-2" style={{ color: c.color }}>{c.type}</div>
+                <div className="inline-block text-base font-extrabold text-[#1a1a1a] font-mono bg-black/[0.06] rounded-md py-[3px] px-[10px] mb-[10px]">{c.pages}</div>
+                <p className="text-[12px] text-[#555] leading-[1.7] m-0">{c.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Guidelines + Deadlines */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 0 }} className="cfp-cols">
-            <div style={{ background: "#0F2347", borderRadius: 14, padding: "24px 26px" }}>
-              <h4 style={{ color: "#C9A84C", marginBottom: 16, fontFamily: "Playfair Display, serif", fontSize: "1rem" }}>
+          <div className="cfp-cols grid grid-cols-2 gap-5">
+            <div className="bg-ug-navy rounded-[14px] p-[24px_26px]">
+              <h4 className="text-ug-gold mb-4 font-serif text-base">
                 Submission Guidelines
               </h4>
               {[
@@ -372,15 +341,15 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 "Submitted via the online registration portal",
                 "Accepted papers receive certificates of presentation",
               ].map((g, i) => (
-                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 11, alignItems: "flex-start" }}>
-                  <Check size={14} color="#C9A84C" style={{ flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: "#fff", lineHeight: 1.6 }}>{g}</span>
+                <div key={i} className="flex gap-[10px] mb-[11px] items-start">
+                  <Check size={14} color="#C9A84C" className="shrink-0 mt-[2px]" />
+                  <span className="text-[13px] text-white leading-[1.6]">{g}</span>
                 </div>
               ))}
             </div>
 
-            <div style={{ background: "#fdf3e0", borderRadius: 14, padding: "24px 26px", border: "1px solid #e8c97a" }}>
-              <h4 style={{ color: "#8a5c00", marginBottom: 16, fontFamily: "Playfair Display, serif", fontSize: "1rem" }}>
+            <div className="bg-[#fdf3e0] rounded-[14px] p-[24px_26px] border border-[#e8c97a]">
+              <h4 className="text-[#8a5c00] mb-4 font-serif text-base">
                 Submission Deadlines
               </h4>
               {[
@@ -391,18 +360,14 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
                 { milestone: "Camera-Ready Submission",    date: "22 August 2026",  done: false },
                 { milestone: "Workshop Dates",             date: "27–29 Aug 2026",  done: false },
               ].map((d, i) => (
-                <div key={i} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "9px 0", borderBottom: i < 5 ? "1px solid rgba(0,0,0,0.07)" : "none",
-                }}>
-                  <span style={{ fontSize: 13, color: "#5a3e00", lineHeight: 1.5 }}>{d.milestone}</span>
-                  <span style={{
-                    fontSize: 12, fontWeight: 700,
-                    color: d.done ? "#1B6B3A" : "#8a5c00",
-                    fontFamily: "monospace", flexShrink: 0, marginLeft: 12,
-                    background: d.done ? "#d4f0de" : "#f5dfa0",
-                    padding: "2px 8px", borderRadius: 6,
-                  }}>{d.date}</span>
+                <div key={i} className="flex justify-between items-center py-[9px]"
+                  style={{ borderBottom: i < 5 ? "1px solid rgba(0,0,0,0.07)" : "none" }}>
+                  <span className="text-[13px] text-[#5a3e00] leading-[1.5]">{d.milestone}</span>
+                  <span className="text-[12px] font-bold font-mono shrink-0 ml-3 py-[2px] px-2 rounded-md"
+                    style={{
+                      color: d.done ? "#1B6B3A" : "#8a5c00",
+                      background: d.done ? "#d4f0de" : "#f5dfa0",
+                    }}>{d.date}</span>
                 </div>
               ))}
             </div>
@@ -411,35 +376,32 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       </section>
 
       {/* ── READY TO SUBMIT CTA ── */}
-      <div style={{ background: "#0F2347", padding: "20px 0", borderTop: "3px solid #C9A84C" }}>
-        <div className="container" style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 20, flexWrap: "wrap",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="bg-ug-navy py-5 border-t-[3px] border-ug-gold">
+        <div className="container flex items-center justify-between gap-5 flex-wrap">
+          <div className="flex items-center gap-4">
             <FileText size={28} color="#C9A84C" />
             <div>
-              <div style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>Ready to submit?</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.88)" }}>Register first, then upload your abstract or paper via the registration portal.</div>
+              <div className="font-bold text-white text-[15px]">Ready to submit?</div>
+              <div className="text-[13px] text-white/88">Register first, then upload your abstract or paper via the registration portal.</div>
             </div>
           </div>
           <button className="btn-gold" onClick={() => navigate("register")}
             style={{ fontSize: 14, padding: "12px 32px", whiteSpace: "nowrap" }}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register &amp; Submit<ArrowRight size={14} /></span>
+            <span className="inline-flex items-center gap-[6px]">Register &amp; Submit<ArrowRight size={14} /></span>
           </button>
         </div>
       </div>
 
       {/* ── PARTICIPANT ELIGIBILITY ── */}
-      <section className="section" style={{ background: "#fff" }}>
-        <div className="container" style={{ maxWidth: 900 }}>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <span className="badge badge-blue" style={{ marginBottom: 10 }}>Participant Eligibility</span>
+      <section className="section bg-white">
+        <div className="container max-w-[900px]">
+          <div className="text-center mb-8">
+            <span className="badge badge-blue mb-[10px]">Participant Eligibility</span>
           </div>
-          <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid #e0e0e0" }}>
-            <div className="amber-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1.6fr", background: "#0F2347" }}>
+          <div className="rounded-[14px] overflow-hidden border border-[#e0e0e0]">
+            <div className="amber-grid grid bg-ug-navy" style={{ gridTemplateColumns: "1.4fr 1fr 1.6fr" }}>
               {["Programme", "Role", "Presentation Types"].map(h => (
-                <div key={h} style={{ padding: "13px 20px", color: "#C9A84C", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</div>
+                <div key={h} className="py-[13px] px-5 text-ug-gold text-[12px] font-bold uppercase tracking-[0.07em]">{h}</div>
               ))}
             </div>
             {[
@@ -451,14 +413,15 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
               { prog: "PhD Computer Science",    role: "Presenter (Optional)",  types: "Poster, Regular, Short, Technical" },
               { prog: "Other PG Students (UG)",  role: "Observer or Presenter", types: "Open registration"                 },
             ].map((r, i) => (
-              <div key={i} className="amber-grid" style={{
-                display: "grid", gridTemplateColumns: "1.4fr 1fr 1.6fr",
-                borderTop: "1px solid #f0f0f0",
-                background: i % 2 === 0 ? "#fff" : "#fafafa",
-              }}>
-                <div style={{ padding: "13px 20px", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{r.prog}</div>
-                <div style={{ padding: "13px 20px", fontSize: 13, color: r.role.includes("Required") ? "#1B6B3A" : "#b5700a", fontWeight: 500 }}>{r.role}</div>
-                <div style={{ padding: "13px 20px", fontSize: 13, color: "#555" }}>{r.types}</div>
+              <div key={i} className="amber-grid grid border-t border-[#f0f0f0]"
+                style={{
+                  gridTemplateColumns: "1.4fr 1fr 1.6fr",
+                  background: i % 2 === 0 ? "#fff" : "#fafafa",
+                }}>
+                <div className="py-[13px] px-5 text-[13px] font-semibold text-[#1a1a1a]">{r.prog}</div>
+                <div className="py-[13px] px-5 text-[13px] font-medium"
+                  style={{ color: r.role.includes("Required") ? "#1B6B3A" : "#b5700a" }}>{r.role}</div>
+                <div className="py-[13px] px-5 text-[13px] text-[#555]">{r.types}</div>
               </div>
             ))}
           </div>

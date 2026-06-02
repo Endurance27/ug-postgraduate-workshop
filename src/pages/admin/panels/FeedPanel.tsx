@@ -31,17 +31,15 @@ export default function FeedPanel() {
   const remove = (id) => onChange(feed.filter((f) => f.id !== id));
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Live Feed
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>
+    <div className="max-w-[720px]">
+      <h2 className="mb-1.5 font-serif">Live Feed</h2>
+      <p className="text-[#666] text-sm mb-7">
         Post real-time updates that appear as a live ticker on the homepage.
         Great for day-of announcements, room changes, or reminders.
       </p>
 
-      <div className="card" style={{ marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 14 }}>New Update</h4>
+      <div className="card mb-6">
+        <h4 className="mb-3.5">New Update</h4>
         <div className="form-group">
           <label>Message</label>
           <input
@@ -51,15 +49,8 @@ export default function FeedPanel() {
             onKeyDown={(e) => e.key === "Enter" && add()}
           />
         </div>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <label style={{ fontSize: 14, fontWeight: 500 }}>Type:</label>
+        <div className="flex gap-3 items-center mb-4">
+          <label className="text-sm font-medium">Type:</label>
           {["update", "alert", "info"].map((t) => (
             <button
               key={t}
@@ -68,102 +59,59 @@ export default function FeedPanel() {
                 background: form.type === t ? typeBg[t] : "#f0f0f0",
                 color: form.type === t ? typeColor[t] : "#666",
                 border: `1.5px solid ${form.type === t ? typeColor[t] : "#ddd"}`,
-                borderRadius: 20,
-                padding: "4px 14px",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                textTransform: "capitalize",
               }}
+              className="rounded-full px-3.5 py-1 text-xs font-semibold cursor-pointer capitalize"
             >
               {t}
             </button>
           ))}
         </div>
         <button className="btn-primary" onClick={add}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Post Update <ArrowRight size={14} />
           </span>
         </button>
       </div>
 
       {feed.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#888",
-            padding: "40px 0",
-            background: "#fff",
-            borderRadius: 12,
-            border: "1px dashed #ddd",
-          }}
-        >
+        <div className="text-center text-[#888] py-10 bg-white rounded-xl border border-dashed border-[#ddd]">
           No feed updates yet. Post one above to display it on the homepage.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {feed.map((f) => (
             <div
               key={f.id}
-              style={{
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 10,
-                padding: "14px 18px",
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                opacity: f.active ? 1 : 0.5,
-              }}
+              className="bg-white border border-[#e0e0e0] rounded-[10px] px-[18px] py-3.5 flex items-center gap-3.5"
+              style={{ opacity: f.active ? 1 : 0.5 }}
             >
               <span
                 style={{
                   background: typeBg[f.type],
                   color: typeColor[f.type],
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "3px 10px",
-                  borderRadius: 12,
-                  textTransform: "uppercase",
-                  flexShrink: 0,
                 }}
+                className="text-[11px] font-bold px-2.5 py-[3px] rounded-xl uppercase flex-shrink-0"
               >
                 {f.type}
               </span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14 }}>{f.text}</div>
-                <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>
-                  {f.time}
-                </div>
+              <div className="flex-1">
+                <div className="text-sm">{f.text}</div>
+                <div className="text-[11px] text-[#aaa] mt-0.5">{f.time}</div>
               </div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => toggle(f.id)}
+                  className="border border-[#ddd] rounded-md px-3 py-1 text-xs cursor-pointer"
                   style={{
                     background: f.active ? "#e3f5eb" : "#f5f5f5",
                     color: f.active ? "#1B6B3A" : "#888",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    padding: "4px 12px",
-                    fontSize: 12,
-                    cursor: "pointer",
                   }}
                 >
                   {f.active ? "Live ●" : "Hidden"}
                 </button>
                 <button
                   onClick={() => remove(f.id)}
-                  style={{
-                    background: "#fdecea",
-                    color: "#c0392b",
-                    border: "1px solid #f5b7b1",
-                    borderRadius: 6,
-                    padding: "4px 10px",
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
+                  className="bg-[#fdecea] text-[#c0392b] border border-[#f5b7b1] rounded-md px-2.5 py-1 text-xs cursor-pointer"
                 >
                   Delete
                 </button>

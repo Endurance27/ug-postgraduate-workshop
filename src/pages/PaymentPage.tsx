@@ -171,29 +171,29 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
   /* ─── DONE ─── */
   if (step === "done") return (
     <main>
-      <section style={{ background: "linear-gradient(135deg, #0F2347, #1B3A6B)", color: "#fff", padding: "72px 0 56px" }}>
+      <section className="bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div className="container">
-          <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem,4.5vw,3rem)", marginBottom: 12 }}>Payment</h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 16 }}>2nd Annual DCS Postgraduate Workshop · {event.dates || "27–29 August 2026"}</p>
+          <h1 className="text-white font-serif mb-3" style={{ fontSize: "clamp(2rem,4.5vw,3rem)" }}>Payment</h1>
+          <p className="text-white/70 text-base">2nd Annual DCS Postgraduate Workshop · {event.dates || "27–29 August 2026"}</p>
         </div>
       </section>
       <div className="container section">
-        <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+        <div className="max-w-[560px] mx-auto text-center">
+          <div className="flex justify-center mb-5">
             <Sparkles size={64} color="#C9A84C" />
           </div>
-          <h2 style={{ marginBottom: 12 }}>Payment Confirmed!</h2>
-          <p style={{ color: "#555", marginBottom: 24, lineHeight: 1.7 }}>
+          <h2 className="mb-3">Payment Confirmed!</h2>
+          <p className="text-[#555] mb-6 leading-[1.7]">
             Your payment of <strong>GHS {fee}.00</strong> for the{" "}
             <strong>{event.title || "2nd UG Postgraduate Workshop"}</strong> has been received successfully.
             A receipt has been sent to <strong>{foundRegistrant?.email}</strong>.
           </p>
-          <div className="alert alert-success" style={{ textAlign: "left", marginBottom: 24 }}>
+          <div className="alert alert-success text-left mb-6">
             <strong>Reference:</strong> {payRef}
           </div>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+          <div className="flex gap-3 justify-center">
             <button className="btn-primary" onClick={() => navigate("home")}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Back to Home <ArrowRight size={14} /></span>
+              <span className="inline-flex items-center gap-1.5">Back to Home <ArrowRight size={14} /></span>
             </button>
             <button className="btn-outline" onClick={() => navigate("contact")}>Contact Us</button>
           </div>
@@ -205,42 +205,35 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
   return (
     <main>
       {/* HERO */}
-      <section style={{
-        background: "linear-gradient(120deg, #0F2347 55%, #1B3A6B 100%)",
-        color: "#fff",
-        padding: "72px 0 56px",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80')",
-          backgroundSize: "cover", backgroundPosition: "center", opacity: 0.1,
-        }} />
-        <div className="container" style={{ position: "relative", zIndex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }} >
+      <section className="bg-gradient-to-r from-ug-navy to-ug-blue text-white py-[72px] pb-14 relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-10"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80')" }}
+        />
+        <div className="container relative z-10 grid gap-[48px] items-center" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <div>
-            <span className="badge" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C", marginBottom: 12, display: "inline-block" }}>
+            <span className="badge inline-block mb-3" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
               {event.edition || "2nd Annual Edition"} · GHS {fee}
             </span>
-            <h1 style={{ color: "#fff", fontSize: "clamp(1.8rem,4vw,2.6rem)", marginBottom: 12 }}>
+            <h1 className="text-white mb-3" style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)" }}>
               Workshop Registration Fee
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 15, lineHeight: 1.7 }}>
+            <p className="text-white/75 text-[15px] leading-[1.7]">
               Complete your payment securely via Mobile Money or card through Paystack.
             </p>
           </div>
           <div>
             {/* Fee card */}
-            <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 16, padding: 28 }}>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, marginBottom: 4 }}>Registration Fee</p>
-              <p style={{ color: "#C9A84C", fontSize: 42, fontWeight: 800, margin: "0 0 16px" }}>GHS {fee}</p>
+            <div className="bg-white/[0.07] border border-white/15 rounded-2xl p-7">
+              <p className="text-white/60 text-[13px] mb-1">Registration Fee</p>
+              <p className="text-ug-gold text-[42px] font-extrabold m-0 mb-4">GHS {fee}</p>
               {[
                 "Access to all 3-day workshop sessions",
                 "Workshop materials &amp; proceedings",
                 "Snacks, water &amp; lunch included",
                 "Certificate of participation",
               ].map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 13, color: "rgba(255,255,255,0.8)" }}>
+                <div key={i} className="flex items-center gap-2 mb-2 text-[13px] text-white/80">
                   <Check size={14} color="#C9A84C" />
                   <span dangerouslySetInnerHTML={{ __html: item }} />
                 </div>
@@ -252,13 +245,13 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
       </section>
 
       <div className="container section">
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <div className="max-w-[640px] mx-auto">
 
           {/* ─── LOOKUP STEP ─── */}
           {step === "lookup" && (
             <div className="card">
-              <h3 style={{ marginBottom: 8 }}>Verify Your Registration</h3>
-              <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+              <h3 className="mb-2">Verify Your Registration</h3>
+              <p className="text-[#666] text-[14px] mb-6">
                 Enter the email and Student ID you used during registration to proceed to payment.
               </p>
               <form onSubmit={handleLookup}>
@@ -281,18 +274,18 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
                   />
                 </div>
                 {lookupError && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#c0392b", fontSize: 13, marginBottom: 16 }}>
+                  <div className="flex items-center gap-2 text-[#c0392b] text-[13px] mb-4">
                     <AlertCircle size={14} /> {lookupError}
                   </div>
                 )}
-                <div className="alert alert-info" style={{ marginBottom: 20 }}>
+                <div className="alert alert-info mb-5">
                   <strong>Not registered yet?</strong>{" "}
-                  <button type="button" style={{ background: "none", border: "none", color: "#1B3A6B", fontWeight: 600, cursor: "pointer", padding: 0, fontSize: "inherit" }}
+                  <button type="button" className="bg-transparent border-none text-ug-blue font-semibold cursor-pointer p-0 text-[length:inherit]"
                     onClick={() => navigate("register")}>Register first</button>
                   {" "}to receive a Student ID and proceed to payment.
                 </div>
                 <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "13px" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Continue to Payment <ArrowRight size={14} /></span>
+                  <span className="inline-flex items-center gap-1.5">Continue to Payment <ArrowRight size={14} /></span>
                 </button>
               </form>
             </div>
@@ -302,48 +295,49 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
           {step === "pay" && foundRegistrant && (
             <>
               {/* Summary */}
-              <div className="card" style={{ marginBottom: 24 }}>
-                <h3 style={{ marginBottom: 16 }}>Payment Summary</h3>
-                <div style={{ background: "#f8f9fa", borderRadius: 10, padding: 20, marginBottom: 0 }}>
+              <div className="card mb-6">
+                <h3 className="mb-4">Payment Summary</h3>
+                <div className="bg-ug-surface rounded-[10px] p-5 mb-0">
                   {[
                     ["Email", foundRegistrant.email],
                     ["Student ID", foundRegistrant.studentId],
                   ].map(([k, v]) => (
-                    <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #eee", fontSize: 14 }}>
-                      <span style={{ color: "#666" }}>{k}</span>
-                      <span style={{ fontWeight: 500 }}>{v}</span>
+                    <div key={k} className="flex justify-between py-2 border-b border-[#eee] text-[14px]">
+                      <span className="text-[#666]">{k}</span>
+                      <span className="font-medium">{v}</span>
                     </div>
                   ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0", fontSize: 16, fontWeight: 700, color: "#1B3A6B" }}>
+                  <div className="flex justify-between pt-3 text-[16px] font-bold text-ug-blue">
                     <span>Registration Fee</span>
                     <span>GHS {fee}.00</span>
                   </div>
-                  <p style={{ fontSize: 12, color: "#888", marginTop: 6 }}>Includes snacks, water, and workshop materials</p>
+                  <p className="text-[12px] text-[#888] mt-1.5">Includes snacks, water, and workshop materials</p>
                 </div>
               </div>
 
               {/* Payment method */}
               <div className="card">
-                <h3 style={{ marginBottom: 16 }}>Choose Payment Method</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+                <h3 className="mb-4">Choose Payment Method</h3>
+                <div className="grid grid-cols-2 gap-3 mb-6">
                   {PAYMENT_METHODS.map(m => (
-                    <button key={m.id} onClick={() => setMethod(m.id)} style={{
-                      border: `2px solid ${method === m.id ? "#1B3A6B" : "#e0e0e0"}`,
-                      borderRadius: 12, padding: "16px 14px", background: method === m.id ? "#E5EAF3" : "#fff",
-                      cursor: "pointer", textAlign: "left", transition: "all 0.15s",
-                    }}>
-                      <div style={{ color: "#1B3A6B", marginBottom: 8 }}>{m.icon}</div>
-                      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, color: "#1B3A6B" }}>{m.label}</div>
-                      <div style={{ fontSize: 12, color: "#666" }}>{m.desc}</div>
+                    <button key={m.id} onClick={() => setMethod(m.id)}
+                      className="rounded-xl px-[14px] py-4 cursor-pointer text-left transition-all duration-150"
+                      style={{
+                        border: `2px solid ${method === m.id ? "#1B3A6B" : "#e0e0e0"}`,
+                        background: method === m.id ? "#E5EAF3" : "#fff",
+                      }}>
+                      <div className="text-ug-blue mb-2">{m.icon}</div>
+                      <div className="font-semibold text-[14px] mb-1 text-ug-blue">{m.label}</div>
+                      <div className="text-[12px] text-[#666]">{m.desc}</div>
                     </button>
                   ))}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#555", fontSize: 12, marginBottom: 20 }}>
+                <div className="flex items-center gap-1.5 text-[#555] text-[12px] mb-5">
                   <Shield size={13} /> Secured and processed by Paystack
                 </div>
                 {paymentError && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#c0392b", fontSize: 13, marginBottom: 16 }}>
+                  <div className="flex items-center gap-2 text-[#c0392b] text-[13px] mb-4">
                     <AlertCircle size={14} /> {paymentError}
                   </div>
                 )}
@@ -356,12 +350,12 @@ export default function PaymentPage({ navigate, event = {}, participants = [], o
                 >
                   {paying
                     ? "Processing…"
-                    : <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Pay GHS {fee} via {method === "momo" ? "Mobile Money" : "Card"} <ArrowRight size={14} /></span>}
+                    : <span className="inline-flex items-center gap-1.5">Pay GHS {fee} via {method === "momo" ? "Mobile Money" : "Card"} <ArrowRight size={14} /></span>}
                 </button>
 
                 <button
                   onClick={() => setStep("lookup")}
-                  style={{ marginTop: 12, background: "none", border: "none", color: "#888", fontSize: 13, cursor: "pointer", display: "block", width: "100%", textAlign: "center" }}
+                  className="mt-3 bg-transparent border-none text-[#888] text-[13px] cursor-pointer block w-full text-center"
                 >
                   Wrong details? Go back
                 </button>

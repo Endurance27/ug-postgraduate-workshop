@@ -85,111 +85,51 @@ export default function SecurityPanel() {
   }
 
   return (
-    <div style={{ maxWidth: 620 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Security Settings
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+    <div className="max-w-[620px]">
+      <h2 className="mb-1.5 font-serif">Security Settings</h2>
+      <p className="text-[#666] text-sm mb-6">
         Manage admin access and account security.
       </p>
 
       {status && (
         <div
+          className="mb-5 px-4 py-3 rounded-[10px] text-[13px] border"
           style={{
-            marginBottom: 20,
-            padding: "12px 16px",
-            borderRadius: 10,
-            fontSize: 13,
             background: status.type === "success" ? "#f0faf4" : "#fff3f3",
-            border: `1px solid ${status.type === "success" ? "#a8d5b5" : "#f5b8b8"}`,
+            borderColor: status.type === "success" ? "#a8d5b5" : "#f5b8b8",
             color: status.type === "success" ? "#1e7e3e" : "#c0392b",
           }}
         >
           {status.type === "success" ? (
-            <Check
-              size={13}
-              style={{
-                display: "inline",
-                verticalAlign: "middle",
-                marginRight: 4,
-              }}
-            />
+            <Check size={13} className="inline align-middle mr-1" />
           ) : (
-            <AlertCircle
-              size={13}
-              style={{
-                display: "inline",
-                verticalAlign: "middle",
-                marginRight: 4,
-              }}
-            />
+            <AlertCircle size={13} className="inline align-middle mr-1" />
           )}
           {status.msg}
         </div>
       )}
 
       {/* Current account */}
-      <div
-        style={{
-          background: "#f4f6fb",
-          borderRadius: 12,
-          padding: "16px 20px",
-          marginBottom: 24,
-          border: "1px solid #e0e4ef",
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            background: "#1B3A6B",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#C9A84C",
-            fontSize: 20,
-            flexShrink: 0,
-          }}
-        >
+      <div className="bg-[#f4f6fb] rounded-xl px-5 py-4 mb-6 border border-[#e0e4ef] flex items-center gap-4">
+        <div className="w-11 h-11 rounded-full bg-ug-blue flex items-center justify-center text-ug-gold text-xl flex-shrink-0">
           {user?.email?.[0]?.toUpperCase() || "A"}
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#0F2347" }}>
+          <div className="text-sm font-semibold text-ug-navy">
             {user?.email}
           </div>
           <div
-            style={{
-              fontSize: 12,
-              color: user?.emailVerified ? "#27ae60" : "#e67e22",
-              marginTop: 2,
-            }}
+            className="text-xs mt-0.5"
+            style={{ color: user?.emailVerified ? "#27ae60" : "#e67e22" }}
           >
             {user?.emailVerified ? (
               <>
-                <Check
-                  size={12}
-                  style={{
-                    display: "inline",
-                    verticalAlign: "middle",
-                    marginRight: 3,
-                  }}
-                />{" "}
+                <Check size={12} className="inline align-middle mr-0.5" />{" "}
                 Email verified
               </>
             ) : (
               <>
-                <AlertCircle
-                  size={12}
-                  style={{
-                    display: "inline",
-                    verticalAlign: "middle",
-                    marginRight: 3,
-                  }}
-                />{" "}
+                <AlertCircle size={12} className="inline align-middle mr-0.5" />{" "}
                 Email not verified
               </>
             )}
@@ -198,33 +138,15 @@ export default function SecurityPanel() {
       </div>
 
       {/* Password reset */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 8 }}>
-          Change Password
-        </h4>
-        <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+      <div className="card mb-6">
+        <h4 className="font-serif mb-2">Change Password</h4>
+        <p className="text-[#666] text-[13px] mb-4">
           Firebase will email a secure password reset link to your account
           email.
         </p>
         {resetSent ? (
-          <div
-            style={{
-              background: "#f0faf4",
-              border: "1px solid #a8d5b5",
-              borderRadius: 10,
-              padding: "12px 16px",
-              fontSize: 13,
-              color: "#1e7e3e",
-            }}
-          >
-            <Check
-              size={14}
-              style={{
-                display: "inline",
-                verticalAlign: "middle",
-                marginRight: 4,
-              }}
-            />{" "}
+          <div className="bg-[#f0faf4] border border-[#a8d5b5] rounded-[10px] px-4 py-3 text-[13px] text-[#1e7e3e]">
+            <Check size={14} className="inline align-middle mr-1" />{" "}
             Password reset email sent to <strong>{user?.email}</strong>. Check
             your inbox.
           </div>
@@ -241,9 +163,7 @@ export default function SecurityPanel() {
             {resetLoading ? (
               "Sending…"
             ) : (
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-              >
+              <span className="inline-flex items-center gap-1.5">
                 Send Password Reset Email <ArrowRight size={14} />
               </span>
             )}
@@ -252,57 +172,29 @@ export default function SecurityPanel() {
       </div>
 
       {/* Admin allowlist */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 8 }}>
-          Admin Email Allowlist
-        </h4>
-        <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+      <div className="card mb-6">
+        <h4 className="font-serif mb-2">Admin Email Allowlist</h4>
+        <p className="text-[#666] text-[13px] mb-4">
           Only emails in this list can sign in to the admin console. Leave the
           list <strong>empty</strong> to allow any verified Firebase account.
         </p>
 
         {allowlist.length === 0 ? (
-          <div
-            style={{
-              background: "#fffbea",
-              border: "1px solid #f0d080",
-              borderRadius: 8,
-              padding: "10px 14px",
-              fontSize: 13,
-              color: "#7a6000",
-              marginBottom: 16,
-            }}
-          >
+          <div className="bg-[#fffbea] border border-[#f0d080] rounded-lg px-3.5 py-2.5 text-[13px] text-[#7a6000] mb-4">
             No allowlist — any verified account can access this console. Add
             emails below to restrict access.
           </div>
         ) : (
-          <div style={{ marginBottom: 16 }}>
+          <div className="mb-4">
             {allowlist.map((email) => (
               <div
                 key={email}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "9px 14px",
-                  background: "#f8f9fb",
-                  borderRadius: 8,
-                  marginBottom: 6,
-                  border: "1px solid #e8eaf0",
-                }}
+                className="flex items-center justify-between px-3.5 py-[9px] bg-[#f8f9fb] rounded-lg mb-1.5 border border-[#e8eaf0]"
               >
-                <span style={{ fontSize: 13, color: "#333" }}>{email}</span>
+                <span className="text-[13px] text-[#333]">{email}</span>
                 <button
                   onClick={() => removeEmail(email)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#c0392b",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
+                  className="bg-transparent border-none text-[#c0392b] text-xs cursor-pointer font-semibold"
                 >
                   Remove
                 </button>
@@ -311,24 +203,17 @@ export default function SecurityPanel() {
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div className="flex gap-2.5">
           <input
             value={newEntry}
             onChange={(e) => setNewEntry(e.target.value)}
             placeholder="admin@example.com"
             onKeyDown={(e) => e.key === "Enter" && addEmail()}
-            style={{
-              flex: 1,
-              padding: "9px 14px",
-              border: "1.5px solid #ddd",
-              borderRadius: 8,
-              fontSize: 14,
-            }}
+            className="flex-1 px-3.5 py-[9px] border-[1.5px] border-[#ddd] rounded-lg text-sm"
           />
           <button
-            className="btn-primary"
+            className="btn-primary whitespace-nowrap"
             onClick={addEmail}
-            style={{ whiteSpace: "nowrap" }}
           >
             Add Email
           </button>
@@ -337,10 +222,8 @@ export default function SecurityPanel() {
 
       {/* Session info */}
       <div className="card">
-        <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 12 }}>
-          Session & Security Info
-        </h4>
-        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.9 }}>
+        <h4 className="font-serif mb-3">Session & Security Info</h4>
+        <div className="text-[13px] text-[#555] leading-[1.9]">
           <div>
             Authentication is powered by <strong>Firebase Auth</strong> —
             sessions persist across page refreshes.
@@ -351,18 +234,12 @@ export default function SecurityPanel() {
           <div>
             Firebase automatically rate-limits repeated failed login attempts.
           </div>
-          <div style={{ marginTop: 8 }}>
+          <div className="mt-2">
             <a
               href="https://console.firebase.google.com"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                color: "#1B3A6B",
-                fontWeight: 600,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-              }}
+              className="text-ug-blue font-semibold inline-flex items-center gap-1"
             >
               Open Firebase Console <ArrowRight size={13} />
             </a>

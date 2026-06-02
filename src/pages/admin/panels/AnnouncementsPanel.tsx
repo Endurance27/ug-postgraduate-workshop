@@ -25,16 +25,14 @@ export default function AnnouncementsPanel() {
   const typeBg = { info: "#E5EAF3", warning: "#fdf3e0", success: "#e3f5eb" };
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Announcements
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>
+    <div className="max-w-[720px]">
+      <h2 className="mb-1.5 font-serif">Announcements</h2>
+      <p className="text-[#666] text-sm mb-7">
         Active announcements appear as banners on the homepage for all visitors.
       </p>
 
-      <div className="card" style={{ marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 14 }}>New Announcement</h4>
+      <div className="card mb-6">
+        <h4 className="mb-3.5">New Announcement</h4>
         <div className="form-group">
           <label>Message</label>
           <input
@@ -44,15 +42,8 @@ export default function AnnouncementsPanel() {
             onKeyDown={(e) => e.key === "Enter" && add()}
           />
         </div>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <label style={{ fontSize: 14, fontWeight: 500 }}>Type:</label>
+        <div className="flex gap-3 items-center mb-4">
+          <label className="text-sm font-medium">Type:</label>
           {["info", "warning", "success"].map((t) => (
             <button
               key={t}
@@ -61,13 +52,8 @@ export default function AnnouncementsPanel() {
                 background: form.type === t ? typeBg[t] : "#f0f0f0",
                 color: form.type === t ? typeColor[t] : "#666",
                 border: `1.5px solid ${form.type === t ? typeColor[t] : "#ddd"}`,
-                borderRadius: 20,
-                padding: "4px 14px",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                textTransform: "capitalize",
               }}
+              className="rounded-full px-3.5 py-1 text-xs font-semibold cursor-pointer capitalize"
             >
               {t}
             </button>
@@ -79,75 +65,41 @@ export default function AnnouncementsPanel() {
       </div>
 
       {items.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#888",
-            padding: "40px 0",
-            background: "#fff",
-            borderRadius: 12,
-            border: "1px dashed #ddd",
-          }}
-        >
+        <div className="text-center text-[#888] py-10 bg-white rounded-xl border border-dashed border-[#ddd]">
           No announcements yet. Add one above to display it on the homepage.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {items.map((a) => (
             <div
               key={a.id}
-              style={{
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 10,
-                padding: "14px 18px",
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                opacity: a.active ? 1 : 0.5,
-              }}
+              className="bg-white border border-[#e0e0e0] rounded-[10px] px-[18px] py-3.5 flex items-center gap-3.5"
+              style={{ opacity: a.active ? 1 : 0.5 }}
             >
               <span
                 style={{
                   background: typeBg[a.type],
                   color: typeColor[a.type],
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "3px 10px",
-                  borderRadius: 12,
-                  textTransform: "uppercase",
-                  flexShrink: 0,
                 }}
+                className="text-[11px] font-bold px-2.5 py-[3px] rounded-xl uppercase flex-shrink-0"
               >
                 {a.type}
               </span>
-              <div style={{ flex: 1, fontSize: 14 }}>{a.text}</div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <div className="flex-1 text-sm">{a.text}</div>
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => toggle(a.id)}
+                  className="border border-[#ddd] rounded-md px-3 py-1 text-xs cursor-pointer"
                   style={{
                     background: a.active ? "#e3f5eb" : "#f5f5f5",
                     color: a.active ? "#1B6B3A" : "#888",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    padding: "4px 12px",
-                    fontSize: 12,
-                    cursor: "pointer",
                   }}
                 >
                   {a.active ? "Live ●" : "Hidden"}
                 </button>
                 <button
                   onClick={() => remove(a.id)}
-                  style={{
-                    background: "#fdecea",
-                    color: "#c0392b",
-                    border: "1px solid #f5b7b1",
-                    borderRadius: 6,
-                    padding: "4px 10px",
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
+                  className="bg-[#fdecea] text-[#c0392b] border border-[#f5b7b1] rounded-md px-2.5 py-1 text-xs cursor-pointer"
                 >
                   Delete
                 </button>

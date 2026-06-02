@@ -195,11 +195,11 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             <div key={a.id} style={{
               background: annBg[a.type] || annBg.info,
               color: annColor[a.type] || annColor.info,
-              padding: "12px 0", borderBottom: `1px solid ${annColor[a.type] || annColor.info}30`,
-            }}>
-              <div className="container" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
-                <span style={{ fontWeight: 700, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.06em" }}>{a.type}</span>
-                <span style={{ flex: 1 }}>{a.text}</span>
+              borderBottom: `1px solid ${annColor[a.type] || annColor.info}30`,
+            }} className="py-3">
+              <div className="container flex items-center gap-[10px] text-sm">
+                <span className="font-bold uppercase text-[11px] tracking-[0.06em]">{a.type}</span>
+                <span className="flex-1">{a.text}</span>
               </div>
             </div>
           ))}
@@ -208,27 +208,20 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
 
       {/* ── LIVE FEED TICKER ─────────────────────────────────────────── */}
       {activeFeed.length > 0 && (
-        <div style={{
-          background: "#0F2347", color: "#fff",
-          padding: "10px 0", borderBottom: "2px solid #C9A84C",
-          overflow: "hidden",
-        }}>
-          <div className="container" style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{
-              background: "#C9A84C", color: "#0F2347",
-              fontSize: 10, fontWeight: 800, padding: "3px 10px",
-              borderRadius: 4, letterSpacing: "0.1em", whiteSpace: "nowrap", flexShrink: 0,
-            }}><span style={{display:"inline-flex",alignItems:"center",gap:4}}><Radio size={12} /> LIVE</span></span>
-            <div style={{ overflow: "hidden", flex: 1 }}>
-              <div style={{
-                display: "flex", gap: 48,
-                animation: activeFeed.length > 1 ? "tickerScroll 18s linear infinite" : "none",
-                whiteSpace: "nowrap",
-              }}>
+        <div className="bg-ug-navy text-white py-[10px] border-b-2 border-ug-gold overflow-hidden">
+          <div className="container flex items-center gap-4">
+            <span className="bg-ug-gold text-ug-navy text-[10px] font-extrabold py-[3px] px-[10px] rounded shrink-0 tracking-[0.1em] whitespace-nowrap">
+              <span className="inline-flex items-center gap-1"><Radio size={12} /> LIVE</span>
+            </span>
+            <div className="overflow-hidden flex-1">
+              <div
+                className="flex gap-12 whitespace-nowrap"
+                style={{ animation: activeFeed.length > 1 ? "tickerScroll 18s linear infinite" : "none" }}
+              >
                 {activeFeed.map(f => (
-                  <span key={f.id} style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", flexShrink: 0 }}>
+                  <span key={f.id} className="text-[13px] text-white/90 shrink-0">
                     {f.text}
-                    {f.time && <span style={{ fontSize: 11, color: "rgba(255, 254, 254, 0.6)", marginLeft: 10 }}>{f.time}</span>}
+                    {f.time && <span className="text-[11px] text-white/60 ml-[10px]">{f.time}</span>}
                   </span>
                 ))}
               </div>
@@ -238,37 +231,22 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       )}
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <section className="hero-section" style={{
-        position: "relative", overflow: "hidden",
-        minHeight: "92vh", display: "flex", alignItems: "center",
-        background: "#0F2347",
-      }}>
+      <section className="hero-section relative overflow-hidden min-h-[92vh] flex items-center bg-ug-navy">
         {/* background image */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url('${img.workshop}')`,
-          backgroundSize: "cover", backgroundPosition: "center",
-          opacity: 0.18,
-        }} />
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.18]"
+          style={{ backgroundImage: `url('${img.workshop}')` }} />
         {/* gradient overlay */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(120deg, #0F2347 55%, rgba(27,58,107,0.85) 100%)",
-        }} />
+        <div className="absolute inset-0"
+          style={{ background: "linear-gradient(120deg, #0F2347 55%, rgba(27,58,107,0.85) 100%)" }} />
 
         {/* floating gold orbs */}
         <div className="hero-orb orb-1" />
         <div className="hero-orb orb-2" />
 
-        <div className="container hero-container" style={{
-          position: "relative", zIndex: 2,
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: 48, alignItems: "center", padding: "100px 24px 80px",
-        }}>
+        <div className="container hero-container relative z-[2] grid grid-cols-2 gap-12 items-center py-[100px] px-6 pb-[80px]">
           {/* LEFT: text */}
           <div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}
-              className={heroReady ? "animate-fade-up delay-1" : "pre-anim"}>
+            <div className={`flex gap-2 flex-wrap mb-6 ${heroReady ? "animate-fade-up delay-1" : "pre-anim"}`}>
               <span className="badge" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
                 {event?.edition || "2nd Annual Edition"}
               </span>
@@ -280,42 +258,34 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
               </span>
             </div>
 
-            <h1 className={heroReady ? "animate-fade-up delay-2" : "pre-anim"} style={{
-              fontFamily: "Playfair Display, serif",
-              fontSize: "clamp(2.2rem, 4.5vw, 3.4rem)",
-              fontWeight: 700, color: "#fff", lineHeight: 1.12,
-              maxWidth: 600, marginBottom: 20,
-            }}>
+            <h1 className={`font-serif font-bold text-white leading-[1.12] max-w-[600px] mb-5 ${heroReady ? "animate-fade-up delay-2" : "pre-anim"}`}
+              style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.4rem)" }}>
               {heroTitle.highlight ? (
                 <>
                   {heroTitle.lead}<br />
-                  <span style={{ color: "#C9A84C" }}>{heroTitle.highlight}</span>
+                  <span className="text-ug-gold">{heroTitle.highlight}</span>
                 </>
               ) : heroTitle.lead}
             </h1>
 
-            <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
-              fontSize: 17, color: "rgba(255,255,255,0.8)",
-              maxWidth: 520, lineHeight: 1.75, marginBottom: 10,
-            }}>
+            <p className={`text-white/80 max-w-[520px] leading-[1.75] mb-[10px] ${heroReady ? "animate-fade-up delay-3" : "pre-anim"}`}
+              style={{ fontSize: 17 }}>
               {heroSubtitle}
             </p>
-            <p className={heroReady ? "animate-fade-up delay-3" : "pre-anim"} style={{
-              fontSize: 15, color: "rgba(255,255,255,0.6)",
-              maxWidth: 520, lineHeight: 1.75, marginBottom: 36,
-            }}>
+            <p className={`text-white/60 max-w-[520px] leading-[1.75] mb-9 ${heroReady ? "animate-fade-up delay-3" : "pre-anim"}`}
+              style={{ fontSize: 15 }}>
               {heroDesc}
             </p>
 
-            <div className={heroReady ? "animate-fade-up delay-4" : "pre-anim"}
-              style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 52 }}>
+            <div className={`flex gap-3 flex-wrap mb-[52px] ${heroReady ? "animate-fade-up delay-4" : "pre-anim"}`}>
               {event?.registrationOpen !== false ? (
                 <button className="btn-gold animate-pulse-gold" onClick={() => navigate("register")}
                   style={{ fontSize: 16, padding: "14px 32px" }}>
-                  <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now — GHS {event?.fee || 100}<ArrowRight size={14} /></span>
+                  <span className="inline-flex items-center gap-[6px]">Register Now — GHS {event?.fee || 100}<ArrowRight size={14} /></span>
                 </button>
               ) : (
-                <div style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 10, padding: "12px 24px", color: "rgba(255,255,255,0.7)", fontSize: 15 }}>
+                <div className="bg-white/10 border border-white/25 rounded-[10px] px-6 py-3 text-white/70"
+                  style={{ fontSize: 15 }}>
                   Registration is currently closed
                 </div>
               )}
@@ -326,8 +296,7 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
             </div>
 
             <div className={heroReady ? "animate-fade-up delay-5" : "pre-anim"}>
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 14,
-                textTransform: "uppercase", letterSpacing: "0.12em" }}>
+              <p className="text-[11px] text-white/40 mb-[14px] uppercase tracking-[0.12em]">
                 Countdown to Workshop
               </p>
               <Countdown />
@@ -335,75 +304,58 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
           </div>
 
           {/* RIGHT: floating image card — hidden on mobile */}
-          <div className={`hide-mobile ${heroReady ? "animate-fade-right delay-3" : "pre-anim"}`}
-            style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+          <div className={`hide-mobile relative flex justify-center ${heroReady ? "animate-fade-right delay-3" : "pre-anim"}`}>
 
             {/* main photo */}
-            <div className="hero-img-card" style={{ position: "relative", zIndex: 2 }}>
+            <div className="hero-img-card relative z-[2]">
               <img
                 src={img.students}
                 alt="Students presenting research"
-                style={{ width: "100%", height: 340, objectFit: "cover", display: "block" }}
+                className="w-full object-cover block"
+                style={{ height: 340 }}
               />
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                background: "linear-gradient(transparent, rgba(15,35,71,0.9))",
-                padding: "28px 20px 20px",
-              }}>
-                <p style={{ color: "#fff", fontSize: 14, fontWeight: 600, margin: 0 }}>
+              <div className="absolute bottom-0 left-0 right-0 p-5 pt-7"
+                style={{ background: "linear-gradient(transparent, rgba(15,35,71,0.9))" }}>
+                <p className="text-white text-sm font-semibold m-0">
                   Present · Collaborate · Publish
                 </p>
-                <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 3 }}>
+                <p className="text-white/65 text-xs mt-[3px]">
                   University of Ghana, Legon
                 </p>
               </div>
             </div>
 
             {/* floating stat badge */}
-            <div className="animate-float" style={{
-              position: "absolute", bottom: -20, left: -20, zIndex: 3,
-              background: "#C9A84C", borderRadius: 14,
-              padding: "14px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1 }}>GHS {event?.fee || 100}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>Registration Fee</div>
+            <div className="animate-float absolute bottom-[-20px] left-[-20px] z-[3] bg-ug-gold rounded-[14px] py-[14px] px-5"
+              style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}>
+              <div className="text-[22px] font-bold text-white leading-none">GHS {event?.fee || 100}</div>
+              <div className="text-[11px] text-white/85 mt-[2px]">Registration Fee</div>
             </div>
 
             {/* floating date badge */}
-            <div className="animate-float-slow" style={{
-              position: "absolute", top: -16, right: -16, zIndex: 3,
-              background: "#fff", borderRadius: 14,
-              padding: "12px 18px", boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#1B3A6B" }}>{event?.dates || "27–29 Aug 2026"}</div>
-              <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>3-Day Hybrid Event</div>
+            <div className="animate-float-slow absolute top-[-16px] right-[-16px] z-[3] bg-white rounded-[14px] py-3 px-[18px]"
+              style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.18)" }}>
+              <div className="text-[13px] font-bold text-ug-blue">{event?.dates || "27–29 Aug 2026"}</div>
+              <div className="text-[11px] text-gray-400 mt-[2px]">3-Day Hybrid Event</div>
             </div>
           </div>
         </div>
 
         {/* bottom wave */}
-        <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 60,
-          background: "#fff",
-          clipPath: "ellipse(55% 100% at 50% 100%)",
-        }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[60px] bg-white"
+          style={{ clipPath: "ellipse(55% 100% at 50% 100%)" }} />
       </section>
 
       {/* ── STATS BAR ────────────────────────────────────────────────── */}
-      <section ref={statsRef} style={{ background: "#fff", borderBottom: "1px solid #eee" }}>
+      <section ref={statsRef} className="bg-white border-b border-[#eee]">
         <div className="container">
-          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          <div className="stats-grid grid grid-cols-4">
             {stats.map((s, i) => (
               <div key={i}
-                className={statsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
-                style={{
-                  padding: "32px 20px", textAlign: "center",
-                  borderRight: i < 3 ? "1px solid #eee" : "none",
-                }}>
-                <div style={{ display: "flex", justifyContent: "center" }}>{s.icon}</div>
-                <div style={{ fontFamily: "Playfair Display, serif", fontSize: 26,
-                  fontWeight: 700, color: "#1B3A6B", marginTop: 6 }}>{s.n}</div>
-                <div style={{ fontSize: 13, color: "#666", marginTop: 3 }}>{s.label}</div>
+                className={`py-8 px-5 text-center ${i < 3 ? "border-r border-[#eee]" : ""} ${statsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}`}>
+                <div className="flex justify-center">{s.icon}</div>
+                <div className="font-serif text-[26px] font-bold text-ug-blue mt-[6px]">{s.n}</div>
+                <div className="text-[13px] text-[#666] mt-[3px]">{s.label}</div>
               </div>
             ))}
           </div>
@@ -411,72 +363,54 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── PHOTO STRIP ──────────────────────────────────────────────── */}
-      <section ref={photoRef} style={{ overflow: "hidden" }}>
-        <div className="photo-strip" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", height: 260 }}>
+      <section ref={photoRef} className="overflow-hidden">
+        <div className="photo-strip grid grid-cols-3 h-[260px]">
           {PHOTOS.map((p, i) => (
             <div key={i}
-              className={photoVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
-              style={{ position: "relative", overflow: "hidden" }}>
+              className={`relative overflow-hidden ${photoVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}`}>
               <img src={p.src} alt={p.label}
-                style={{
-                  width: "100%", height: "100%", objectFit: "cover",
-                  transition: "transform 0.5s ease", display: "block",
-                }}
+                className="w-full h-full object-cover block transition-transform duration-500 ease-in-out"
                 onMouseEnter={e => e.currentTarget.style.transform = "scale(1.06)"}
                 onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
               />
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(transparent 45%, rgba(15,35,71,0.75))",
-              }} />
-              <p style={{
-                position: "absolute", bottom: 16, left: 20,
-                color: "#fff", fontSize: 14, fontWeight: 600, margin: 0,
-              }}>{p.label}</p>
+              <div className="absolute inset-0"
+                style={{ background: "linear-gradient(transparent 45%, rgba(15,35,71,0.75))" }} />
+              <p className="absolute bottom-4 left-5 text-white text-sm font-semibold m-0">{p.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── IMPORTANT DATES ──────────────────────────────────────────── */}
-      <section style={{ background: "#0F2347", padding: "52px 0", borderTop: "4px solid #C9A84C" }}>
+      <section className="bg-ug-navy py-[52px] border-t-4 border-ug-gold">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <span style={{
-              display: "inline-block", fontSize: 11, fontWeight: 800,
-              background: "rgba(201,168,76,0.2)", color: "#C9A84C",
-              padding: "4px 14px", borderRadius: 20, letterSpacing: "0.12em",
-              textTransform: "uppercase", border: "1px solid rgba(201,168,76,0.4)",
-              marginBottom: 12,
-            }}>Key Dates</span>
-            <h2 style={{ color: "#fff", fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", margin: 0, fontFamily: "Playfair Display, serif" }}>
+          <div className="text-center mb-9">
+            <span className="inline-block text-[11px] font-extrabold bg-ug-gold/20 text-ug-gold py-1 px-[14px] rounded-[20px] tracking-[0.12em] uppercase border border-ug-gold/40 mb-3">
+              Key Dates
+            </span>
+            <h2 className="text-white font-serif m-0" style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)" }}>
               Important Deadlines
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             {(home.importantDates || [
               { id: 1, label: "Registration Opens",           date: "Now Open",    icon: <CheckCircle size={28} color="#4ade80" />, done: true  },
               { id: 2, label: "Abstract Submission Deadline", date: "31 Jul 2026", icon: <Calendar size={28} color="#C9A84C" />,    done: false },
               { id: 3, label: "Acceptance Notification",      date: "8 Aug 2026",  icon: <MailOpen size={28} color="#C9A84C" />,    done: false },
               { id: 4, label: "Workshop Begins",              date: "27 Aug 2026", icon: <GraduationCap size={28} color="#C9A84C" />, done: false },
             ]).map((d, i) => (
-              <div key={i} style={{
+              <div key={i} className="flex flex-col items-start gap-[10px] rounded-[14px] p-[24px_22px]" style={{
                 background: d.done ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.07)",
                 border: `1px solid ${d.done ? "rgba(74,222,128,0.3)" : "rgba(201,168,76,0.25)"}`,
                 borderTop: `3px solid ${d.done ? "#4ade80" : "#C9A84C"}`,
-                borderRadius: 14, padding: "24px 22px",
-                display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
               }}>
-                <span style={{ display: "flex" }}>{d.icon}</span>
+                <span className="flex">{d.icon}</span>
                 <div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", letterSpacing: "0.04em", marginBottom: 6, lineHeight: 1.4 }}>
+                  <div className="text-[12px] text-white/75 tracking-[0.04em] mb-[6px] leading-[1.4]">
                     {d.label}
                   </div>
-                  <div style={{
-                    fontSize: 18, fontWeight: 800,
-                    color: d.done ? "#4ade80" : "#C9A84C",
-                    fontFamily: "DM Sans, sans-serif", letterSpacing: "-0.01em",
-                  }}>{d.date}</div>
+                  <div className="text-[18px] font-extrabold font-sans tracking-[-0.01em]"
+                    style={{ color: d.done ? "#4ade80" : "#C9A84C" }}>{d.date}</div>
                 </div>
               </div>
             ))}
@@ -485,64 +419,58 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── ABOUT ────────────────────────────────────────────────────── */}
-      <section ref={aboutRef} className="section" style={{ background: "#f8f9fa" }}>
+      <section ref={aboutRef} className="section bg-ug-surface">
         <div className="container">
-          <div className="home-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+          <div className="home-about-grid grid grid-cols-2 gap-16 items-center">
             <div className={aboutVisible ? "animate-fade-left" : "pre-anim"}>
-              <span className="badge badge-blue" style={{ marginBottom: 16 }}>About the Workshop</span>
-              <h2 className="about-heading" style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", marginBottom: 20, lineHeight: 1.25 }}>
+              <span className="badge badge-blue mb-4">About the Workshop</span>
+              <h2 className="about-heading mb-5 leading-[1.25]" style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)" }}>
                 The Premier Research Platform for DCS Postgraduate Students
               </h2>
-              <p style={{ color: "#555", lineHeight: 1.85, marginBottom: 16 }}>
+              <p className="text-[#555] leading-[1.85] mb-4">
                 A flagship academic event by the Department of Computer Science, University of Ghana — now in its <strong>second edition</strong>. It brings postgraduate researchers together to share, debate, and celebrate academic work.
               </p>
-              <p style={{ color: "#555", lineHeight: 1.85, marginBottom: 28 }}>
+              <p className="text-[#555] leading-[1.85] mb-7">
                 Students present thesis work as posters, papers, or technical demos. A panel of judges awards prizes for the best presentations across all categories.
               </p>
-              <div className="about-tracks-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="about-tracks-grid grid grid-cols-2 gap-3">
                 {activeTracks.map((t, i) => (
-                  <div key={i} style={{
-                    background: "#fff", borderRadius: 12, padding: "16px 18px",
-                    border: "1px solid #eee", borderTop: `3px solid ${t.color}`,
-                    transition: "box-shadow 0.2s",
-                  }}
+                  <div key={i} className="bg-white rounded-xl p-[16px_18px] border border-[#eee] transition-shadow duration-200"
+                    style={{ borderTop: `3px solid ${t.color}` }}
                     onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 18px rgba(27,58,107,0.1)"}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: t.color, marginBottom: 6 }}>{t.title}</div>
-                    <p style={{ fontSize: 12, color: "#666", lineHeight: 1.6, margin: 0 }}>{t.desc}</p>
+                    <div className="text-[13px] font-semibold mb-[6px]" style={{ color: t.color }}>{t.title}</div>
+                    <p className="text-[12px] text-[#666] leading-[1.6] m-0">{t.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* image panel */}
-            <div className={aboutVisible ? "animate-fade-right" : "pre-anim"}
-              style={{ position: "relative" }}>
-              <div style={{
-                borderRadius: 20, overflow: "hidden",
-                boxShadow: "0 20px 60px rgba(15,35,71,0.18)",
-              }}>
+            <div className={`relative ${aboutVisible ? "animate-fade-right" : "pre-anim"}`}>
+              <div className="rounded-[20px] overflow-hidden"
+                style={{ boxShadow: "0 20px 60px rgba(15,35,71,0.18)" }}>
                 <img
                   src={img.research}
                   alt="Academic lecture hall"
-                  style={{ width: "100%", height: 420, objectFit: "cover", display: "block" }}
+                  className="w-full object-cover block"
+                  style={{ height: 420 }}
                 />
               </div>
               {/* overlay info card */}
-              <div style={{
-                position: "absolute", bottom: -24, left: -24,
-                background: "linear-gradient(135deg, #1B3A6B, #0F2347)",
-                borderRadius: 14, borderTop: "3px solid #C9A84C",
-                padding: "20px 24px", boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
-                minWidth: 230,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div className="absolute bottom-[-24px] left-[-24px] rounded-[14px] p-[20px_24px] min-w-[230px]"
+                style={{
+                  background: "linear-gradient(135deg, #1B3A6B, #0F2347)",
+                  borderTop: "3px solid #C9A84C",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+                }}>
+                <div className="flex items-center gap-2 mb-2">
                   <BookOpen size={18} color="#C9A84C" />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#C9A84C", textTransform: "uppercase", letterSpacing: "0.08em" }}>Publication Opportunity</span>
+                  <span className="text-[11px] font-bold text-ug-gold uppercase tracking-[0.08em]">Publication Opportunity</span>
                 </div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 6 }}>CBAS Journal</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", lineHeight: 1.5 }}>Top papers considered for publication</div>
+                <div className="text-[17px] font-bold text-white mb-[6px]">CBAS Journal</div>
+                <div className="text-[12px] text-white/90 leading-[1.5]">Top papers considered for publication</div>
               </div>
             </div>
           </div>
@@ -552,89 +480,80 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       {/* ── WHO CAN REGISTER ─────────────────────────────────────────── */}
       <section className="section">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <span className="badge badge-navy" style={{ marginBottom: 12 }}>Eligibility</span>
+          <div className="text-center mb-12">
+            <span className="badge badge-navy mb-3">Eligibility</span>
             <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>Who Can Register?</h2>
-            <p style={{ color: "#555", maxWidth: 520, margin: "12px auto 0", fontSize: 15 }}>
+            <p className="text-[#555] max-w-[520px] mx-auto mt-3 text-[15px]">
               All postgraduate students at the University of Ghana may register and attend.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, maxWidth: 900, margin: "0 auto" }}>
+          <div className="grid gap-[14px] max-w-[900px] mx-auto"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
             {activeProgrammes.map((p, i) => (
-              <div key={i} style={{
-                background: "#fff", border: "1px solid #e8e8e8", borderRadius: 12,
-                padding: "16px 20px", display: "flex", alignItems: "center", gap: 14,
-                transition: "box-shadow 0.2s, transform 0.2s",
-              }}
+              <div key={i} className="bg-white border border-[#e8e8e8] rounded-xl p-[16px_20px] flex items-center gap-[14px] transition-[box-shadow,transform] duration-200"
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 18px rgba(27,58,107,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{
-                  width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                  background: p.required ? "#E5EAF3" : "#f5f5f5",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
-                }}>{p.required ? <GraduationCap size={18} color="#1B3A6B" /> : <Eye size={18} color="#888" />}</div>
+                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-base ${p.required ? "bg-ug-blue-light" : "bg-[#f5f5f5]"}`}>
+                  {p.required ? <GraduationCap size={18} color="#1B3A6B" /> : <Eye size={18} color="#888" />}
+                </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: "#666", marginTop: 2 }}>
+                  <div className="text-[14px] font-semibold">{p.name}</div>
+                  <div className="text-[12px] text-[#666] mt-[2px]">
                     {p.role} · {p.required
-                      ? <span style={{ color: "#1B3A6B", fontWeight: 500 }}>Presenter expected</span>
-                      : <span style={{ color: "#888" }}>Optional</span>}
+                      ? <span className="text-ug-blue font-medium">Presenter expected</span>
+                      : <span className="text-[#888]">Optional</span>}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ textAlign: "center", marginTop: 36 }}>
-            <p style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
+          <div className="text-center mt-9">
+            <p className="text-[14px] text-[#666] mb-4">
               Registration fee: <strong>GHS {event?.fee || 100}</strong> — includes snacks, water, and workshop materials
             </p>
             <button className="btn-primary" onClick={() => navigate("register")}>
-              <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now<ArrowRight size={14} /></span>
+              <span className="inline-flex items-center gap-[6px]">Register Now<ArrowRight size={14} /></span>
             </button>
           </div>
         </div>
       </section>
 
       {/* ── AWARDS ───────────────────────────────────────────────────── */}
-      <section ref={awardsRef} style={{ position: "relative", overflow: "hidden", background: "#0F2347", color: "#fff" }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url('${img.students}')`,
-          backgroundSize: "cover", backgroundPosition: "center",
-          opacity: 0.12,
-        }} />
+      <section ref={awardsRef} className="relative overflow-hidden bg-ug-navy text-white">
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.12]"
+          style={{ backgroundImage: `url('${img.students}')` }} />
         {/* gradient overlay for depth */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(15,35,71,0.85) 0%, rgba(27,58,107,0.7) 100%)" }} />
-        <div className="section container" style={{ position: "relative", textAlign: "center" }}>
-          <span className="badge" style={{ background: "rgba(201,168,76,0.3)", color: "#C9A84C", marginBottom: 16, border: "1px solid rgba(201,168,76,0.4)" }}>Recognition</span>
-          <h2 style={{ color: "#fff", fontSize: "clamp(1.5rem, 3vw, 2rem)", marginBottom: 12 }}>Awards &amp; Recognition</h2>
-          <p style={{ color: "rgba(255,255,255,0.8)", maxWidth: 500, margin: "0 auto 48px", fontSize: 15 }}>
+        <div className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, rgba(15,35,71,0.85) 0%, rgba(27,58,107,0.7) 100%)" }} />
+        <div className="section container relative text-center">
+          <span className="badge border border-ug-gold/40 mb-4"
+            style={{ background: "rgba(201,168,76,0.3)", color: "#C9A84C" }}>Recognition</span>
+          <h2 className="text-white mb-3" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>Awards &amp; Recognition</h2>
+          <p className="text-white/80 max-w-[500px] mx-auto mb-12 text-[15px]">
             A panel of academic judges evaluates all presentations and rewards the top performers.
           </p>
-          <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+          <div className="flex gap-6 justify-center flex-wrap">
             {[
               { pos: <Trophy size={48} color="#C9A84C" />, label: "First Place",  desc: "Best overall presentation", border: "#C9A84C" },
               { pos: <Medal size={48} color="#b0b8c8" />,  label: "Second Place", desc: "Runner-up recognition",     border: "#b0b8c8" },
               { pos: <Medal size={48} color="#c87941" />,  label: "Third Place",  desc: "Honourable mention",        border: "#c87941" },
             ].map((a, i) => (
               <div key={i}
-                className={awardsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
+                className={`rounded-[18px] p-[36px_44px] min-w-[210px] transition-[transform,background,box-shadow] duration-[250ms] ${awardsVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}`}
                 style={{
                   background: "rgba(255,255,255,0.13)",
                   backdropFilter: "blur(12px)",
                   border: `2px solid ${a.border}60`,
                   borderTop: `3px solid ${a.border}`,
-                  borderRadius: 18, padding: "36px 44px", minWidth: 210,
                   boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-                  transition: "transform 0.25s, background 0.25s, box-shadow 0.25s",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,0.35)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.25)"; }}
               >
-                <div style={{ marginBottom: 14, display: "flex", justifyContent: "center" }}>{a.pos}</div>
-                <div style={{ fontWeight: 700, fontSize: 18, color: "#fff", marginBottom: 6 }}>{a.label}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{a.desc}</div>
+                <div className="mb-[14px] flex justify-center">{a.pos}</div>
+                <div className="font-bold text-[18px] text-white mb-[6px]">{a.label}</div>
+                <div className="text-[13px] text-white/75 leading-[1.5]">{a.desc}</div>
               </div>
             ))}
           </div>
@@ -642,57 +561,48 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── FEATURED SESSIONS ────────────────────────────────────────── */}
-      <section className="section" style={{ background: "#fff" }}>
+      <section className="section bg-white">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 12 }}>
-            <span className="badge badge-blue" style={{ marginBottom: 12 }}>Programme Highlights</span>
-            <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", marginBottom: 10 }}>Featured Sessions</h2>
-            <p style={{ fontWeight: 600, fontSize: 16, color: "#1B3A6B", marginBottom: 8 }}>Keynote &amp; Invited Speakers</p>
-            <p style={{ color: "#666", fontSize: 14, maxWidth: 560, margin: "0 auto 44px", lineHeight: 1.75 }}>
+          <div className="text-center mb-3">
+            <span className="badge badge-blue mb-3">Programme Highlights</span>
+            <h2 className="mb-[10px]" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>Featured Sessions</h2>
+            <p className="font-semibold text-base text-ug-blue mb-2">Keynote &amp; Invited Speakers</p>
+            <p className="text-[#666] text-[14px] max-w-[560px] mx-auto mb-11 leading-[1.75]">
               Speaker announcements will be made progressively. Check back for updates as confirmed invitations are received.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
             {(home.featuredSessions || [
               { id: 1, icon: <Mic size={28} />,       tag: "Keynote",  session: "Opening Keynote",          role: "TBA — Keynote Speaker", status: "Announcement Coming Soon",        topic: "Technology, Research & the Future of Computing in Africa", accent: "#1B3A6B" },
               { id: 2, icon: <Lightbulb size={28} />, tag: "Industry", session: "Industry Insights Session", role: "TBA — Invited Speaker", status: "Industry / Academic Partner",      topic: "AI, Machine Learning & Applied Computer Science",          accent: "#C9A84C" },
               { id: 3, icon: <BookOpen size={28} />,  tag: "Panel",    session: "Research Methods Panel",    role: "TBA — Panel Chair",     status: "University of Ghana, DCS Faculty", topic: "Publishing Research: From Submission to Acceptance",        accent: "#0F2347" },
             ]).map((s, i) => (
-              <div key={i} className="card" style={{
-                borderTop: `4px solid ${s.accent}`,
-                transition: "box-shadow 0.2s, transform 0.2s",
-              }}
+              <div key={i} className="card transition-[box-shadow,transform] duration-200"
+                style={{ borderTop: `4px solid ${s.accent}` }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(27,58,107,0.13)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
                 {/* session icon */}
-                <div style={{
-                  width: 64, height: 64, borderRadius: "50%",
-                  background: `${s.accent}15`, border: `2px solid ${s.accent}30`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 16,
-                }}>{s.icon}</div>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                  style={{
+                    background: `${s.accent}15`,
+                    border: `2px solid ${s.accent}30`,
+                  }}>{s.icon}</div>
 
-                <div style={{
-                  display: "inline-block", fontSize: 10, fontWeight: 700,
-                  background: s.accent, color: "#fff",
-                  padding: "3px 10px", borderRadius: 12,
-                  textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12,
-                }}>{s.tag}</div>
+                <div className="inline-block text-[10px] font-bold text-white py-[3px] px-[10px] rounded-xl uppercase tracking-[0.06em] mb-3"
+                  style={{ background: s.accent }}>{s.tag}</div>
 
-                <h3 style={{ fontSize: "1rem", fontFamily: "Playfair Display, serif", marginBottom: 4, color: "#1a1a1a" }}>
+                <h3 className="text-base font-serif mb-1 text-[#1a1a1a]">
                   {s.session}
                 </h3>
-                <p style={{ fontSize: 13, color: s.accent, fontWeight: 600, marginBottom: 4 }}>{s.role}</p>
+                <p className="text-[13px] font-semibold mb-1" style={{ color: s.accent }}>{s.role}</p>
                 {s.status && (
-                  <p style={{ fontSize: 12, color: "#888", marginBottom: 12 }}>{s.status}</p>
+                  <p className="text-[12px] text-[#888] mb-3">{s.status}</p>
                 )}
-                <div style={{
-                  background: "#f8f9fa", borderRadius: 8, padding: "10px 14px",
-                  borderLeft: `3px solid ${s.accent}`,
-                }}>
-                  <p style={{ fontSize: 12, color: "#555", lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>
-                    <strong style={{ color: "#1B3A6B", fontStyle: "normal" }}>Theme: </strong>{s.topic}
+                <div className="bg-ug-surface rounded-lg p-[10px_14px]"
+                  style={{ borderLeft: `3px solid ${s.accent}` }}>
+                  <p className="text-[12px] text-[#555] leading-[1.6] m-0 italic">
+                    <strong className="text-ug-blue not-italic">Theme: </strong>{s.topic}
                   </p>
                 </div>
               </div>
@@ -704,31 +614,23 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       {/* ── ORGANIZERS ───────────────────────────────────────────────── */}
       <section ref={orgRef} className="section">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
-            <span className="badge badge-blue" style={{ marginBottom: 12 }}>Leadership</span>
+          <div className="text-center mb-11">
+            <span className="badge badge-blue mb-3">Leadership</span>
             <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>Organizers</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+          <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
             {organizers.map((o, i) => (
               <div key={i}
-                className={orgVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}
-                style={{
-                  background: "#fff", border: "1px solid #e0e0e0",
-                  borderRadius: 16, padding: "28px 24px", textAlign: "center",
-                  borderTop: "3px solid #1B3A6B",
-                  transition: "box-shadow 0.2s, transform 0.2s",
-                }}
+                className={`bg-white border border-[#e0e0e0] rounded-2xl p-[28px_24px] text-center border-t-[3px] border-t-ug-blue transition-[box-shadow,transform] duration-200 ${orgVisible ? `animate-fade-up delay-${i + 1}` : "pre-anim"}`}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(27,58,107,0.12)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{
-                  width: 52, height: 52, borderRadius: "50%",
-                  background: "#E5EAF3", display: "flex", alignItems: "center",
-                  justifyContent: "center", margin: "0 auto 14px",
-                }}><Landmark size={22} color="#1B3A6B" /></div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{o.title}</div>
-                <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>{o.sub}</div>
-                <span className="badge badge-blue" style={{ marginTop: 12 }}>{o.role}</span>
+                <div className="w-[52px] h-[52px] rounded-full bg-ug-blue-light flex items-center justify-center mx-auto mb-[14px]">
+                  <Landmark size={22} color="#1B3A6B" />
+                </div>
+                <div className="font-semibold text-[15px]">{o.title}</div>
+                <div className="text-[13px] text-[#666] mt-1">{o.sub}</div>
+                <span className="badge badge-blue mt-3">{o.role}</span>
               </div>
             ))}
           </div>
@@ -736,55 +638,52 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── SPONSORS ─────────────────────────────────────────────────── */}
-      <section className="section-sm" style={{ background: "#f8f9fa", borderTop: "1px solid #eee" }}>
+      <section className="section-sm bg-ug-surface border-t border-[#eee]">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <span className="badge badge-gold" style={{ marginBottom: 12 }}>Support</span>
-            <h2 className="about-heading" style={{ fontSize: "1.6rem" }}>Sponsors &amp; Funders</h2>
+          <div className="text-center mb-8">
+            <span className="badge badge-gold mb-3">Support</span>
+            <h2 className="about-heading text-[1.6rem]">Sponsors &amp; Funders</h2>
           </div>
-          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+          <div className="flex gap-5 justify-center flex-wrap">
             {sponsors.map((s, i) => (
-              <div key={i} style={{
-                background: "#fff", border: "1px solid #e8e0cc",
-                borderRadius: 14, padding: "24px 32px", textAlign: "center", minWidth: 200,
-                transition: "box-shadow 0.2s",
-              }}
+              <div key={i} className="bg-white border border-[#e8e0cc] rounded-[14px] p-[24px_32px] text-center min-w-[200px] transition-shadow duration-200"
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(201,168,76,0.18)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
               >
-                <div style={{ marginBottom: 10, display: "flex", justifyContent: "center" }}>{s.icon}</div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{s.name}</div>
-                <span className="badge badge-gold" style={{ marginTop: 8 }}>{s.tier}</span>
+                <div className="mb-[10px] flex justify-center">{s.icon}</div>
+                <div className="font-semibold text-[15px]">{s.name}</div>
+                <span className="badge badge-gold mt-2">{s.tier}</span>
               </div>
             ))}
           </div>
-          <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#888" }}>
+          <p className="text-center mt-6 text-[13px] text-[#888]">
             Interested in sponsoring? Contact the Workshop Planning Committee at the Department of Computer Science, UG.
           </p>
         </div>
       </section>
 
       {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}
-      <section className="section" style={{ background: "#f8f9fa" }}>
+      <section className="section bg-ug-surface">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
-            <span className="badge badge-gold" style={{ marginBottom: 12 }}>Voices from 2025</span>
+          <div className="text-center mb-11">
+            <span className="badge badge-gold mb-3">Voices from 2025</span>
             <h2 className="about-heading" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)" }}>What Participants Say</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+          <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
             {(home.testimonials || [
               { id: 1, quote: "Presenting my thesis research here was a turning point. The feedback from the judges helped me refine my work before my final defence.", name: "Ama Boateng",  prog: "MPhil Computer Science" },
               { id: 2, quote: "The networking opportunities were incredible. I connected with PhD students and faculty whose work directly overlaps with my own research area.", name: "Kwame Asante", prog: "MSc Computer Science" },
               { id: 3, quote: "I wasn't sure if my work was ready to present, but the committee was very encouraging. The experience gave me real academic confidence.", name: "Efua Mensah",  prog: "MSc Computer Science" },
             ]).map((t, i) => (
-              <div key={i} className="card" style={{ position: "relative" }}>
-                <div style={{ fontSize: 40, color: "#C9A84C", fontFamily: "Georgia, serif", lineHeight: 1, marginBottom: 8 }}>"</div>
-                <p style={{ fontSize: 14, color: "#444", lineHeight: 1.85, marginBottom: 20, fontStyle: "italic" }}>{t.quote}</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <img src={t.photo || [img.research, img.students, img.workshop][i % 3]} alt={t.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", border: "2px solid #E5EAF3" }} />
+              <div key={i} className="card relative">
+                <div className="text-[40px] text-ug-gold font-['Georgia,serif'] leading-none mb-2">"</div>
+                <p className="text-[14px] text-[#444] leading-[1.85] mb-5 italic">{t.quote}</p>
+                <div className="flex items-center gap-3">
+                  <img src={t.photo || [img.research, img.students, img.workshop][i % 3]} alt={t.name}
+                    className="w-11 h-11 rounded-full object-cover border-2 border-ug-blue-light" />
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: "#888" }}>{t.prog}</div>
+                    <div className="font-semibold text-[14px]">{t.name}</div>
+                    <div className="text-[12px] text-[#888]">{t.prog}</div>
                   </div>
                 </div>
               </div>
@@ -794,24 +693,20 @@ export default function HomePage({ navigate, event, announcements, feed = [], im
       </section>
 
       {/* ── CTA ──────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", overflow: "hidden",
-        background: "linear-gradient(135deg, #1B3A6B 0%, #0F2347 100%)",
-        padding: "80px 0", textAlign: "center" }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url('${img.networking}')`,
-          backgroundSize: "cover", backgroundPosition: "center", opacity: 0.07,
-        }} />
-        <div className="container" style={{ position: "relative" }}>
-          <h2 style={{ color: "#fff", fontSize: "clamp(1.8rem, 3vw, 2.4rem)", marginBottom: 14 }}>
+      <section className="relative overflow-hidden py-[80px] text-center"
+        style={{ background: "linear-gradient(135deg, #1B3A6B 0%, #0F2347 100%)" }}>
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.07]"
+          style={{ backgroundImage: `url('${img.networking}')` }} />
+        <div className="container relative">
+          <h2 className="text-white mb-[14px]" style={{ fontSize: "clamp(1.8rem, 3vw, 2.4rem)" }}>
             Ready to Present Your Research?
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 16, maxWidth: 500, margin: "0 auto 36px", lineHeight: 1.75 }}>
+          <p className="text-white/70 text-base max-w-[500px] mx-auto mb-9 leading-[1.75]">
             Secure your spot at the {event?.edition || "2nd DCS Postgraduate Workshop"}. GHS {event?.fee || 100} covers snacks, water &amp; all workshop materials.
           </p>
           <button className="btn-gold animate-pulse-gold" onClick={() => navigate("register")}
             style={{ fontSize: 17, padding: "16px 44px" }}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6}}>Register Now<ArrowRight size={14} /></span>
+            <span className="inline-flex items-center gap-[6px]">Register Now<ArrowRight size={14} /></span>
           </button>
         </div>
       </section>

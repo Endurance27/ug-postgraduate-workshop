@@ -80,14 +80,14 @@ export default function ScheduleEditor() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+      <h2 className="mb-1.5 font-serif">
         Schedule Editor
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         Changes update the Schedule page in real-time.
       </p>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div className="flex gap-2 mb-6">
         {schedule.map((d, i) => (
           <button
             key={i}
@@ -96,74 +96,34 @@ export default function ScheduleEditor() {
               setEditingId(null);
               setAdding(false);
             }}
-            style={{
-              background: activeDay === i ? "#0F2347" : "#fff",
-              color: activeDay === i ? "#fff" : "#333",
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: "8px 18px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className={`border border-[#ddd] rounded-lg px-[18px] py-2 text-[13px] font-semibold cursor-pointer ${
+              activeDay === i
+                ? "bg-ug-navy text-white"
+                : "bg-white text-[#333]"
+            }`}
           >
             {d.day}
           </button>
         ))}
       </div>
 
-      <div
-        style={{
-          background: "#0F2347",
-          borderRadius: "10px 10px 0 0",
-          padding: "12px 20px",
-        }}
-      >
-        <span style={{ fontWeight: 600, color: "#fff", fontSize: 14 }}>
+      <div className="bg-ug-navy rounded-t-[10px] px-5 py-3">
+        <span className="font-semibold text-white text-sm">
           {day.day}
         </span>
-        <span
-          style={{
-            color: "rgba(255,255,255,0.6)",
-            fontSize: 13,
-            marginLeft: 14,
-          }}
-        >
+        <span className="text-white/60 text-[13px] ml-[14px]">
           {day.date}
         </span>
       </div>
 
-      <div
-        style={{
-          border: "1px solid #e0e0e0",
-          borderTop: "none",
-          borderRadius: "0 0 10px 10px",
-          overflow: "hidden",
-          marginBottom: 16,
-        }}
-      >
+      <div className="border border-[#e0e0e0] border-t-0 rounded-b-[10px] overflow-hidden mb-4">
         {day.sessions.map((s, si) => (
           <div key={s.id}>
             {editingId === s.id ? (
-              <div
-                style={{
-                  background: "#fffbf0",
-                  padding: "14px 20px",
-                  borderBottom: "1px solid #f0e0b0",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "100px 1fr 130px 160px",
-                    gap: 10,
-                    marginBottom: 10,
-                  }}
-                >
+              <div className="bg-[#fffbf0] p-[14px_20px] border-b border-[#f0e0b0]">
+                <div className="grid grid-cols-[100px_1fr_130px_160px] gap-[10px] mb-[10px]">
                   <div>
-                    <div
-                      style={{ fontSize: 11, color: "#888", marginBottom: 3 }}
-                    >
+                    <div className="text-[11px] text-[#888] mb-[3px]">
                       Time
                     </div>
                     <input
@@ -171,19 +131,11 @@ export default function ScheduleEditor() {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, time: e.target.value }))
                       }
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        border: "1px solid #ddd",
-                        borderRadius: 6,
-                        fontSize: 13,
-                      }}
+                      className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                     />
                   </div>
                   <div>
-                    <div
-                      style={{ fontSize: 11, color: "#888", marginBottom: 3 }}
-                    >
+                    <div className="text-[11px] text-[#888] mb-[3px]">
                       Session Title
                     </div>
                     <input
@@ -191,19 +143,11 @@ export default function ScheduleEditor() {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, title: e.target.value }))
                       }
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        border: "1px solid #ddd",
-                        borderRadius: 6,
-                        fontSize: 13,
-                      }}
+                      className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                     />
                   </div>
                   <div>
-                    <div
-                      style={{ fontSize: 11, color: "#888", marginBottom: 3 }}
-                    >
+                    <div className="text-[11px] text-[#888] mb-[3px]">
                       Type
                     </div>
                     <select
@@ -211,13 +155,7 @@ export default function ScheduleEditor() {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, type: e.target.value }))
                       }
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        border: "1px solid #ddd",
-                        borderRadius: 6,
-                        fontSize: 13,
-                      }}
+                      className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                     >
                       {TYPE_OPTIONS.map((t) => (
                         <option key={t} value={t}>
@@ -227,9 +165,7 @@ export default function ScheduleEditor() {
                     </select>
                   </div>
                   <div>
-                    <div
-                      style={{ fontSize: 11, color: "#888", marginBottom: 3 }}
-                    >
+                    <div className="text-[11px] text-[#888] mb-[3px]">
                       Track
                     </div>
                     <select
@@ -237,13 +173,7 @@ export default function ScheduleEditor() {
                       onChange={(e) =>
                         setEditForm((f) => ({ ...f, track: e.target.value }))
                       }
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        border: "1px solid #ddd",
-                        borderRadius: 6,
-                        fontSize: 13,
-                      }}
+                      className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                     >
                       {TRACK_OPTIONS.map((t) => (
                         <option key={t} value={t}>
@@ -253,8 +183,8 @@ export default function ScheduleEditor() {
                     </select>
                   </div>
                 </div>
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+                <div className="mb-[10px]">
+                  <div className="text-[11px] text-[#888] mb-[3px]">
                     Presenter / Speaker
                   </div>
                   <input
@@ -262,17 +192,11 @@ export default function ScheduleEditor() {
                     onChange={(e) =>
                       setEditForm((f) => ({ ...f, presenter: e.target.value }))
                     }
-                    style={{
-                      width: "100%",
-                      padding: "6px 8px",
-                      border: "1px solid #ddd",
-                      borderRadius: 6,
-                      fontSize: 13,
-                    }}
+                    className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                     placeholder="e.g. Prof. Kwame Asante"
                   />
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div className="flex gap-2">
                   <button
                     onClick={saveEdit}
                     className="btn-primary"
@@ -282,14 +206,7 @@ export default function ScheduleEditor() {
                   </button>
                   <button
                     onClick={cancelEdit}
-                    style={{
-                      background: "#f0f0f0",
-                      border: "none",
-                      borderRadius: 8,
-                      padding: "7px 14px",
-                      fontSize: 13,
-                      cursor: "pointer",
-                    }}
+                    className="bg-[#f0f0f0] border-none rounded-lg px-[14px] py-[7px] text-[13px] cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -297,80 +214,44 @@ export default function ScheduleEditor() {
               </div>
             ) : (
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "90px 1fr auto",
-                  alignItems: "center",
-                  padding: "12px 20px",
-                  gap: 12,
-                  background: si % 2 === 0 ? "#fff" : "#fafafa",
-                  borderBottom:
-                    si < day.sessions.length - 1 ? "1px solid #f0f0f0" : "none",
-                }}
+                className={`grid grid-cols-[90px_1fr_auto] items-center px-5 py-3 gap-3 border-b border-[#f0f0f0] ${
+                  si % 2 === 0 ? "bg-white" : "bg-[#fafafa]"
+                } ${si >= day.sessions.length - 1 ? "border-b-0" : ""}`}
               >
-                <div style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>
+                <div className="text-[13px] font-medium text-[#555]">
                   {s.time}
                 </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{s.title}</div>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      marginTop: 3,
-                      flexWrap: "wrap",
-                    }}
-                  >
+                  <div className="text-sm font-semibold">{s.title}</div>
+                  <div className="flex gap-2 mt-[3px] flex-wrap">
                     <span
-                      style={{
-                        fontSize: 11,
-                        background: "#f0f0f0",
-                        color: typeColors[s.type] || "#555",
-                        padding: "2px 8px",
-                        borderRadius: 10,
-                        fontWeight: 600,
-                      }}
+                      className="text-[11px] bg-[#f0f0f0] px-2 py-[2px] rounded-[10px] font-semibold"
+                      style={{ color: typeColors[s.type] || "#555" }}
                     >
                       {s.type}
                     </span>
                     {s.track && (
-                      <span style={{ fontSize: 11, color: "#888" }}>
+                      <span className="text-[11px] text-[#888]">
                         {s.track}
                       </span>
                     )}
                     {s.presenter && (
-                      <span style={{ fontSize: 11, color: "#888" }}>
+                      <span className="text-[11px] text-[#888]">
                         · {s.presenter}
                       </span>
                     )}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="flex gap-[6px]">
                   <button
                     onClick={() => startEdit(s)}
-                    style={{
-                      background: "#E5EAF3",
-                      color: "#1B3A6B",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "5px 12px",
-                      fontSize: 12,
-                      cursor: "pointer",
-                    }}
+                    className="bg-ug-blue-light text-ug-blue border-none rounded-md px-3 py-[5px] text-xs cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => deleteSession(s.id)}
-                    style={{
-                      background: "#fdecea",
-                      color: "#c0392b",
-                      border: "none",
-                      borderRadius: 6,
-                      padding: "5px 10px",
-                      fontSize: 12,
-                      cursor: "pointer",
-                    }}
+                    className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-[10px] py-[5px] text-xs cursor-pointer"
                   >
                     <X size={14} />
                   </button>
@@ -383,26 +264,12 @@ export default function ScheduleEditor() {
 
       {adding ? (
         <div className="card" style={{ border: "2px dashed #C9A84C" }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#b5700a",
-              marginBottom: 12,
-            }}
-          >
+          <div className="text-[13px] font-semibold text-[#b5700a] mb-3">
             New Session
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "100px 1fr 130px 160px",
-              gap: 10,
-              marginBottom: 10,
-            }}
-          >
+          <div className="grid grid-cols-[100px_1fr_130px_160px] gap-[10px] mb-[10px]">
             <div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+              <div className="text-[11px] text-[#888] mb-[3px]">
                 Time
               </div>
               <input
@@ -411,17 +278,11 @@ export default function ScheduleEditor() {
                   setAddForm((f) => ({ ...f, time: e.target.value }))
                 }
                 placeholder="e.g. 10:00 AM"
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
               />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+              <div className="text-[11px] text-[#888] mb-[3px]">
                 Title
               </div>
               <input
@@ -430,17 +291,11 @@ export default function ScheduleEditor() {
                   setAddForm((f) => ({ ...f, title: e.target.value }))
                 }
                 placeholder="Session title"
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
               />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+              <div className="text-[11px] text-[#888] mb-[3px]">
                 Type
               </div>
               <select
@@ -448,13 +303,7 @@ export default function ScheduleEditor() {
                 onChange={(e) =>
                   setAddForm((f) => ({ ...f, type: e.target.value }))
                 }
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
               >
                 {TYPE_OPTIONS.map((t) => (
                   <option key={t} value={t}>
@@ -464,7 +313,7 @@ export default function ScheduleEditor() {
               </select>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+              <div className="text-[11px] text-[#888] mb-[3px]">
                 Track
               </div>
               <select
@@ -472,13 +321,7 @@ export default function ScheduleEditor() {
                 onChange={(e) =>
                   setAddForm((f) => ({ ...f, track: e.target.value }))
                 }
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
               >
                 {TRACK_OPTIONS.map((t) => (
                   <option key={t} value={t}>
@@ -488,8 +331,8 @@ export default function ScheduleEditor() {
               </select>
             </div>
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: "#888", marginBottom: 3 }}>
+          <div className="mb-3">
+            <div className="text-[11px] text-[#888] mb-[3px]">
               Presenter
             </div>
             <input
@@ -498,16 +341,10 @@ export default function ScheduleEditor() {
                 setAddForm((f) => ({ ...f, presenter: e.target.value }))
               }
               placeholder="Optional"
-              style={{
-                width: "100%",
-                padding: "6px 8px",
-                border: "1px solid #ddd",
-                borderRadius: 6,
-                fontSize: 13,
-              }}
+              className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
             />
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="flex gap-2">
             <button
               onClick={addSession}
               className="btn-primary"
@@ -517,14 +354,7 @@ export default function ScheduleEditor() {
             </button>
             <button
               onClick={() => setAdding(false)}
-              style={{
-                background: "#f0f0f0",
-                border: "none",
-                borderRadius: 8,
-                padding: "8px 14px",
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              className="bg-[#f0f0f0] border-none rounded-lg px-[14px] py-2 text-[13px] cursor-pointer"
             >
               Cancel
             </button>
@@ -533,21 +363,7 @@ export default function ScheduleEditor() {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: "#fff",
-            border: "2px dashed #ddd",
-            borderRadius: 10,
-            padding: "12px 20px",
-            fontSize: 13,
-            color: "#888",
-            cursor: "pointer",
-            width: "100%",
-            justifyContent: "center",
-            transition: "border-color 0.2s, color 0.2s",
-          }}
+          className="flex items-center gap-2 bg-white border-2 border-dashed border-[#ddd] rounded-[10px] px-5 py-3 text-[13px] text-[#888] cursor-pointer w-full justify-center transition-[border-color,color] duration-200"
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = "#C9A84C";
             e.currentTarget.style.color = "#b5700a";

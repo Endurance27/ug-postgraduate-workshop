@@ -21,50 +21,35 @@ export default function SubmissionsPanel() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+      <h2 className="mb-[6px] font-serif">
         Submissions
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         {submissions.length} total ·{" "}
         {submissions.filter((s) => s.status === "Accepted").length} accepted
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="flex flex-col gap-[14px]">
         {submissions.map((s) => (
           <div
             key={s.id}
-            className="card"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              alignItems: "start",
-              gap: 20,
-            }}
+            className="card grid items-start gap-5"
+            style={{ gridTemplateColumns: "1fr auto" }}
           >
             <div>
-              <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>
+              <div className="font-semibold text-[15px] mb-[6px]">
                 {s.title}
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <span className="badge badge-navy" style={{ fontSize: 11 }}>
+              <div className="flex gap-[10px] flex-wrap items-center">
+                <span className="badge badge-navy text-[11px]">
                   {s.category}
                 </span>
-                <span style={{ fontSize: 13, color: "#666" }}>
+                <span className="text-[13px] text-[#666]">
                   by {s.author}
                 </span>
                 <span
+                  className="text-[11px] font-bold py-[3px] px-[10px] rounded-xl"
                   style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "3px 10px",
-                    borderRadius: 12,
                     background: statusBg[s.status],
                     color: statusColor[s.status],
                   }}
@@ -73,35 +58,13 @@ export default function SubmissionsPanel() {
                 </span>
               </div>
             </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                justifyContent: "flex-end",
-              }}
-            >
+            <div className="flex gap-2 flex-wrap justify-end">
               {s.status !== "Accepted" && (
                 <button
                   onClick={() => setStatus(s.id, "Accepted")}
-                  style={{
-                    background: "#e3f5eb",
-                    color: "#1B6B3A",
-                    border: "1px solid #a8d5b8",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 13,
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
+                  className="bg-[#e3f5eb] text-[#1B6B3A] border border-[#a8d5b8] rounded-lg py-[6px] px-[14px] text-[13px] cursor-pointer font-semibold"
                 >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
+                  <span className="inline-flex items-center gap-1">
                     <Check size={14} /> Accept
                   </span>
                 </button>
@@ -109,15 +72,7 @@ export default function SubmissionsPanel() {
               {s.status !== "Under Review" && (
                 <button
                   onClick={() => setStatus(s.id, "Under Review")}
-                  style={{
-                    background: "#fdf3e0",
-                    color: "#b5700a",
-                    border: "1px solid #e8d5a0",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
+                  className="bg-[#fdf3e0] text-[#b5700a] border border-[#e8d5a0] rounded-lg py-[6px] px-[14px] text-[13px] cursor-pointer"
                 >
                   In Review
                 </button>
@@ -125,15 +80,7 @@ export default function SubmissionsPanel() {
               {s.status !== "Rejected" && (
                 <button
                   onClick={() => setStatus(s.id, "Rejected")}
-                  style={{
-                    background: "#fdecea",
-                    color: "#c0392b",
-                    border: "1px solid #f5b7b1",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
+                  className="bg-[#fdecea] text-[#c0392b] border border-[#f5b7b1] rounded-lg py-[6px] px-[14px] text-[13px] cursor-pointer"
                 >
                   Reject
                 </button>

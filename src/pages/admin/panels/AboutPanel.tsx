@@ -68,38 +68,23 @@ export default function AboutPanel() {
   });
 
   return (
-    <div style={{ maxWidth: 680 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[680px]">
+      <h2 className="mb-[6px] font-serif">
         About Page
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         Edit the overview text, captions, and key messages shown on the About page.
       </p>
 
       {/* ── Validation errors ── */}
       {validationErrors.length > 0 && (
-        <div
-          style={{
-            background: "#fff3f3",
-            border: "1px solid #f5b8b8",
-            borderRadius: 10,
-            padding: "12px 16px",
-            marginBottom: 20,
-          }}
-        >
+        <div className="bg-[#fff3f3] border border-[#f5b8b8] rounded-[10px] py-3 px-4 mb-5">
           {validationErrors.map((err) => (
             <div
               key={err}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                color: "#c0392b",
-                fontSize: 13,
-                marginBottom: 4,
-              }}
+              className="flex items-center gap-2 text-[#c0392b] text-[13px] mb-1"
             >
-              <AlertCircle size={14} style={{ flexShrink: 0 }} />
+              <AlertCircle size={14} className="shrink-0" />
               {err}
             </div>
           ))}
@@ -108,52 +93,36 @@ export default function AboutPanel() {
 
       {/* ── Save error ── */}
       {saveError && (
-        <div
-          style={{
-            background: "#fff3f3",
-            border: "1px solid #f5b8b8",
-            borderRadius: 10,
-            padding: "10px 16px",
-            marginBottom: 20,
-            color: "#c0392b",
-            fontSize: 13,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <AlertCircle size={14} style={{ flexShrink: 0 }} />
+        <div className="bg-[#fff3f3] border border-[#f5b8b8] rounded-[10px] py-[10px] px-4 mb-5 text-[#c0392b] text-[13px] flex items-center gap-2">
+          <AlertCircle size={14} className="shrink-0" />
           {saveError}
         </div>
       )}
 
       {/* ── Success message ── */}
       {saved && (
-        <div
-          className="alert alert-success"
-          style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}
-        >
-          <Check size={14} style={{ flexShrink: 0 }} />
+        <div className="alert alert-success mb-5 flex items-center gap-2">
+          <Check size={14} className="shrink-0" />
           About content saved to Firestore and is now live on the website.
         </div>
       )}
 
       {/* ── Hero & Overview ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <h4 className="mb-4 font-serif">
           Hero &amp; Overview
         </h4>
         <div className="form-row">
           <div className="form-group">
             <label>
-              Hero Badge Text <span style={{ color: "#c0392b" }}>*</span>
+              Hero Badge Text <span className="text-[#c0392b]">*</span>
             </label>
             <input {...field("badge")} placeholder="2nd Annual Edition" />
           </div>
         </div>
         <div className="form-group">
           <label>
-            Section Heading <span style={{ color: "#c0392b" }}>*</span>
+            Section Heading <span className="text-[#c0392b]">*</span>
           </label>
           <input
             {...field("title")}
@@ -162,29 +131,29 @@ export default function AboutPanel() {
         </div>
         <div className="form-group">
           <label>
-            First Paragraph <span style={{ color: "#c0392b" }}>*</span>
+            First Paragraph <span className="text-[#c0392b]">*</span>
           </label>
           <textarea
             {...field("desc1")}
-            style={{ minHeight: 80 }}
+            className="min-h-[80px]"
             placeholder="Introductory paragraph about the workshop…"
           />
         </div>
         <div className="form-group">
           <label>
-            Second Paragraph <span style={{ color: "#c0392b" }}>*</span>
+            Second Paragraph <span className="text-[#c0392b]">*</span>
           </label>
           <textarea
             {...field("desc2")}
-            style={{ minHeight: 80 }}
+            className="min-h-[80px]"
             placeholder="Continued description…"
           />
         </div>
       </div>
 
       {/* ── Image Captions ── */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <h4 className="mb-4 font-serif">
           Image Captions
         </h4>
         <div className="form-row">
@@ -204,23 +173,14 @@ export default function AboutPanel() {
           <label>Info Card Text</label>
           <textarea
             {...field("cardText")}
-            style={{ minHeight: 70 }}
+            className="min-h-[70px]"
             placeholder="Brief note about this edition compared to the previous…"
           />
         </div>
       </div>
 
-      <div
-        style={{
-          background: "#f8f9fa",
-          borderRadius: 12,
-          padding: "14px 18px",
-          marginBottom: 20,
-          fontSize: 13,
-          color: "#666",
-        }}
-      >
-        <strong style={{ color: "#1B3A6B" }}>Hero background image</strong> — change via{" "}
+      <div className="bg-ug-surface rounded-xl py-[14px] px-[18px] mb-5 text-[13px] text-[#666]">
+        <strong className="text-ug-blue">Hero background image</strong> — change via{" "}
         <strong>Site Images → Research Presentations</strong> in Admin Tools.
       </div>
 
@@ -230,10 +190,10 @@ export default function AboutPanel() {
         disabled={saving}
         style={{ opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer" }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span className="inline-flex items-center gap-[6px]">
           {saving ? (
             <>
-              <Loader size={14} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader size={14} className="animate-spin" />
               Saving…
             </>
           ) : (
@@ -243,8 +203,6 @@ export default function AboutPanel() {
           )}
         </span>
       </button>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

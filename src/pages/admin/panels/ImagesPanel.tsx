@@ -14,9 +14,9 @@ export default function ImagesPanel() {
     students: images.students || "/images/dcs-research.jpg",
   });
   const [saved, setSaved] = useState(false);
-  const [uploading, setUploading] = useState(null);
-  const fileRef = useRef(null);
-  const uploadingKeyRef = useRef(null);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const uploadingKeyRef = useRef<string | null>(null);
 
   const save = () => {
     onChange(form);
@@ -24,13 +24,13 @@ export default function ImagesPanel() {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const triggerUpload = (key) => {
+  const triggerUpload = (key: string) => {
     uploadingKeyRef.current = key;
-    fileRef.current.click();
+    fileRef.current?.click();
   };
 
-  const handleFile = async (e) => {
-    const file = e.target.files[0];
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file || !uploadingKeyRef.current) return;
     const key = uploadingKeyRef.current;
     e.target.value = "";
@@ -78,31 +78,22 @@ export default function ImagesPanel() {
   ];
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Site Images
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
+    <div className="max-w-[760px]">
+      <h2 className="mb-1.5 font-serif">Site Images</h2>
+      <p className="text-[#666] text-sm mb-2">
         These 4 images appear across all pages of the site. Upload a new image
         or paste a URL — every page updates instantly.
       </p>
-      <div
-        className="alert alert-info"
-        style={{ marginBottom: 24, fontSize: 13 }}
-      >
+      <div className="alert alert-info mb-6 text-[13px]">
         <strong>Upload:</strong> click "Upload" to pick a file from your device.{" "}
         <strong>URL:</strong> paste <code>/images/yourfile.jpg</code> for files
         in <code>public/images/</code>, or any direct image link.
       </div>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Images saved and live on the site.
         </div>
@@ -112,74 +103,37 @@ export default function ImagesPanel() {
         ref={fileRef}
         type="file"
         accept="image/*"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={handleFile}
       />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div className="flex flex-col gap-5">
         {IMAGE_DEFS.map((def) => {
-          const val = form[def.key];
+          const val = form[def.key as keyof typeof form];
           const isUploading = uploading === def.key;
           return (
             <div
               key={def.key}
-              style={{
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 14,
-                padding: "20px 22px",
-                display: "flex",
-                gap: 20,
-                alignItems: "flex-start",
-              }}
+              className="bg-white border border-[#e0e0e0] rounded-[14px] p-[20px_22px] flex gap-5 items-start"
             >
-              <div
-                style={{
-                  width: 140,
-                  height: 96,
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  border: "1px solid #e0e0e0",
-                  flexShrink: 0,
-                  background: "#f5f5f5",
-                }}
-              >
+              <div className="w-[140px] h-24 rounded-[10px] overflow-hidden border border-[#e0e0e0] shrink-0 bg-[#f5f5f5]">
                 {val ? (
                   <img
                     src={val}
                     alt={def.label}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
+                    className="w-full h-full object-cover block"
                   />
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "100%",
-                    }}
-                  >
+                  <div className="flex items-center justify-center h-full">
                     <Image size={28} color="#bbb" />
                   </div>
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    marginBottom: 2,
-                    color: "#1B3A6B",
-                  }}
-                >
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm mb-0.5 text-ug-blue">
                   {def.label}
                 </div>
-                <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>
+                <div className="text-[11px] text-[#888] mb-2.5">
                   Used on: {def.usedOn}
                 </div>
                 <input
@@ -188,38 +142,15 @@ export default function ImagesPanel() {
                     setForm((f) => ({ ...f, [def.key]: e.target.value }))
                   }
                   placeholder="https://... or /images/filename.jpg"
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1.5px solid #ddd",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    marginBottom: 8,
-                  }}
+                  className="w-full px-3 py-2 border-[1.5px] border-[#ddd] rounded-lg text-[13px] mb-2"
                 />
                 <button
                   type="button"
                   onClick={() => triggerUpload(def.key)}
                   disabled={!!uploading}
-                  style={{
-                    background: "#E5EAF3",
-                    color: "#1B3A6B",
-                    border: "1px solid #b0bdd8",
-                    borderRadius: 7,
-                    padding: "6px 16px",
-                    fontSize: 13,
-                    cursor: uploading ? "not-allowed" : "pointer",
-                    fontWeight: 500,
-                    opacity: uploading ? 0.65 : 1,
-                  }}
+                  className="bg-ug-blue-light text-ug-blue border border-[#b0bdd8] rounded-[7px] px-4 py-1.5 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-65 cursor-pointer"
                 >
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
-                  >
+                  <span className="inline-flex items-center gap-[5px]">
                     <Upload size={13} />{" "}
                     {isUploading ? "Uploading…" : "Upload Image"}
                   </span>
@@ -230,8 +161,8 @@ export default function ImagesPanel() {
         })}
       </div>
 
-      <button className="btn-primary" onClick={save} style={{ marginTop: 24 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <button className="btn-primary mt-6" onClick={save}>
+        <span className="inline-flex items-center gap-1.5">
           Save All Images <ArrowRight size={14} />
         </span>
       </button>

@@ -174,27 +174,27 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
         onChange={e => set(key, e.target.value)}
         placeholder={`Enter your ${label.toLowerCase()}`}
       />
-      {errors[key] && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors[key]}</p>}
+      {errors[key] && <p className="text-[#c0392b] text-[12px] mt-1">{errors[key]}</p>}
     </div>
   );
 
   if (event.registrationOpen === false) return (
     <main>
-      <section style={{ background: "linear-gradient(135deg, #0F2347, #1B3A6B)", color: "#fff", padding: "72px 0 56px" }}>
+      <section className="bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div className="container">
-          <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem,4.5vw,3rem)", marginBottom: 12 }}>Registration</h1>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 16 }}>2nd Annual DCS Postgraduate Workshop · {event.dates || "27–29 August 2026"}</p>
+          <h1 className="text-white font-serif mb-3" style={{ fontSize: "clamp(2rem,4.5vw,3rem)" }}>Registration</h1>
+          <p className="text-white/70 text-base">2nd Annual DCS Postgraduate Workshop · {event.dates || "27–29 August 2026"}</p>
         </div>
       </section>
       <div className="container section">
-        <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Lock size={64} color="#1B3A6B" /></div>
-          <h2 style={{ marginBottom: 12 }}>Registration is Currently Closed</h2>
-          <p style={{ color: "#555", lineHeight: 1.75, marginBottom: 28 }}>
+        <div className="max-w-[520px] mx-auto text-center">
+          <div className="mb-5 flex justify-center"><Lock size={64} color="#1B3A6B" /></div>
+          <h2 className="mb-3">Registration is Currently Closed</h2>
+          <p className="text-[#555] leading-[1.75] mb-7">
             Registration for the {event.title || "DCS Postgraduate Research Workshop 2026"} is not yet open.
             Check back soon or follow announcements for updates.
           </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+          <div className="flex gap-3 justify-center">
             <button className="btn-primary" onClick={() => navigate("home")}>Back to Home</button>
             <button className="btn-outline" onClick={() => navigate("support")}>Contact Us</button>
           </div>
@@ -207,23 +207,23 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     <main>
       <div className="page-hero"><div className="container"><h1>Registration Complete!</h1></div></div>
       <div className="container section">
-        <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Sparkles size={64} color="#C9A84C" /></div>
-          <h2 style={{ marginBottom: 12 }}>You're registered, {form.otherNames.split(" ")[0] || form.surname}!</h2>
-          <p style={{ color: "#555", marginBottom: 24, lineHeight: 1.7 }}>
+        <div className="max-w-[560px] mx-auto text-center">
+          <div className="mb-5 flex justify-center"><Sparkles size={64} color="#C9A84C" /></div>
+          <h2 className="mb-3">You're registered, {form.otherNames.split(" ")[0] || form.surname}!</h2>
+          <p className="text-[#555] mb-6 leading-[1.7]">
             {paymentConfirmed ? (
               <>Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete.</>
             ) : (
               <>Your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> has been saved. Your payment is still pending.</>
             )}
           </p>
-          <div className="alert alert-success" style={{ textAlign: "left" }}>
+          <div className="alert alert-success text-left">
             {paymentConfirmed && confirmationRef
               ? <><strong>Payment reference:</strong> {confirmationRef}</>
               : <><strong>Next step:</strong> Complete your workshop payment to confirm your place.</>}
           </div>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
-            {!paymentConfirmed && <button className="btn-primary" onClick={() => navigate("payment")}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Pay Registration Fee <ArrowRight size={14} /></span></button>}
+          <div className="flex gap-3 justify-center mt-6">
+            {!paymentConfirmed && <button className="btn-primary" onClick={() => navigate("payment")}><span className="inline-flex items-center gap-1.5">Pay Registration Fee <ArrowRight size={14} /></span></button>}
             <button className="btn-outline" onClick={() => navigate("home")}>Back to Home</button>
           </div>
         </div>
@@ -234,83 +234,57 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
   return (
     <main>
       {/* SPLIT-LAYOUT HERO */}
-      <section style={{
-        background: "linear-gradient(120deg, #0F2347 55%, #1B3A6B 100%)",
-        color: "#fff",
-        padding: "72px 0 56px",
-        position: "relative",
-        overflow: "hidden",
-      }}>
+      <section className="bg-gradient-to-r from-ug-navy to-ug-blue text-white py-[72px] pb-14 relative overflow-hidden">
         {/* Background image overlay */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1620829813573-7c9e1877706f?auto=format&fit=crop&w=1600&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.12,
-        }} />
-        <div className="container reg-grid" style={{
-          position: "relative",
-          zIndex: 1,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 48,
-          alignItems: "center",
-        }}>
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-[0.12]"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1620829813573-7c9e1877706f?auto=format&fit=crop&w=1600&q=80')" }}
+        />
+        <div className="container reg-grid relative z-10 grid gap-[48px] items-center" style={{ gridTemplateColumns: "1fr 1fr" }}>
           {/* Left: text */}
           <div>
-            <span className="badge" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C", marginBottom: 12, display: "inline-block" }}>
+            <span className="badge inline-block mb-3" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
               {event.edition || "2nd Annual Edition"} · GHS {fee}
             </span>
-            <h1 style={{ color: "#fff", fontSize: "clamp(1.8rem, 4vw, 2.6rem)", marginBottom: 12 }}>
+            <h1 className="text-white mb-3" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>
               Register for the Workshop
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 15, lineHeight: 1.7, marginBottom: 0 }}>
+            <p className="text-white/75 text-[15px] leading-[1.7] mb-0">
               2nd Annual Postgraduate Students Workshop · 27–29 August 2026 · University of Ghana
             </p>
           </div>
 
           {/* Right: photo with floating badge */}
-          <div style={{ position: "relative" }}>
-            <div style={{ borderRadius: 16, overflow: "hidden", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
+          <div className="relative">
+            <div className="rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
               <img
                 src="https://images.unsplash.com/photo-1686213011624-8578b598ef0f?auto=format&fit=crop&w=600&q=85"
                 alt="Workshop registration"
-                style={{ width: "100%", height: 260, objectFit: "cover", display: "block" }}
+                className="w-full object-cover block"
+                style={{ height: 260 }}
               />
             </div>
             {/* Floating badge */}
-            <div style={{
-              position: "absolute",
-              bottom: -16,
-              left: -16,
-              background: "#C9A84C",
-              borderRadius: 12,
-              padding: "12px 18px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 4 }}><Check size={14} /> Snacks included</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>+ Water &amp; materials</div>
+            <div className="absolute -bottom-4 -left-4 bg-ug-gold rounded-xl px-[18px] py-3 shadow-[0_8px_24px_rgba(0,0,0,0.2)]">
+              <div className="text-[13px] font-bold text-white flex items-center gap-1"><Check size={14} /> Snacks included</div>
+              <div className="text-[11px] text-white/80 mt-0.5">+ Water &amp; materials</div>
             </div>
           </div>
         </div>
       </section>
 
       <div className="container section">
-        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+        <div className="max-w-[680px] mx-auto">
           {/* STEPPER */}
-          <div style={{ display: "flex", gap: 0, marginBottom: 40, background: "#f8f9fa", borderRadius: 12, padding: "4px", border: "1px solid #eee" }}>
+          <div className="flex gap-0 mb-10 bg-ug-surface rounded-xl p-1 border border-[#eee]">
             {steps.map((s, i) => (
-              <div key={i} style={{
-                flex: 1, textAlign: "center", padding: "10px 8px",
-                borderRadius: 9, fontSize: 13,
-                background: i === step ? "#1B3A6B" : "transparent",
-                color: i === step ? "#fff" : i < step ? "#1B3A6B" : "#999",
-                fontWeight: i === step ? 600 : 400,
-                transition: "all 0.2s"
-              }}>
-                <span style={{ marginRight: 6, display: "inline-flex", alignItems: "center" }}>{i < step ? <Check size={14} /> : `${i + 1}.`}</span>{s}
+              <div key={i} className="flex-1 text-center px-2 py-[10px] rounded-[9px] text-[13px] transition-all duration-200"
+                style={{
+                  background: i === step ? "#1B3A6B" : "transparent",
+                  color: i === step ? "#fff" : i < step ? "#1B3A6B" : "#999",
+                  fontWeight: i === step ? 600 : 400,
+                }}>
+                <span className="mr-1.5 inline-flex items-center">{i < step ? <Check size={14} /> : `${i + 1}.`}</span>{s}
               </div>
             ))}
           </div>
@@ -319,7 +293,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
             {/* STEP 0: Personal */}
             {step === 0 && (
               <div>
-                <h3 style={{ marginBottom: 24 }}>Personal Details</h3>
+                <h3 className="mb-6">Personal Details</h3>
                 <div className="form-row">
                   {field("Surname", "surname")}
                   {field("Othername(s)", "otherNames")}
@@ -331,7 +305,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
-                  {errors.gender && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.gender}</p>}
+                  {errors.gender && <p className="text-[#c0392b] text-[12px] mt-1">{errors.gender}</p>}
                 </div>
                 <div className="form-row">
                   {field("Email Address", "email", "email")}
@@ -344,7 +318,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
             {/* STEP 1: Academic */}
             {step === 1 && (
               <div>
-                <h3 style={{ marginBottom: 24 }}>Academic Information</h3>
+                <h3 className="mb-6">Academic Information</h3>
                 {field("Department", "department")}
                 <div className="form-group">
                   <label>Programme<span className="req">*</span></label>
@@ -352,7 +326,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     <option value="">-- Select your programme --</option>
                     {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
-                  {errors.programme && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.programme}</p>}
+                  {errors.programme && <p className="text-[#c0392b] text-[12px] mt-1">{errors.programme}</p>}
                 </div>
                 {form.programme === "Other (Specify)" && (
                   <div className="form-group">
@@ -363,7 +337,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                       onChange={e => set("otherProgramme", e.target.value)}
                       placeholder="Enter your specific programme"
                     />
-                    {errors.otherProgramme && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.otherProgramme}</p>}
+                    {errors.otherProgramme && <p className="text-[#c0392b] text-[12px] mt-1">{errors.otherProgramme}</p>}
                   </div>
                 )}
                 <div className="form-group">
@@ -383,7 +357,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                       onChange={e => set("otherLevel", e.target.value)}
                       placeholder="Enter your academic level"
                     />
-                    {errors.otherLevel && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.otherLevel}</p>}
+                    {errors.otherLevel && <p className="text-[#c0392b] text-[12px] mt-1">{errors.otherLevel}</p>}
                   </div>
                 )}
               </div>
@@ -392,7 +366,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
             {/* STEP 2: Participation */}
             {step === 2 && (
               <div>
-                <h3 style={{ marginBottom: 24 }}>Participation Details</h3>
+                <h3 className="mb-6">Participation Details</h3>
                 <div className="form-group">
                   <label>Attendance Mode<span className="req">*</span></label>
                   <select value={form.attendanceMode} onChange={e => set("attendanceMode", e.target.value)}>
@@ -426,8 +400,8 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
             {/* STEP 3: Payment */}
             {step === 3 && (
               <div>
-                <h3 style={{ marginBottom: 20 }}>Registration Summary &amp; Payment</h3>
-                <div style={{ background: "#f8f9fa", borderRadius: 10, padding: 20, marginBottom: 24 }}>
+                <h3 className="mb-5">Registration Summary &amp; Payment</h3>
+                <div className="bg-ug-surface rounded-[10px] p-5 mb-6">
                   {[
                     ["Surname", form.surname],
                     ["Other Names", form.otherNames],
@@ -441,22 +415,22 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     ["Participation", form.participationType],
                     form.participationType !== "Observer" && ["Presentation Type", form.presentationType],
                   ].filter(Boolean).map(([k, v]) => (
-                    <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #eee", fontSize: 14 }}>
-                      <span style={{ color: "#666" }}>{k}</span>
-                      <span style={{ fontWeight: 500 }}>{v}</span>
+                    <div key={k} className="flex justify-between py-2 border-b border-[#eee] text-[14px]">
+                      <span className="text-[#666]">{k}</span>
+                      <span className="font-medium">{v}</span>
                     </div>
                   ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0", fontSize: 16, fontWeight: 700, color: "#1B3A6B" }}>
+                  <div className="flex justify-between pt-3 text-[16px] font-bold text-ug-blue">
                     <span>Registration Fee</span>
                     <span>GHS {fee}.00</span>
                   </div>
-                  <p style={{ fontSize: 12, color: "#888", marginTop: 6 }}>Includes snacks, water, and workshop materials</p>
+                  <p className="text-[12px] text-[#888] mt-1.5">Includes snacks, water, and workshop materials</p>
                 </div>
-                <div className="alert alert-info" style={{ marginBottom: 20 }}>
+                <div className="alert alert-info mb-5">
                   <strong>Payment via Paystack:</strong> You will be redirected to a secure Paystack checkout to complete payment by Mobile Money or debit/credit card.
                 </div>
                 {registrationError && (
-                  <div className="alert alert-info" style={{ marginBottom: 20 }}>
+                  <div className="alert alert-info mb-5">
                     {registrationError}
                   </div>
                 )}
@@ -466,22 +440,22 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                   disabled={paying}
                   style={{ width: "100%", justifyContent: "center", fontSize: 16, padding: "14px" }}
                 >
-                  {paying ? "Processing..." : <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Pay GHS {fee} via Paystack <ArrowRight size={14} /></span>}
+                  {paying ? "Processing..." : <span className="inline-flex items-center gap-1.5">Pay GHS {fee} via Paystack <ArrowRight size={14} /></span>}
                 </button>
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 28 }}>
+            <div className="flex justify-between mt-7">
               {step > 0
-                ? <button className="btn-outline" onClick={back}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><ArrowLeft size={14} /> Back</span></button>
+                ? <button className="btn-outline" onClick={back}><span className="inline-flex items-center gap-1.5"><ArrowLeft size={14} /> Back</span></button>
                 : <div />}
               {step < 3
-                ? <button className="btn-primary" onClick={next}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Continue <ArrowRight size={14} /></span></button>
+                ? <button className="btn-primary" onClick={next}><span className="inline-flex items-center gap-1.5">Continue <ArrowRight size={14} /></span></button>
                 : <div />}
             </div>
           </div>
 
-          <p style={{ textAlign: "center", marginTop: 16, fontSize: 13, color: "#888" }}>
+          <p className="text-center mt-4 text-[13px] text-[#888]">
             Registration is open to all postgraduate students at the University of Ghana.
           </p>
         </div>

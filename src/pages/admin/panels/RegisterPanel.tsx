@@ -16,22 +16,16 @@ export default function RegisterPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Register Page
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 28 }}>
+    <div className="max-w-[560px]">
+      <h2 className="mb-1.5 font-serif">Register Page</h2>
+      <p className="text-[#666] text-sm mb-7">
         Control registration availability and fee shown on the Register page.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved — changes are live on the Register page.
         </div>
@@ -50,7 +44,7 @@ export default function RegisterPanel() {
           value={form.submissionsOpen}
           onChange={(v) => setForm((f) => ({ ...f, submissionsOpen: v }))}
         />
-        <div className="form-group" style={{ maxWidth: 200, marginTop: 16 }}>
+        <div className="form-group max-w-[200px] mt-4">
           <label>Registration Fee (GHS)</label>
           <input
             type="number"
@@ -61,7 +55,7 @@ export default function RegisterPanel() {
             }
           />
         </div>
-        <div className="form-group" style={{ marginTop: 16 }}>
+        <div className="form-group mt-4">
           <label>Paystack Public Key</label>
           <input
             value={form.paystackKey || ""}
@@ -70,10 +64,10 @@ export default function RegisterPanel() {
             }
             placeholder="pk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
           />
-          <p style={{ fontSize: 12, color: "#888", marginTop: 4 }}>
+          <p className="text-xs text-[#888] mt-1">
             Get your key from <strong>paystack.com/dashboard</strong>. Also add
             to <code>index.html</code>:<br />
-            <code style={{ fontSize: 11 }}>
+            <code className="text-[11px]">
               &lt;script
               src="https://js.paystack.co/v1/inline.js"&gt;&lt;/script&gt;
             </code>
@@ -101,9 +95,7 @@ export default function RegisterPanel() {
           </div>
         </div>
         <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Save Register Settings <ArrowRight size={14} />
           </span>
         </button>

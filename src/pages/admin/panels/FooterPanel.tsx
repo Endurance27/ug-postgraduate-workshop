@@ -34,24 +34,14 @@ export default function FooterPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 600 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Footer
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+    <div className="max-w-[600px]">
+      <h2 className="mb-1.5 font-serif">Footer</h2>
+      <p className="text-[#666] text-sm mb-6">
         Edit the footer tagline, organizers, sponsors, and publication details.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
-          <Check
-            size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
-          />{" "}
-          Saved.
+        <div className="alert alert-success mb-5">
+          <Check size={14} className="inline align-middle mr-1" /> Saved.
         </div>
       )}
 
@@ -86,7 +76,7 @@ export default function FooterPanel() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, organizers: e.target.value }))
               }
-              style={{ minHeight: 80 }}
+              className="min-h-[80px]"
             />
           </div>
           <div className="form-group">
@@ -96,11 +86,11 @@ export default function FooterPanel() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, sponsors: e.target.value }))
               }
-              style={{ minHeight: 80 }}
+              className="min-h-[80px]"
             />
           </div>
         </div>
-        <div className="form-group" style={{ maxWidth: 280 }}>
+        <div className="form-group max-w-[280px]">
           <label>Publication Partner</label>
           <input
             value={form.publication}
@@ -111,9 +101,7 @@ export default function FooterPanel() {
           />
         </div>
         <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Save Footer <ArrowRight size={14} />
           </span>
         </button>

@@ -22,50 +22,42 @@ export default function StreamPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 600 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Livestream Page
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+    <div className="max-w-[600px]">
+      <h2 className="mb-1.5 font-serif">Livestream Page</h2>
+      <p className="text-[#666] text-sm mb-6">
         Control the live stream status and YouTube video IDs for each day.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved — changes are live on the Livestream page.
         </div>
       )}
 
-      <div className="card" style={{ marginBottom: 20 }}>
+      <div className="card mb-5">
         <ToggleRow
           label="Stream is Live"
           desc="Activates the video player for visitors — turn on when streaming begins"
           value={form.live}
           onChange={(v) => setForm((f) => ({ ...f, live: v }))}
         />
-        <div className="form-group" style={{ marginTop: 16 }}>
+        <div className="form-group mt-4">
           <label>Stream Notice / Message</label>
           <textarea
             value={form.note}
             onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
             placeholder="e.g. Stream begins at 9:00 AM GMT on 27 August 2026. Please refresh if buffering."
-            style={{ minHeight: 70 }}
+            className="min-h-[70px]"
           />
         </div>
       </div>
 
       <div className="card">
-        <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>
-          YouTube Video IDs — Per Day
-        </h4>
-        <p style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
+        <h4 className="mb-4 font-serif">YouTube Video IDs — Per Day</h4>
+        <p className="text-[13px] text-[#666] mb-4">
           Paste only the video ID (e.g. <code>1KWiyZnJFmw</code>), not the full
           URL. Leave blank if not yet available.
         </p>
@@ -88,25 +80,21 @@ export default function StreamPanel() {
         ].map((d) => (
           <div key={d.key} className="form-group">
             <label>{d.label}</label>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div className="flex gap-2.5 items-center">
               <input
-                value={form[d.key]}
+                value={form[d.key as keyof typeof form] as string}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, [d.key]: e.target.value }))
                 }
                 placeholder={d.placeholder}
-                style={{ flex: 1 }}
+                className="flex-1"
               />
-              {form[d.key] && (
+              {form[d.key as keyof typeof form] && (
                 <a
-                  href={`https://youtube.com/watch?v=${form[d.key]}`}
+                  href={`https://youtube.com/watch?v=${form[d.key as keyof typeof form]}`}
                   target="_blank"
                   rel="noreferrer"
-                  style={{
-                    fontSize: 12,
-                    color: "#1B3A6B",
-                    whiteSpace: "nowrap",
-                  }}
+                  className="text-xs text-ug-blue whitespace-nowrap"
                 >
                   ▶ Preview
                 </a>
@@ -115,9 +103,7 @@ export default function StreamPanel() {
           </div>
         ))}
         <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Save Livestream Settings <ArrowRight size={14} />
           </span>
         </button>

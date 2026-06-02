@@ -53,32 +53,27 @@ export default function AwardsPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 680 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[680px]">
+      <h2 className="mb-1.5 font-serif">
         Awards
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
+      <p className="text-[#666] text-sm mb-2">
         Enter winner details and toggle "Announce" to make them visible on the
         Awards page.
       </p>
 
       <div
-        className="alert alert-info"
-        style={{ marginBottom: 24, fontSize: 13 }}
+        className="alert alert-info mb-6 text-[13px]"
       >
         Winners only appear on the public Awards page when "Announced" is
         toggled on.
       </div>
 
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 16 }}>
+        <div className="alert alert-success mb-4">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Award details saved.
         </div>
@@ -87,50 +82,33 @@ export default function AwardsPanel() {
       {awards.map((a, i) => (
         <div
           key={a.id}
-          className="card"
+          className="card mb-4"
           style={{
-            marginBottom: 16,
             borderLeft: `4px solid ${i === 0 ? "#C9A84C" : i === 1 ? "#aaa" : "#b5700a"}`,
           }}
         >
           <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
+            className="flex justify-between items-center mb-[14px]"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 28 }}>{a.emoji}</span>
-              <span
-                style={{
-                  fontWeight: 700,
-                  fontSize: 16,
-                  fontFamily: "Playfair Display, serif",
-                }}
-              >
+            <div className="flex items-center gap-[10px]">
+              <span className="text-[28px]">{a.emoji}</span>
+              <span className="font-bold text-base font-serif">
                 {a.label}
               </span>
             </div>
             <button
               onClick={() => toggleAnnounce(i)}
-              style={{
-                background: a.announced ? "#e3f5eb" : "#f5f5f5",
-                color: a.announced ? "#1B6B3A" : "#888",
-                border: `1.5px solid ${a.announced ? "#a8d5b8" : "#ddd"}`,
-                borderRadius: 20,
-                padding: "5px 16px",
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
+              className={`rounded-[20px] px-4 py-[5px] text-xs font-bold cursor-pointer border-[1.5px] ${
+                a.announced
+                  ? "bg-[#e3f5eb] text-[#1B6B3A] border-[#a8d5b8]"
+                  : "bg-[#f5f5f5] text-[#888] border-[#ddd]"
+              }`}
             >
               {a.announced ? "● Announced" : "○ Not Announced"}
             </button>
           </div>
           <div className="form-row">
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group mb-0">
               <label>Winner Name</label>
               <input
                 value={forms[i].winner}
@@ -138,7 +116,7 @@ export default function AwardsPanel() {
                 placeholder="e.g. Kwame Asante"
               />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group mb-0">
               <label>Paper Title</label>
               <input
                 value={forms[i].paper}
@@ -151,39 +129,28 @@ export default function AwardsPanel() {
       ))}
 
       <button
-        className="btn-primary"
+        className="btn-primary mt-1"
         onClick={saveAll}
-        style={{ marginTop: 4 }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span className="inline-flex items-center gap-[6px]">
           Save Award Details <ArrowRight size={14} />
         </span>
       </button>
 
       {/* Past Winners */}
-      <div
-        style={{
-          marginTop: 36,
-          paddingTop: 28,
-          borderTop: "2px solid #f0f0f0",
-        }}
-      >
-        <h3 style={{ fontFamily: "Playfair Display, serif", marginBottom: 6 }}>
+      <div className="mt-9 pt-7 border-t-2 border-[#f0f0f0]">
+        <h3 className="font-serif mb-1.5">
           Past Winners (Historical)
         </h3>
-        <p style={{ color: "#666", fontSize: 14, marginBottom: 20 }}>
+        <p className="text-[#666] text-sm mb-5">
           Names displayed on the Awards page under "Maiden Workshop 2025". Leave
           name blank to show placeholder text.
         </p>
         {pastSaved && (
-          <div className="alert alert-success" style={{ marginBottom: 16 }}>
+          <div className="alert alert-success mb-4">
             <Check
               size={14}
-              style={{
-                display: "inline",
-                verticalAlign: "middle",
-                marginRight: 4,
-              }}
+              className="inline align-middle mr-1"
             />{" "}
             Past winners saved.
           </div>
@@ -191,26 +158,18 @@ export default function AwardsPanel() {
         {pastForms.map((w, i) => (
           <div
             key={w.id || i}
-            className="card"
+            className="card mb-[14px]"
             style={{
-              marginBottom: 14,
               borderLeft: `4px solid ${i === 0 ? "#C9A84C" : i === 1 ? "#aaa" : "#b5700a"}`,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 12,
-              }}
-            >
-              <span style={{ fontSize: 22 }}>{w.pos}</span>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>{w.place}</span>
-              <span style={{ fontSize: 12, color: "#888" }}>· {w.edition}</span>
+            <div className="flex items-center gap-[10px] mb-3">
+              <span className="text-[22px]">{w.pos}</span>
+              <span className="font-bold text-sm">{w.place}</span>
+              <span className="text-xs text-[#888]">· {w.edition}</span>
             </div>
             <div className="form-row">
-              <div className="form-group" style={{ marginBottom: 0 }}>
+              <div className="form-group mb-0">
                 <label>Winner Name</label>
                 <input
                   value={w.name}
@@ -218,7 +177,7 @@ export default function AwardsPanel() {
                   placeholder="e.g. Akua Asante (or leave blank)"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
+              <div className="form-group mb-0">
                 <label>Field / Programme</label>
                 <input
                   value={w.field}
@@ -227,8 +186,8 @@ export default function AwardsPanel() {
                 />
               </div>
             </div>
-            <div className="form-row" style={{ marginTop: 10 }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-row mt-[10px]">
+              <div className="form-group mb-0">
                 <label>Edition Label</label>
                 <input
                   value={w.edition}
@@ -236,7 +195,7 @@ export default function AwardsPanel() {
                   placeholder="Maiden Workshop 2025"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
+              <div className="form-group mb-0">
                 <ImageUploadField
                   label="Photo (optional)"
                   value={w.avatar}
@@ -247,9 +206,7 @@ export default function AwardsPanel() {
           </div>
         ))}
         <button className="btn-outline" onClick={savePastWinners}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-[6px]">
             Save Past Winners <ArrowRight size={14} />
           </span>
         </button>

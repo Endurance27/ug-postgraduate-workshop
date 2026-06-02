@@ -83,21 +83,14 @@ const SUBJECTS = ["Registration Query", "Payment Issue", "Paper Submission", "Sp
 function AccordionItem({ q, a }: AccordionItemProps) {
   const [open, setOpen] = useState<boolean>(false);
   return (
-    <div style={{ borderBottom: "1px solid #f0f0f0" }}>
-      <button onClick={() => setOpen(o => !o)} style={{
-        width: "100%", display: "flex", justifyContent: "space-between",
-        alignItems: "center", padding: "15px 20px", background: "none",
-        border: "none", cursor: "pointer", textAlign: "left", gap: 16,
-      }}>
-        <span style={{ fontSize: 14, fontWeight: 500, color: "#1a1a1a", lineHeight: 1.4 }}>{q}</span>
-        <span style={{
-          fontSize: 18, color: "#1B3A6B", flexShrink: 0,
-          transform: open ? "rotate(45deg)" : "rotate(0deg)",
-          transition: "transform 0.2s", display: "inline-block",
-        }}>+</span>
+    <div className="border-b border-[#f0f0f0]">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex justify-between items-center px-5 py-[15px] bg-transparent border-none cursor-pointer text-left gap-4">
+        <span className="text-[14px] font-medium text-[#1a1a1a] leading-[1.4]">{q}</span>
+        <span className="text-[18px] text-ug-blue flex-shrink-0 inline-block transition-transform duration-200"
+          style={{ transform: open ? "rotate(45deg)" : "rotate(0deg)" }}>+</span>
       </button>
       {open && (
-        <div style={{ padding: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.8 }}>{a}</div>
+        <div className="px-5 pb-4 text-[13px] text-[#555] leading-[1.8]">{a}</div>
       )}
     </div>
   );
@@ -136,40 +129,35 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
   return (
     <main>
       {/* HERO */}
-      <section style={{
-        position: "relative", overflow: "hidden",
-        background: "linear-gradient(135deg, #0F2347, #1B3A6B)",
-        color: "#fff", padding: "72px 0 56px",
-      }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "url('/images/collaboration-networking.jpeg')",
-          backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15,
-        }} />
-        <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <span className="badge" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C", marginBottom: 14, display: "inline-block" }}>
+      <section className="relative overflow-hidden bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-[0.15]"
+          style={{ backgroundImage: "url('/images/collaboration-networking.jpeg')" }}
+        />
+        <div className="container relative z-10">
+          <span className="badge inline-block mb-[14px]" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
             Help Centre
           </span>
-          <h1 style={{ color: "#fff", fontFamily: "Playfair Display, serif", fontSize: "clamp(2rem, 4.5vw, 3rem)", marginBottom: 12 }}>
+          <h1 className="text-white font-serif mb-3" style={{ fontSize: "clamp(2rem, 4.5vw, 3rem)" }}>
             FAQ &amp; Contact
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 16 }}>
+          <p className="text-white/75 text-base">
             Find answers or reach the Workshop Planning Committee
           </p>
         </div>
       </section>
 
       {/* TABS */}
-      <div style={{ borderBottom: "1px solid #e0e0e0", background: "#fff", position: "sticky", top: 64, zIndex: 10 }}>
-        <div className="container" style={{ display: "flex", gap: 0 }}>
+      <div className="border-b border-[#e0e0e0] bg-white sticky top-16 z-10">
+        <div className="container flex gap-0">
           {[{ key: "faq", label: "Frequently Asked Questions" }, { key: "contact", label: "Contact Us" }].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              background: "none", border: "none", cursor: "pointer",
-              padding: "16px 24px", fontSize: 14, fontWeight: tab === t.key ? 600 : 400,
-              color: tab === t.key ? "#1B3A6B" : "#666",
-              borderBottom: tab === t.key ? "2px solid #1B3A6B" : "2px solid transparent",
-              transition: "all 0.15s",
-            }}>{t.label}</button>
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className="bg-transparent border-none cursor-pointer px-6 py-4 text-[14px] transition-all duration-150"
+              style={{
+                fontWeight: tab === t.key ? 600 : 400,
+                color: tab === t.key ? "#1B3A6B" : "#666",
+                borderBottom: tab === t.key ? "2px solid #1B3A6B" : "2px solid transparent",
+              }}>{t.label}</button>
           ))}
         </div>
       </div>
@@ -177,34 +165,33 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
       {/* ── FAQ TAB ── */}
       {tab === "faq" && (
         <div className="container section">
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 36, justifyContent: "center" }}>
+          <div className="flex gap-2 flex-wrap mb-9 justify-center">
             {categories.map(c => (
-              <button key={c} onClick={() => setActiveCategory(c)} style={{
-                background: activeCategory === c ? "#1B3A6B" : "#fff",
-                color: activeCategory === c ? "#fff" : "#555",
-                border: "1.5px solid #ddd", borderRadius: 24,
-                padding: "7px 18px", fontSize: 13, fontWeight: 500,
-                cursor: "pointer", transition: "all 0.15s",
-              }}>{c}</button>
+              <button key={c} onClick={() => setActiveCategory(c)}
+                className="border-[1.5px] border-[#ddd] rounded-3xl px-[18px] py-[7px] text-[13px] font-medium cursor-pointer transition-all duration-150"
+                style={{
+                  background: activeCategory === c ? "#1B3A6B" : "#fff",
+                  color: activeCategory === c ? "#fff" : "#555",
+                }}>{c}</button>
             ))}
           </div>
 
-          <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div className="max-w-[760px] mx-auto">
             {visibleFAQs.map((section, si) => (
-              <div key={si} style={{ marginBottom: 32 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div key={si} className="mb-8">
+                <div className="flex items-center gap-2.5 mb-3">
                   <span>{section.icon}</span>
-                  <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: "1.1rem", color: "#1B3A6B" }}>{section.category}</h3>
+                  <h3 className="font-serif text-[1.1rem] text-ug-blue">{section.category}</h3>
                 </div>
-                <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+                <div className="bg-white border border-[#e8e8e8] rounded-xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
                   {section.items.map((item, ii) => <AccordionItem key={ii} q={item.q} a={item.a} />)}
                 </div>
               </div>
             ))}
 
-            <div style={{ textAlign: "center", marginTop: 40, background: "#E5EAF3", borderRadius: 14, padding: "28px 24px" }}>
-              <p style={{ fontSize: 15, color: "#333", marginBottom: 14 }}>Still have questions?</p>
-              <button onClick={() => setTab("contact")} className="btn-primary"><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Contact the Committee <ArrowRight size={14} /></span></button>
+            <div className="text-center mt-10 bg-ug-blue-light rounded-[14px] px-6 py-7">
+              <p className="text-[15px] text-[#333] mb-[14px]">Still have questions?</p>
+              <button onClick={() => setTab("contact")} className="btn-primary"><span className="inline-flex items-center gap-1.5">Contact the Committee <ArrowRight size={14} /></span></button>
             </div>
           </div>
         </div>
@@ -214,10 +201,10 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
       {tab === "contact" && (
         <div className="container section">
           {submitted ? (
-            <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-              <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Mail size={64} color="#1B3A6B" /></div>
-              <h2 style={{ marginBottom: 12 }}>Thank you, {form.name.split(" ")[0]}!</h2>
-              <p style={{ color: "#555", lineHeight: 1.75, marginBottom: 24 }}>
+            <div className="max-w-[520px] mx-auto text-center">
+              <div className="mb-5 flex justify-center"><Mail size={64} color="#1B3A6B" /></div>
+              <h2 className="mb-3">Thank you, {form.name.split(" ")[0]}!</h2>
+              <p className="text-[#555] leading-[1.75] mb-6">
                 Your message has been received. The Workshop Planning Committee will respond to <strong>{form.email}</strong> within 2–3 working days.
               </p>
               <button className="btn-primary" onClick={() => { setSubmitted(false); setForm({ name: "", email: "", subject: "", message: "" }); }}>
@@ -225,22 +212,22 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
               </button>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 48, alignItems: "start" }} className="contact-grid">
+            <div className="contact-grid grid gap-[48px] items-start" style={{ gridTemplateColumns: "1fr 360px" }}>
               <form onSubmit={handleSubmit}>
                 <div className="card">
-                  <h3 style={{ marginBottom: 6 }}>Send a Message</h3>
-                  <p style={{ fontSize: 14, color: "#666", marginBottom: 24 }}>We'll get back to you within 2–3 working days.</p>
+                  <h3 className="mb-1.5">Send a Message</h3>
+                  <p className="text-[14px] text-[#666] mb-6">We'll get back to you within 2–3 working days.</p>
 
                   <div className="form-row">
                     <div className="form-group">
                       <label>Full Name<span className="req">*</span></label>
                       <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Your full name" />
-                      {errors.name && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.name}</p>}
+                      {errors.name && <p className="text-[#c0392b] text-[12px] mt-1">{errors.name}</p>}
                     </div>
                     <div className="form-group">
                       <label>Email Address<span className="req">*</span></label>
                       <input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="your@email.com" />
-                      {errors.email && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.email}</p>}
+                      {errors.email && <p className="text-[#c0392b] text-[12px] mt-1">{errors.email}</p>}
                     </div>
                   </div>
 
@@ -250,49 +237,45 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
                       <option value="">-- Select a subject --</option>
                       {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    {errors.subject && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.subject}</p>}
+                    {errors.subject && <p className="text-[#c0392b] text-[12px] mt-1">{errors.subject}</p>}
                   </div>
 
                   <div className="form-group">
                     <label>Message<span className="req">*</span></label>
                     <textarea value={form.message} onChange={e => set("message", e.target.value)}
                       placeholder="Describe your query in detail…" style={{ minHeight: 130 }} />
-                    <div style={{ fontSize: 12, color: "#888", marginTop: 4 }}>{form.message.length} characters</div>
-                    {errors.message && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.message}</p>}
+                    <div className="text-[12px] text-[#888] mt-1">{form.message.length} characters</div>
+                    {errors.message && <p className="text-[#c0392b] text-[12px] mt-1">{errors.message}</p>}
                   </div>
 
                   <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "13px" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Send Message <ArrowRight size={14} /></span>
+                    <span className="inline-flex items-center gap-1.5">Send Message <ArrowRight size={14} /></span>
                   </button>
                 </div>
               </form>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                <div style={{ borderRadius: 16, overflow: "hidden", position: "relative" }}>
+              <div className="flex flex-col gap-5">
+                <div className="rounded-2xl overflow-hidden relative">
                   <img src="/images/collaboration-networking.jpeg" alt="DCS Department"
-                    style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(transparent 40%, rgba(15,35,71,0.85))",
-                    display: "flex", alignItems: "flex-end", padding: "14px 16px",
-                  }}>
-                    <p style={{ color: "#fff", fontSize: 13, fontWeight: 600, margin: 0 }}>Department of Computer Science, UG</p>
+                    className="w-full object-cover block" style={{ height: 180 }} />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(15,35,71,0.85)] flex items-end px-4 py-[14px]">
+                    <p className="text-white text-[13px] font-semibold m-0">Department of Computer Science, UG</p>
                   </div>
                 </div>
 
                 <div className="card">
-                  <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>Contact Details</h4>
+                  <h4 className="mb-[14px] font-serif">Contact Details</h4>
                   {[
                     { icon: <Mail size={18} />,   label: "Email",    value: contact.email    || "dcsworkshop@ug.edu.gh" },
                     { icon: <Globe size={18} />,  label: "Website",  value: contact.website  || "www.cs.ug.edu.gh" },
                     { icon: <MapPin size={18} />, label: "Location", value: contact.location || "Dept. of Computer Science\nSPMS, University of Ghana\nLegon, Accra, Ghana" },
                     { icon: <Clock size={18} />,  label: "Hours",    value: contact.hours    || "Mon–Fri · 8:00 AM – 5:00 PM GMT" },
                   ].map((c, i) => (
-                    <div key={i} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: i < 3 ? "1px solid #f5f5f5" : "none" }}>
-                      <span style={{ flexShrink: 0, marginTop: 2, color: "#1B3A6B" }}>{c.icon}</span>
+                    <div key={i} className="flex gap-3 pb-3 mb-3" style={{ borderBottom: i < 3 ? "1px solid #f5f5f5" : "none" }}>
+                      <span className="flex-shrink-0 mt-0.5 text-ug-blue">{c.icon}</span>
                       <div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{c.label}</div>
-                        <div style={{ fontSize: 13, color: "#333", lineHeight: 1.6, whiteSpace: "pre-line" }}>{c.value}</div>
+                        <div className="text-[11px] font-semibold text-[#888] uppercase tracking-[0.06em] mb-0.5">{c.label}</div>
+                        <div className="text-[13px] text-[#333] leading-[1.6] whitespace-pre-line">{c.value}</div>
                       </div>
                     </div>
                   ))}

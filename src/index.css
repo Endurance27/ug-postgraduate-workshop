@@ -1,4 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ── UG brand tokens available as Tailwind utilities ──────────────────────── */
+@theme {
+  --color-ug-blue:       #1B3A6B;
+  --color-ug-navy:       #0F2347;
+  --color-ug-navy-deep:  #0A1A35;
+  --color-ug-blue-light: #E5EAF3;
+  --color-ug-gold:       #C9A84C;
+  --color-ug-gold-dark:  #A07828;
+  --color-ug-gold-light: #FAF0D0;
+  --color-ug-gray:       #58595B;
+  --color-ug-surface:    #f8f9fa;
+  --color-ug-admin-bg:   #f1f3f7;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans:  "DM Sans", sans-serif;
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

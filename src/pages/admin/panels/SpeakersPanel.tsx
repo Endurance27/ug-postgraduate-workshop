@@ -55,30 +55,26 @@ export default function SpeakersPanel() {
     setCommittee((cs) => cs.filter((_, ci) => ci !== i));
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[760px]">
+      <h2 className="mb-1.5 font-serif">
         Speakers &amp; Committee
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         Changes appear immediately on the Speakers page.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved.
         </div>
       )}
 
       {/* Keynote */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 16, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-6">
+        <h4 className="mb-4 font-serif">
           Keynote Speaker
         </h4>
         <div className="form-row">
@@ -124,7 +120,7 @@ export default function SpeakersPanel() {
           <textarea
             value={keynote.bio}
             onChange={(e) => setKeynote((k) => ({ ...k, bio: e.target.value }))}
-            style={{ minHeight: 80 }}
+            className="min-h-[80px]"
           />
         </div>
         <div className="form-row">
@@ -149,27 +145,12 @@ export default function SpeakersPanel() {
       </div>
 
       {/* Panelists */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>Panelists</h4>
+      <div className="card mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">Panelists</h4>
           <button
             onClick={addPanelist}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
           >
             + Add
           </button>
@@ -177,34 +158,15 @@ export default function SpeakersPanel() {
         {panelists.map((p, i) => (
           <div
             key={p.id}
-            style={{
-              border: "1px solid #e0e0e0",
-              borderRadius: 10,
-              padding: "16px",
-              marginBottom: 12,
-            }}
+            className="border border-[#e0e0e0] rounded-[10px] p-4 mb-3"
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ fontWeight: 600, fontSize: 14 }}>
+            <div className="flex justify-between mb-2.5">
+              <span className="font-semibold text-sm">
                 {p.name || `Panelist ${i + 1}`}
               </span>
               <button
                 onClick={() => removePanelist(i)}
-                style={{
-                  background: "#fdecea",
-                  color: "#c0392b",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "3px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-[3px] text-xs cursor-pointer"
               >
                 Remove
               </button>
@@ -249,7 +211,7 @@ export default function SpeakersPanel() {
                 <textarea
                   value={p.bio}
                   onChange={(e) => updatePanelist(i, "bio", e.target.value)}
-                  style={{ minHeight: 60 }}
+                  className="min-h-[60px]"
                 />
               </div>
               <div className="form-group">
@@ -265,29 +227,14 @@ export default function SpeakersPanel() {
       </div>
 
       {/* Committee */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">
             Organising Committee
           </h4>
           <button
             onClick={addCommittee}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-3.5 py-1.5 text-[13px] cursor-pointer"
           >
             + Add
           </button>
@@ -295,29 +242,23 @@ export default function SpeakersPanel() {
         {committee.map((m, i) => (
           <div
             key={m.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr auto",
-              gap: 10,
-              alignItems: "end",
-              marginBottom: 10,
-            }}
+            className="grid grid-cols-[1fr_1fr_1fr_auto] gap-[10px] items-end mb-2.5"
           >
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group mb-0">
               <label>Name</label>
               <input
                 value={m.name}
                 onChange={(e) => updateCommittee(i, "name", e.target.value)}
               />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group mb-0">
               <label>Role</label>
               <input
                 value={m.role}
                 onChange={(e) => updateCommittee(i, "role", e.target.value)}
               />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group mb-0">
               <label>Institution</label>
               <input
                 value={m.institution}
@@ -328,16 +269,7 @@ export default function SpeakersPanel() {
             </div>
             <button
               onClick={() => removeCommittee(i)}
-              style={{
-                background: "#fdecea",
-                color: "#c0392b",
-                border: "none",
-                borderRadius: 6,
-                padding: "8px 10px",
-                fontSize: 12,
-                cursor: "pointer",
-                marginBottom: 20,
-              }}
+              className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-2.5 py-2 text-xs cursor-pointer mb-5"
             >
               <X size={14} />
             </button>
@@ -346,7 +278,7 @@ export default function SpeakersPanel() {
       </div>
 
       <button className="btn-primary" onClick={save}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span className="inline-flex items-center gap-1.5">
           Save Speakers <ArrowRight size={14} />
         </span>
       </button>

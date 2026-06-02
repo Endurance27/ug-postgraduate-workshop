@@ -28,31 +28,22 @@ export default function ContactPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 640 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
-        Contact Info
-      </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
+    <div className="max-w-[640px]">
+      <h2 className="mb-1.5 font-serif">Contact Info</h2>
+      <p className="text-[#666] text-sm mb-2">
         These details appear on the Contact page, Support page contact tab, and
         the WhatsApp float button.
       </p>
-      <div
-        className="alert alert-info"
-        style={{ marginBottom: 20, fontSize: 13 }}
-      >
+      <div className="alert alert-info mb-5 text-[13px]">
         Changes here update the <strong>Contact</strong> page,{" "}
         <strong>Support</strong> page, and <strong>WhatsApp</strong> button
         across the whole site.
       </div>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved — contact details updated site-wide.
         </div>
@@ -118,13 +109,11 @@ export default function ContactPanel() {
             onChange={(e) =>
               setForm((f) => ({ ...f, location: e.target.value }))
             }
-            style={{ minHeight: 80 }}
+            className="min-h-[80px]"
           />
         </div>
         <button className="btn-primary" onClick={save}>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
+          <span className="inline-flex items-center gap-1.5">
             Save Contact Info <ArrowRight size={14} />
           </span>
         </button>

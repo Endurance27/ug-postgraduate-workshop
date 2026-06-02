@@ -61,57 +61,38 @@ export default function SponsorsAdminPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <h2 style={{ marginBottom: 6, fontFamily: "Playfair Display, serif" }}>
+    <div className="max-w-[760px]">
+      <h2 className="mb-1.5 font-serif">
         Sponsors Page
       </h2>
-      <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>
+      <p className="text-[#666] text-sm mb-6">
         Manage institutional sponsor cards, publication partner, and footer
         sponsor lists.
       </p>
       {saved && (
-        <div className="alert alert-success" style={{ marginBottom: 20 }}>
+        <div className="alert alert-success mb-5">
           <Check
             size={14}
-            style={{
-              display: "inline",
-              verticalAlign: "middle",
-              marginRight: 4,
-            }}
+            className="inline align-middle mr-1"
           />{" "}
           Saved — Sponsors page updated.
         </div>
       )}
 
       {/* Institutional Sponsor Cards */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-serif">
             Institutional Sponsor Cards
           </h4>
           <button
             onClick={add}
-            style={{
-              background: "#1B3A6B",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "6px 14px",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
+            className="bg-ug-blue text-white border-none rounded-lg px-[14px] py-[6px] text-[13px] cursor-pointer"
           >
             + Add Sponsor
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-[14px]">
           These cards appear in the "Institutional Sponsors" grid on the
           Sponsors page.
         </p>
@@ -119,106 +100,57 @@ export default function SponsorsAdminPanel() {
         {items.map((s, i) => (
           <div
             key={s.id || i}
+            className="rounded-xl p-4 mb-[14px]"
             style={{
               border: `2px solid ${tierColors[s.tier] || "#ddd"}`,
-              borderRadius: 12,
-              padding: "16px",
-              marginBottom: 14,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 12,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 24 }}>{s.logo}</span>
-                <span style={{ fontWeight: 600, fontSize: 14 }}>
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-[10px]">
+                <span className="text-2xl">{s.logo}</span>
+                <span className="font-semibold text-sm">
                   {s.name || `Sponsor ${i + 1}`}
                 </span>
               </div>
               <button
                 onClick={() => remove(i)}
-                style={{
-                  background: "#fdecea",
-                  color: "#c0392b",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "4px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                }}
+                className="bg-[#fdecea] text-[#c0392b] border-none rounded-md px-[10px] py-1 text-xs cursor-pointer"
               >
                 Remove
               </button>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 1fr 1fr 120px",
-                gap: 10,
-                marginBottom: 10,
-              }}
-            >
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Logo / Icon</label>
+            <div className="grid grid-cols-[60px_1fr_1fr_120px] gap-[10px] mb-[10px]">
+              <div className="form-group mb-0">
+                <label className="text-xs">Logo / Icon</label>
                 <input
                   value={s.logo}
                   onChange={(e) => update(i, "logo", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 18,
-                    textAlign: "center",
-                  }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[18px] text-center"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Organisation Name</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Organisation Name</label>
                 <input
                   value={s.name}
                   onChange={(e) => update(i, "name", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Role / Badge Label</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Role / Badge Label</label>
                 <input
                   value={s.role}
                   onChange={(e) => update(i, "role", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                   placeholder="Host Institution"
                 />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontSize: 12 }}>Tier</label>
+              <div className="form-group mb-0">
+                <label className="text-xs">Tier</label>
                 <select
                   value={s.tier}
                   onChange={(e) => update(i, "tier", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "6px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px]"
                 >
                   <option value="gold">Gold</option>
                   <option value="primary">Primary (Blue)</option>
@@ -227,20 +159,12 @@ export default function SponsorsAdminPanel() {
                 </select>
               </div>
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label style={{ fontSize: 12 }}>Description</label>
+            <div className="form-group mb-0">
+              <label className="text-xs">Description</label>
               <textarea
                 value={s.desc}
                 onChange={(e) => update(i, "desc", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  minHeight: 60,
-                  resize: "vertical",
-                }}
+                className="w-full p-[6px_8px] border border-[#ddd] rounded-md text-[13px] min-h-[60px] resize-y"
               />
             </div>
           </div>
@@ -248,11 +172,11 @@ export default function SponsorsAdminPanel() {
       </div>
 
       {/* Publication Partner */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <h4 className="mb-[14px] font-serif">
           Publication Partner
         </h4>
-        <div className="form-group" style={{ maxWidth: 300 }}>
+        <div className="form-group max-w-[300px]">
           <label>Journal / Publisher Name</label>
           <input
             value={footerForm.publication}
@@ -265,11 +189,11 @@ export default function SponsorsAdminPanel() {
       </div>
 
       {/* Footer Lists */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 14, fontFamily: "Playfair Display, serif" }}>
+      <div className="card mb-5">
+        <h4 className="mb-[14px] font-serif">
           Footer Sponsor Lists
         </h4>
-        <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>
+        <p className="text-[13px] text-[#888] mb-[14px]">
           These text lists appear in the site footer (not the Sponsors page
           cards).
         </p>
@@ -281,7 +205,7 @@ export default function SponsorsAdminPanel() {
               onChange={(e) =>
                 setFooterForm((f) => ({ ...f, organizers: e.target.value }))
               }
-              style={{ minHeight: 80 }}
+              className="min-h-[80px]"
             />
           </div>
           <div className="form-group">
@@ -291,14 +215,14 @@ export default function SponsorsAdminPanel() {
               onChange={(e) =>
                 setFooterForm((f) => ({ ...f, sponsors: e.target.value }))
               }
-              style={{ minHeight: 80 }}
+              className="min-h-[80px]"
             />
           </div>
         </div>
       </div>
 
       <button className="btn-primary" onClick={saveAll}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span className="inline-flex items-center gap-[6px]">
           Save Sponsors Page <ArrowRight size={14} />
         </span>
       </button>

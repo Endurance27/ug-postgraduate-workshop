@@ -248,110 +248,48 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
   // ── Loading while Firebase resolves auth state ──
   if (!authReady)
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#f1f3f7",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div style={{ marginBottom: 16, color: "#1B3A6B" }}>
+      <div className="min-h-screen flex items-center justify-center bg-ug-admin-bg">
+        <div className="text-center">
+          <div className="mb-4 text-ug-blue">
             <Shield size={36} />
           </div>
-          <p style={{ color: "#555", fontSize: 15 }}>Loading admin console…</p>
+          <p className="text-[#555] text-[15px]">Loading admin console…</p>
         </div>
       </div>
     );
 
   if (!fireUser)
     return (
-      <main style={{ minHeight: "100vh", display: "flex" }}>
+      <main className="min-h-screen flex">
         {/* ── Left: image slideshow ── */}
         <div
-          style={{
-            flex: 1,
-            position: "relative",
-            overflow: "hidden",
-            minHeight: 500,
-            display: "flex",
-          }}
-          className="admin-slide-panel"
+          className="flex-1 relative overflow-hidden min-h-[500px] flex admin-slide-panel"
         >
           {SLIDE_IMAGES.map((img, i) => (
             <div
               key={i}
               style={{
-                position: "absolute",
-                inset: 0,
                 backgroundImage: `url('${img.src}')`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
                 opacity: i === slide ? (fading ? 0 : 1) : 0,
-                transition: "opacity 0.6s ease",
               }}
+              className="absolute inset-0 bg-cover bg-center transition-opacity duration-[600ms]"
             >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(135deg, rgba(15,35,71,0.75) 0%, rgba(27,58,107,0.55) 100%)",
-                }}
-              />
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,35,71,0.75)_0%,rgba(27,58,107,0.55)_100%)]" />
             </div>
           ))}
 
           {/* Overlay content */}
-          <div
-            style={{
-              position: "relative",
-              zIndex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              padding: "48px 40px",
-              width: "100%",
-            }}
-          >
+          <div className="relative z-[1] flex flex-col justify-between p-[48px_40px] w-full">
             <div>
-              <div
-                style={{
-                  display: "inline-block",
-                  background: "rgba(201,168,76,0.2)",
-                  border: "1px solid rgba(201,168,76,0.4)",
-                  borderRadius: 8,
-                  padding: "6px 14px",
-                  marginBottom: 24,
-                }}
-              >
-                <span
-                  style={{ color: "#C9A84C", fontSize: 13, fontWeight: 600 }}
-                >
+              <div className="inline-block bg-[rgba(201,168,76,0.2)] border border-[rgba(201,168,76,0.4)] rounded-lg px-3.5 py-1.5 mb-6">
+                <span className="text-ug-gold text-[13px] font-semibold">
                   DCS Workshop 2026
                 </span>
               </div>
-              <h2
-                style={{
-                  color: "#fff",
-                  fontFamily: "Playfair Display, serif",
-                  fontSize: "2rem",
-                  lineHeight: 1.3,
-                  maxWidth: 340,
-                }}
-              >
+              <h2 className="text-white font-serif text-[2rem] leading-[1.3] max-w-[340px]">
                 Postgraduate Research Workshop Administration
               </h2>
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.7)",
-                  marginTop: 14,
-                  fontSize: 15,
-                  maxWidth: 340,
-                }}
-              >
+              <p className="text-white/70 mt-3.5 text-[15px] max-w-[340px]">
                 Manage registrations, submissions, schedule, and live updates
                 for the 2nd Annual Workshop.
               </p>
@@ -359,17 +297,10 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
             {/* Slide caption + dots */}
             <div>
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: 13,
-                  marginBottom: 12,
-                  fontStyle: "italic",
-                }}
-              >
+              <p className="text-white/60 text-[13px] mb-3 italic">
                 {SLIDE_IMAGES[slide].caption}
               </p>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="flex gap-2">
                 {SLIDE_IMAGES.map((_, i) => (
                   <button
                     key={i}
@@ -378,15 +309,9 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     }}
                     style={{
                       width: i === slide ? 24 : 8,
-                      height: 8,
-                      borderRadius: 4,
-                      background:
-                        i === slide ? "#C9A84C" : "rgba(255,255,255,0.35)",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      transition: "all 0.3s ease",
+                      background: i === slide ? "#C9A84C" : "rgba(255,255,255,0.35)",
                     }}
+                    className="h-2 rounded-[4px] border-none cursor-pointer p-0 transition-all duration-300"
                   />
                 ))}
               </div>
@@ -396,77 +321,31 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
         {/* ── Right: auth form ── */}
         <div
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "48px 40px",
-            background: "#fff",
-          }}
-          className="admin-form-panel"
+          className="flex-1 flex items-center justify-center px-10 py-12 bg-white admin-form-panel"
         >
-          <div style={{ width: "100%", maxWidth: 400 }}>
+          <div className="w-full max-w-[400px]">
             {/* ── SIGN IN ── */}
             {authView === "signin" && (
               <>
-                <div style={{ textAlign: "center", marginBottom: 32 }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#C9A84C",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      marginBottom: 10,
-                    }}
-                  >
+                <div className="text-center mb-8">
+                  <div className="text-xs text-ug-gold font-bold tracking-[0.1em] uppercase mb-2.5">
                     Admin Console
                   </div>
-                  <h2
-                    style={{
-                      fontFamily: "Playfair Display, serif",
-                      fontSize: "2rem",
-                      color: "#0F2347",
-                      marginBottom: 8,
-                    }}
-                  >
+                  <h2 className="font-serif text-[2rem] text-ug-navy mb-2">
                     Welcome Back
                   </h2>
-                  <p style={{ color: "#666", fontSize: 15 }}>
+                  <p className="text-[#666] text-[15px]">
                     Sign in to manage the workshop.
                   </p>
                 </div>
-                <div
-                  style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }}
-                />
+                <div className="border-t border-[#e8eaf0] mb-7" />
                 {authError && (
-                  <div
-                    style={{
-                      background: "#fff3f3",
-                      border: "1px solid #f5b8b8",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#c0392b",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div className="bg-[#fff3f3] border border-[#f5b8b8] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#c0392b] text-[13px]">
                     {authError}
                   </div>
                 )}
                 {authMsg && (
-                  <div
-                    style={{
-                      background: "#f0faf4",
-                      border: "1px solid #a8d5b5",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#1e7e3e",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div className="bg-[#f0faf4] border border-[#a8d5b5] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#1e7e3e] text-[13px]">
                     {authMsg}
                   </div>
                 )}
@@ -485,35 +364,20 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                   />
                 </div>
                 <div className="form-group">
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 6,
-                    }}
-                  >
-                    <label style={{ margin: 0 }}>Password</label>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="m-0">Password</label>
                     <button
                       type="button"
                       onClick={() => {
                         resetForm();
                         setAuthView("forgot");
                       }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#1B3A6B",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        padding: 0,
-                        fontWeight: 600,
-                      }}
+                      className="bg-none border-none text-ug-blue text-xs cursor-pointer p-0 font-semibold"
                     >
                       Forgot password?
                     </button>
                   </div>
-                  <div style={{ position: "relative" }}>
+                  <div className="relative">
                     <input
                       type={showPass ? "text" : "password"}
                       autoComplete="current-password"
@@ -524,7 +388,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                         setAuthError("");
                       }}
                       placeholder="••••••••"
-                      style={{ paddingRight: 44 }}
+                      className="pr-11"
                       onKeyDown={(e) =>
                         e.key === "Enter" && !authLoading && handleSignIn()
                       }
@@ -532,54 +396,27 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     <button
                       type="button"
                       onClick={() => setShowPass((v) => !v)}
-                      style={{
-                        position: "absolute",
-                        right: 12,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#888",
-                        fontSize: 16,
-                        padding: 0,
-                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                     >
                       {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
                 <button
-                  className="btn-primary"
-                  style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    padding: "14px",
-                    fontSize: 15,
-                    borderRadius: 10,
-                    marginTop: 8,
-                    opacity: authLoading ? 0.65 : 1,
-                    cursor: authLoading ? "not-allowed" : "pointer",
-                  }}
+                  className={`btn-primary w-full justify-center px-0 py-3.5 text-[15px] rounded-[10px] mt-2${authLoading ? " opacity-65 cursor-not-allowed" : ""}`}
                   onClick={handleSignIn}
                   disabled={authLoading}
                 >
                   {authLoading ? (
                     "Signing in…"
                   ) : (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
+                    <span className="inline-flex items-center gap-1.5">
                       Sign In <ArrowRight size={14} />
                     </span>
                   )}
                 </button>
-                <div style={{ textAlign: "center", marginTop: 20 }}>
-                  <span style={{ color: "#888", fontSize: 13 }}>
+                <div className="text-center mt-5">
+                  <span className="text-[#888] text-[13px]">
                     Don't have an account?{" "}
                   </span>
                   <button
@@ -588,15 +425,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       resetForm();
                       setAuthView("signup");
                     }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#1B3A6B",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
+                    className="bg-transparent border-none text-ug-blue text-[13px] font-bold cursor-pointer p-0"
                   >
                     Create account
                   </button>
@@ -607,64 +436,25 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
             {/* ── SIGN UP ── */}
             {authView === "signup" && (
               <>
-                <div style={{ textAlign: "center", marginBottom: 32 }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#C9A84C",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      marginBottom: 10,
-                    }}
-                  >
+                <div className="text-center mb-8">
+                  <div className="text-xs text-ug-gold font-bold tracking-[0.1em] uppercase mb-2.5">
                     Admin Console
                   </div>
-                  <h2
-                    style={{
-                      fontFamily: "Playfair Display, serif",
-                      fontSize: "2rem",
-                      color: "#0F2347",
-                      marginBottom: 8,
-                    }}
-                  >
+                  <h2 className="font-serif text-[2rem] text-ug-navy mb-2">
                     Create Account
                   </h2>
-                  <p style={{ color: "#666", fontSize: 15 }}>
+                  <p className="text-[#666] text-[15px]">
                     Set up admin access for the workshop.
                   </p>
                 </div>
-                <div
-                  style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }}
-                />
+                <div className="border-t border-[#e8eaf0] mb-7" />
                 {authError && (
-                  <div
-                    style={{
-                      background: "#fff3f3",
-                      border: "1px solid #f5b8b8",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#c0392b",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div className="bg-[#fff3f3] border border-[#f5b8b8] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#c0392b] text-[13px]">
                     {authError}
                   </div>
                 )}
                 {authMsg && (
-                  <div
-                    style={{
-                      background: "#f0faf4",
-                      border: "1px solid #a8d5b5",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#1e7e3e",
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                    }}
-                  >
+                  <div className="bg-[#f0faf4] border border-[#a8d5b5] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#1e7e3e] text-[13px] leading-relaxed">
                     {authMsg}
                   </div>
                 )}
@@ -686,7 +476,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     </div>
                     <div className="form-group">
                       <label>Password</label>
-                      <div style={{ position: "relative" }}>
+                      <div className="relative">
                         <input
                           type={showPass ? "text" : "password"}
                           autoComplete="new-password"
@@ -700,23 +490,12 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                             setAuthError("");
                           }}
                           placeholder="At least 6 characters"
-                          style={{ paddingRight: 44 }}
+                          className="pr-11"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPass((v) => !v)}
-                          style={{
-                            position: "absolute",
-                            right: 12,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#888",
-                            fontSize: 16,
-                            padding: 0,
-                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                         >
                           {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -724,7 +503,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     </div>
                     <div className="form-group">
                       <label>Confirm Password</label>
-                      <div style={{ position: "relative" }}>
+                      <div className="relative">
                         <input
                           type={showConfirm ? "text" : "password"}
                           autoComplete="new-password"
@@ -735,7 +514,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                             setAuthError("");
                           }}
                           placeholder="Re-enter your password"
-                          style={{ paddingRight: 44 }}
+                          className="pr-11"
                           onKeyDown={(e) =>
                             e.key === "Enter" && !authLoading && handleSignUp()
                           }
@@ -743,18 +522,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                         <button
                           type="button"
                           onClick={() => setShowConfirm((v) => !v)}
-                          style={{
-                            position: "absolute",
-                            right: 12,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#888",
-                            fontSize: 16,
-                            padding: 0,
-                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                         >
                           {showConfirm ? (
                             <EyeOff size={16} />
@@ -765,14 +533,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       </div>
                     </div>
                     {form.password && (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 6,
-                          flexWrap: "wrap",
-                          marginBottom: 16,
-                        }}
-                      >
+                      <div className="flex gap-1.5 flex-wrap mb-4">
                         {[
                           { label: "6+ chars", ok: form.password.length >= 6 },
                           {
@@ -783,14 +544,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                         ].map(({ label, ok }) => (
                           <span
                             key={label}
-                            style={{
-                              fontSize: 11,
-                              padding: "2px 8px",
-                              borderRadius: 12,
-                              fontWeight: 600,
-                              background: ok ? "#e8f5ee" : "#f5f5f5",
-                              color: ok ? "#27ae60" : "#aaa",
-                            }}
+                            className={`text-[11px] px-2 py-0.5 rounded-xl font-semibold${ok ? " bg-[#e8f5ee] text-[#27ae60]" : " bg-[#f5f5f5] text-[#aaa]"}`}
                           >
                             {ok ? <Check size={11} /> : "○"} {label}
                           </span>
@@ -798,37 +552,22 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       </div>
                     )}
                     <button
-                      className="btn-primary"
-                      style={{
-                        width: "100%",
-                        justifyContent: "center",
-                        padding: "14px",
-                        fontSize: 15,
-                        borderRadius: 10,
-                        opacity: authLoading ? 0.65 : 1,
-                        cursor: authLoading ? "not-allowed" : "pointer",
-                      }}
+                      className={`btn-primary w-full justify-center px-0 py-3.5 text-[15px] rounded-[10px]${authLoading ? " opacity-65 cursor-not-allowed" : ""}`}
                       onClick={handleSignUp}
                       disabled={authLoading}
                     >
                       {authLoading ? (
                         "Creating account…"
                       ) : (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
+                        <span className="inline-flex items-center gap-1.5">
                           Create Account <ArrowRight size={14} />
                         </span>
                       )}
                     </button>
                   </>
                 )}
-                <div style={{ textAlign: "center", marginTop: 20 }}>
-                  <span style={{ color: "#888", fontSize: 13 }}>
+                <div className="text-center mt-5">
+                  <span className="text-[#888] text-[13px]">
                     Already have an account?{" "}
                   </span>
                   <button
@@ -837,15 +576,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       resetForm();
                       setAuthView("signin");
                     }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#1B3A6B",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
+                    className="bg-transparent border-none text-ug-blue text-[13px] font-bold cursor-pointer p-0"
                   >
                     Sign in
                   </button>
@@ -856,63 +587,25 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
             {/* ── FORGOT PASSWORD ── */}
             {authView === "forgot" && (
               <>
-                <div style={{ textAlign: "center", marginBottom: 32 }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#C9A84C",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      marginBottom: 10,
-                    }}
-                  >
+                <div className="text-center mb-8">
+                  <div className="text-xs text-ug-gold font-bold tracking-[0.1em] uppercase mb-2.5">
                     Admin Console
                   </div>
-                  <h2
-                    style={{
-                      fontFamily: "Playfair Display, serif",
-                      fontSize: "2rem",
-                      color: "#0F2347",
-                      marginBottom: 8,
-                    }}
-                  >
+                  <h2 className="font-serif text-[2rem] text-ug-navy mb-2">
                     Reset Password
                   </h2>
-                  <p style={{ color: "#666", fontSize: 15 }}>
+                  <p className="text-[#666] text-[15px]">
                     Enter your email and we'll send a reset link.
                   </p>
                 </div>
-                <div
-                  style={{ borderTop: "1px solid #e8eaf0", marginBottom: 28 }}
-                />
+                <div className="border-t border-[#e8eaf0] mb-7" />
                 {authError && (
-                  <div
-                    style={{
-                      background: "#fff3f3",
-                      border: "1px solid #f5b8b8",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#c0392b",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div className="bg-[#fff3f3] border border-[#f5b8b8] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#c0392b] text-[13px]">
                     {authError}
                   </div>
                 )}
                 {authMsg && (
-                  <div
-                    style={{
-                      background: "#f0faf4",
-                      border: "1px solid #a8d5b5",
-                      borderRadius: 10,
-                      padding: "10px 14px",
-                      marginBottom: 18,
-                      color: "#1e7e3e",
-                      fontSize: 13,
-                    }}
-                  >
+                  <div className="bg-[#f0faf4] border border-[#a8d5b5] rounded-[10px] px-3.5 py-2.5 mb-[18px] text-[#1e7e3e] text-[13px]">
                     {authMsg}
                   </div>
                 )}
@@ -938,59 +631,30 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       />
                     </div>
                     <button
-                      className="btn-primary"
-                      style={{
-                        width: "100%",
-                        justifyContent: "center",
-                        padding: "14px",
-                        fontSize: 15,
-                        borderRadius: 10,
-                        opacity: authLoading ? 0.65 : 1,
-                        cursor: authLoading ? "not-allowed" : "pointer",
-                      }}
+                      className={`btn-primary w-full justify-center px-0 py-3.5 text-[15px] rounded-[10px]${authLoading ? " opacity-65 cursor-not-allowed" : ""}`}
                       onClick={handleForgotPassword}
                       disabled={authLoading}
                     >
                       {authLoading ? (
                         "Sending…"
                       ) : (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
+                        <span className="inline-flex items-center gap-1.5">
                           Send Reset Link <ArrowRight size={14} />
                         </span>
                       )}
                     </button>
                   </>
                 )}
-                <div style={{ textAlign: "center", marginTop: 20 }}>
+                <div className="text-center mt-5">
                   <button
                     type="button"
                     onClick={() => {
                       resetForm();
                       setAuthView("signin");
                     }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#1B3A6B",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
+                    className="bg-transparent border-none text-ug-blue text-[13px] font-bold cursor-pointer p-0"
                   >
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
+                    <span className="inline-flex items-center gap-1.5">
                       <ArrowLeft size={14} /> Back to Sign In
                     </span>
                   </button>
@@ -1013,63 +677,24 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
   return (
     <AdminContext.Provider value={{ siteContent, updateContent, navigate }}>
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        background: "#f1f3f7",
-      }}
-    >
+    <div className="flex flex-col min-h-screen bg-ug-admin-bg">
       {/* ── ADMIN TOP BAR ────────────────────────────────────────── */}
-      <div
-        style={{
-          background: "#0A1A35",
-          borderBottom: "1px solid rgba(201,168,76,0.25)",
-          padding: "10px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexShrink: 0,
-          zIndex: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span
-            style={{
-              color: "#C9A84C",
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-            }}
-          >
+      <div className="bg-[#0A1A35] border-b border-[rgba(201,168,76,0.25)] px-6 py-[10px] flex justify-between items-center shrink-0 z-10">
+        <div className="flex items-center gap-3.5">
+          <span className="text-ug-gold font-bold text-[13px] tracking-[0.08em] uppercase">
             DCS Admin Console
           </span>
-          <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>
-            |
-          </span>
-          <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 13 }}>
+          <span className="text-white/25 text-xs">|</span>
+          <span className="text-white/45 text-[13px]">
             {event.edition}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => navigate && navigate("home")}
-            style={{
-              background: "#C9A84C",
-              color: "#0F2347",
-              border: "none",
-              borderRadius: 8,
-              padding: "7px 18px",
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
+            className="bg-ug-gold text-ug-navy border-none rounded-lg px-[18px] py-[7px] text-[13px] font-bold cursor-pointer"
           >
-            <span
-              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-            >
+            <span className="inline-flex items-center gap-1.5">
               <ArrowLeft size={14} /> View Website
             </span>
           </button>
@@ -1077,121 +702,49 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
       </div>
 
       {/* ── SIDEBAR + CONTENT ────────────────────────────────────── */}
-      <div style={{ display: "flex", flex: 1 }}>
+      <div className="flex flex-1">
         {/* ── SIDEBAR ──────────────────────────────────────────────── */}
-        <aside
-          style={{
-            width: 220,
-            background: "#0F2347",
-            display: "flex",
-            flexDirection: "column",
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ padding: "24px 20px 16px" }}>
-            <div
-              style={{
-                fontSize: 11,
-                color: "rgba(255,255,255,0.4)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: 4,
-              }}
-            >
+        <aside className="w-[220px] bg-ug-navy flex flex-col shrink-0">
+          <div className="px-5 pt-6 pb-4">
+            <div className="text-[11px] text-white/40 tracking-[0.1em] uppercase mb-1">
               Console
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#C9A84C" }}>
+            <div className="text-sm font-semibold text-ug-gold">
               DCS Workshop Admin
             </div>
           </div>
 
-          <nav style={{ flex: 1, padding: "8px 12px", overflowY: "auto" }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: "rgba(255,255,255,0.3)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                padding: "6px 4px 4px",
-                marginBottom: 2,
-              }}
-            >
+          <nav className="flex-1 px-3 py-2 overflow-y-auto">
+            <div className="text-[10px] text-white/30 tracking-[0.1em] uppercase px-1 pt-1.5 pb-1 mb-0.5">
               Pages
             </div>
             {SIDEBAR_PAGES.map((s) => (
               <button
                 key={s.key}
                 onClick={() => adminNav('/admin/' + s.key)}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  background:
-                    activeSection === s.key ? "rgba(201,168,76,0.18)" : "transparent",
-                  border:
-                    activeSection === s.key
-                      ? "1px solid rgba(201,168,76,0.3)"
-                      : "1px solid transparent",
-                  borderRadius: 8,
-                  padding: "9px 12px",
-                  marginBottom: 3,
-                  color: activeSection === s.key ? "#C9A84C" : "rgba(255,255,255,0.65)",
-                  fontSize: 13,
-                  fontWeight: activeSection === s.key ? 600 : 400,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all 0.15s",
-                }}
+                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-[9px] mb-[3px] text-[13px] cursor-pointer text-left transition-all duration-150 border${
+                  activeSection === s.key
+                    ? " bg-[rgba(201,168,76,0.18)] border-[rgba(201,168,76,0.3)] text-ug-gold font-semibold"
+                    : " bg-transparent border-transparent text-white/65 font-normal"
+                }`}
               >
                 <s.icon size={15} />
                 {s.label}
               </button>
             ))}
-            <div
-              style={{
-                height: 1,
-                background: "rgba(255,255,255,0.1)",
-                margin: "8px 4px",
-              }}
-            />
-            <div
-              style={{
-                fontSize: 10,
-                color: "rgba(255,255,255,0.3)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                padding: "4px 4px 4px",
-                marginBottom: 2,
-              }}
-            >
+            <div className="h-px bg-white/10 my-2 mx-1" />
+            <div className="text-[10px] text-white/30 tracking-[0.1em] uppercase px-1 py-1 mb-0.5">
               Admin Tools
             </div>
             {SIDEBAR_TOOLS.map((s) => (
               <button
                 key={s.key}
                 onClick={() => adminNav('/admin/' + s.key)}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  background:
-                    activeSection === s.key ? "rgba(201,168,76,0.18)" : "transparent",
-                  border:
-                    activeSection === s.key
-                      ? "1px solid rgba(201,168,76,0.3)"
-                      : "1px solid transparent",
-                  borderRadius: 8,
-                  padding: "9px 12px",
-                  marginBottom: 3,
-                  color: activeSection === s.key ? "#C9A84C" : "rgba(255,255,255,0.65)",
-                  fontSize: 13,
-                  fontWeight: activeSection === s.key ? 600 : 400,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all 0.15s",
-                }}
+                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-[9px] mb-[3px] text-[13px] cursor-pointer text-left transition-all duration-150 border${
+                  activeSection === s.key
+                    ? " bg-[rgba(201,168,76,0.18)] border-[rgba(201,168,76,0.3)] text-ug-gold font-semibold"
+                    : " bg-transparent border-transparent text-white/65 font-normal"
+                }`}
               >
                 <s.icon size={15} />
                 {s.label}
@@ -1199,26 +752,21 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
             ))}
           </nav>
 
-          <div style={{ padding: "16px 12px" }}>
+          <div className="px-3 py-4">
             <div
-              style={{
-                background: event.registrationOpen
-                  ? "rgba(50,180,100,0.15)"
-                  : "rgba(220,50,50,0.15)",
-                borderRadius: 8,
-                padding: "10px 12px",
-                marginBottom: 8,
-              }}
+              className={`rounded-lg px-3 py-2.5 mb-2${
+                event.registrationOpen
+                  ? " bg-[rgba(50,180,100,0.15)]"
+                  : " bg-[rgba(220,50,50,0.15)]"
+              }`}
             >
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+              <div className="text-[11px] text-white/50">
                 Registration
               </div>
               <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: event.registrationOpen ? "#5dbb7a" : "#f07070",
-                }}
+                className={`text-[13px] font-semibold${
+                  event.registrationOpen ? " text-[#5dbb7a]" : " text-[#f07070]"
+                }`}
               >
                 {event.registrationOpen ? "● Open" : "● Closed"}
               </div>
@@ -1228,16 +776,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                 signOut(auth);
                 navigate && navigate("home");
               }}
-              style={{
-                width: "100%",
-                background: "rgba(255,255,255,0.07)",
-                color: "rgba(255,255,255,0.6)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 8,
-                padding: "8px",
-                fontSize: 13,
-                cursor: "pointer",
-              }}
+              className="w-full bg-white/[0.07] text-white/60 border border-white/[0.12] rounded-lg py-2 text-[13px] cursor-pointer"
             >
               Sign Out
             </button>
@@ -1245,7 +784,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
         </aside>
 
         {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-        <div style={{ flex: 1, padding: "32px 36px", overflowY: "auto" }}>
+        <div className="flex-1 px-9 py-8 overflow-y-auto">
           <Outlet />
         </div>
       </div>
@@ -1254,4 +793,3 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
     </AdminContext.Provider>
   );
 }
-

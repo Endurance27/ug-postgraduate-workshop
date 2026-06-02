@@ -12,11 +12,9 @@ export default function OverviewPanel() {
 
   return (
     <div>
-      <h2 className="mb-[6px] font-serif">
-        Dashboard
-      </h2>
-      <p className="text-[#666] text-sm mb-7">
-        {event.edition} · {event.dates}
+      <h2 className="mb-[6px] font-serif">Dashboard</h2>
+      <p className="text-[#888] text-[13px] mb-7">
+        Live snapshot · {event.dates}
       </p>
 
       <div

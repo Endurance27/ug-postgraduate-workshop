@@ -313,8 +313,8 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
               <div key={i} className="rounded-[14px] p-[22px_18px] border transition-shadow duration-200"
                 style={{
                   background: c.bg,
-                  borderTop: `3px solid ${c.color}`,
                   border: `1px solid ${c.color}30`,
+                  borderTop: `3px solid ${c.color}`,
                 }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = `0 6px 20px ${c.color}25`}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}

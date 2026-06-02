@@ -21,6 +21,7 @@ interface RegistrationForm {
   programme: string;
   otherProgramme: string;
   level: string;
+  otherLevel: string;
   attendanceMode: string;
   participationType: string;
   presentationType: string;
@@ -71,7 +72,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
   const [step, setStep] = useState<number>(0);
   const [form, setForm] = useState<RegistrationForm>({
     surname: "", otherNames: "", gender: "", email: "", phone: "", studentId: "",
-    department: "", programme: "", otherProgramme: "", level: "Master's",
+    department: "", programme: "", otherProgramme: "", level: "Master's", otherLevel: "",
     attendanceMode: "Physical", participationType: "Presenter",
     presentationType: "Regular Paper",
   });
@@ -97,6 +98,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
       if (!form.department.trim()) e.department = "Department is required.";
       if (!form.programme) e.programme = "Programme is required.";
       if (form.programme === "Other (Specify)" && !form.otherProgramme.trim()) e.otherProgramme = "Please specify your programme.";
+      if (form.level === "Other (Specify)" && !form.otherLevel.trim()) e.otherLevel = "Please specify your academic level.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -369,8 +371,21 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                   <select value={form.level} onChange={e => set("level", e.target.value)}>
                     <option value="Master's">Master's (MSc / MPhil)</option>
                     <option value="PhD">PhD</option>
+                    <option value="Other (Specify)">Other (Specify)</option>
                   </select>
                 </div>
+                {form.level === "Other (Specify)" && (
+                  <div className="form-group">
+                    <label>Specify Level<span className="req">*</span></label>
+                    <input
+                      type="text"
+                      value={form.otherLevel}
+                      onChange={e => set("otherLevel", e.target.value)}
+                      placeholder="Enter your academic level"
+                    />
+                    {errors.otherLevel && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.otherLevel}</p>}
+                  </div>
+                )}
               </div>
             )}
 

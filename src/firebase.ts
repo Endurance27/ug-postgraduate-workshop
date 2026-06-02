@@ -20,6 +20,7 @@ import {
   setDoc,
   collection,
   getDocs,
+  onSnapshot,
 } from 'firebase/firestore';
 import {
   getStorage,
@@ -72,7 +73,7 @@ try {
 } catch (e) {
   console.warn('Firestore init failed:', (e as Error).message);
 }
-export { _db as db, doc, getDoc, setDoc, collection, getDocs };
+export { _db as db, doc, getDoc, setDoc, collection, getDocs, onSnapshot };
 
 // Storage — protected so a missing bucket can't crash the app
 let _storage: FirebaseStorage | null = null;

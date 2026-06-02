@@ -14,13 +14,32 @@ interface FooterData {
 
 interface MainLayoutProps {
   footer?: FooterData;
+  contentStatus?: {
+    loading?: boolean;
+    error?: string;
+  };
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
-export default function MainLayout({ footer }: MainLayoutProps) {
+export default function MainLayout({ footer, contentStatus }: MainLayoutProps) {
   return (
     <div className="app">
       <Navbar />
+
+      {(contentStatus?.loading || contentStatus?.error) && (
+        <div className="container" style={{ paddingTop: 16 }}>
+          {contentStatus.loading && (
+            <div className="alert alert-info">
+              Loading the latest content from Firebase…
+            </div>
+          )}
+          {contentStatus.error && (
+            <div className="alert alert-error">
+              Could not load the latest content. Showing the last cached version.
+            </div>
+          )}
+        </div>
+      )}
 
       <main>
         <Outlet />

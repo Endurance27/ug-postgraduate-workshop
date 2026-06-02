@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { auth, db, doc, getDoc, setDoc, collection, getDocs, onAuthStateChanged } from "./firebase.js";
+import { auth, db, doc, setDoc, collection, getDocs, onSnapshot, onAuthStateChanged } from "./firebase.js";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import {
@@ -55,6 +55,11 @@ interface SaveOptions {
   paymentReference?: string;
   amount?: number;
   method?: string;
+}
+
+interface ContentStatus {
+  loading: boolean;
+  error: string;
 }
 
 interface SiteContent {
@@ -339,6 +344,7 @@ export default function App() {
   const location = useLocation();
   const [, setRegistrant] = useState(null);
   const saveTimer = useRef(null);
+  const [contentStatus, setContentStatus] = useState<ContentStatus>({ loading: true, error: "" });
 
   // 1. Initialise from localStorage instantly (fast, works offline)
   const [siteContent, setSiteContent] = useState<SiteContent>(() => {
@@ -352,9 +358,12 @@ export default function App() {
     return INIT_CONTENT as SiteContent;
   });
 
-  // 2. On mount: pull the latest from Firestore (overrides localStorage if newer)
+  // 2. On mount: keep site content in sync with Firestore
   useEffect(() => {
-    if (!db || !doc || !getDoc) return;
+    if (!db || !doc || !onSnapshot) {
+      setContentStatus({ loading: false, error: "Firestore is not configured for this app." });
+      return;
+    }
     let alive = true;
 
     const loadFirebaseRecords = () => {
@@ -382,11 +391,25 @@ export default function App() {
         .catch(() => {});
     };
 
-    getDoc(doc(db, "workshop", "siteContent"))
-      .then(snap => {
-        if (alive && snap.exists()) setSiteContent(c => mergeRemote(c, snap.data()));
-      })
-      .catch(() => {}); // rules not set yet or offline — silently keep localStorage data
+    // Root cause: public pages only loaded cached content once, so admin updates never flowed through.
+    // Fix: subscribe to Firestore for live updates and surface load errors.
+    const unsubscribe = onSnapshot(
+      doc(db, "workshop", "siteContent"),
+      (snap) => {
+        if (!alive) return;
+        if (snap.exists()) {
+          setSiteContent(c => mergeRemote(c, snap.data()));
+          setContentStatus({ loading: false, error: "" });
+        } else {
+          setContentStatus({ loading: false, error: "No site content found in Firestore yet." });
+        }
+      },
+      (err) => {
+        if (!alive) return;
+        console.warn("Firestore read failed:", err.message);
+        setContentStatus({ loading: false, error: err.message });
+      }
+    );
 
     loadFirebaseRecords();
     const unsubAuth = auth && onAuthStateChanged
@@ -396,6 +419,7 @@ export default function App() {
     return () => {
       alive = false;
       if (unsubAuth) unsubAuth();
+      unsubscribe();
     };
   }, []);
 
@@ -534,6 +558,7 @@ export default function App() {
         element={
           <MainLayout
             footer={siteContent.footer}
+            contentStatus={contentStatus}
           />
         }
       >

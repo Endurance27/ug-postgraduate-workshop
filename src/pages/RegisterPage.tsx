@@ -11,7 +11,9 @@ declare global {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
-  fullName: string;
+  surname: string;
+  otherNames: string;
+  gender: string;
   email: string;
   phone: string;
   studentId: string;
@@ -67,7 +69,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
 
   const [step, setStep] = useState<number>(0);
   const [form, setForm] = useState<RegistrationForm>({
-    fullName: "", email: "", phone: "", studentId: "",
+    surname: "", otherNames: "", gender: "", email: "", phone: "", studentId: "",
     department: "", programme: "", level: "Master's",
     attendanceMode: "Physical", participationType: "Presenter",
     presentationType: "Regular Paper",
@@ -84,10 +86,11 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
   const validate = (): boolean => {
     const e: FormErrors = {};
     if (step === 0) {
-      if (!form.fullName.trim()) e.fullName = "Full name is required.";
+      if (!form.surname.trim()) e.surname = "Surname is required.";
+      if (!form.otherNames.trim()) e.otherNames = "Other names are required.";
+      if (!form.gender) e.gender = "Please select a gender.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
       if (!form.phone.trim()) e.phone = "Phone number is required.";
-      if (!form.studentId.trim()) e.studentId = "Student ID is required.";
     }
     if (step === 1) {
       if (!form.department.trim()) e.department = "Department is required.";
@@ -141,7 +144,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
         amount: fee * 100,
         currency: "GHS",
         ref: `UGPGW2026-${Date.now()}`,
-        metadata: { name: form.fullName, studentId: form.studentId, programme: form.programme },
+        metadata: { name: `${form.surname} ${form.otherNames}`, studentId: form.studentId, programme: form.programme },
         callback: (response) => {
           setPaying(false);
           finishRegistration("Confirmed", response.reference, "paystack");
@@ -202,7 +205,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
       <div className="container section">
         <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
           <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}><Sparkles size={64} color="#C9A84C" /></div>
-          <h2 style={{ marginBottom: 12 }}>You're registered, {form.fullName.split(" ")[0]}!</h2>
+          <h2 style={{ marginBottom: 12 }}>You're registered, {form.otherNames.split(" ")[0] || form.surname}!</h2>
           <p style={{ color: "#555", marginBottom: 24, lineHeight: 1.7 }}>
             {paymentConfirmed ? (
               <>Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete.</>
@@ -313,12 +316,24 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
             {step === 0 && (
               <div>
                 <h3 style={{ marginBottom: 24 }}>Personal Details</h3>
-                {field("Full Name", "fullName")}
+                <div className="form-row">
+                  {field("Surname", "surname")}
+                  {field("Other Names", "otherNames")}
+                </div>
+                <div className="form-group">
+                  <label>Gender<span className="req">*</span></label>
+                  <select value={form.gender} onChange={e => set("gender", e.target.value)}>
+                    <option value="">-- Select gender --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                  {errors.gender && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.gender}</p>}
+                </div>
                 <div className="form-row">
                   {field("Email Address", "email", "email")}
                   {field("Phone Number", "phone", "tel")}
                 </div>
-                {field("Student ID", "studentId")}
+                {field("Student ID (optional)", "studentId", "text", false)}
               </div>
             )}
 
@@ -385,10 +400,12 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                 <h3 style={{ marginBottom: 20 }}>Registration Summary &amp; Payment</h3>
                 <div style={{ background: "#f8f9fa", borderRadius: 10, padding: 20, marginBottom: 24 }}>
                   {[
-                    ["Name", form.fullName],
+                    ["Surname", form.surname],
+                    ["Other Names", form.otherNames],
+                    ["Gender", form.gender],
                     ["Email", form.email],
                     ["Phone", form.phone],
-                    ["Student ID", form.studentId],
+                    form.studentId && ["Student ID", form.studentId],
                     ["Programme", form.programme],
                     ["Level", form.level],
                     ["Attendance Mode", form.attendanceMode],

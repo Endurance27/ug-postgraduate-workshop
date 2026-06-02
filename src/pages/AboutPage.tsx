@@ -1,4 +1,6 @@
-import { ArrowRight, Play, Video, Calendar, Globe, BookOpen, Trophy, FolderOpen, FileText, ClipboardList, Settings, Check, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, Play, Video, Calendar, Globe, BookOpen, Trophy, FolderOpen, FileText, ClipboardList, Settings, Check, Sparkles, AlertCircle } from "lucide-react";
+import { db, doc, getDoc } from "../firebase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AboutData {
@@ -22,20 +24,79 @@ interface AboutPageProps {
   event?: EventData;
 }
 
+// ─── Defaults ─────────────────────────────────────────────────────────────────
+const DEFAULTS: Required<AboutData> = {
+  badge:         "2nd Annual Edition",
+  title:         "A Platform for Academic Excellence in Postgraduate Research",
+  desc1:         "The 2nd Annual DCS Postgraduate Students Workshop builds on the success of the maiden edition held in 2025, bringing together MSc and MPhil students from Computer Science, Data Science, and IT for Business programmes.",
+  desc2:         "The workshop provides a structured platform for students to present original research, receive expert feedback, and engage with peers and academic staff in a rigorous yet supportive environment.",
+  imageCaption1: "Advancing Research at UG",
+  imageCaption2: "Dept. of Computer Science · SPMS",
+  cardText:      "Following the success of the 2025 inaugural edition, the 2026 workshop expands to include broader participation across all DCS postgraduate programmes, richer parallel tracks, and a formal awards ceremony.",
+};
+
 export default function AboutPage({ navigate, images = {}, about = {}, event = {} }: AboutPageProps) {
-  const a = {
-    badge:         about.badge         || "2nd Annual Edition",
-    title:         about.title         || "A Platform for Academic Excellence in Postgraduate Research",
-    desc1:         about.desc1         || "The 2nd Annual DCS Postgraduate Students Workshop builds on the success of the maiden edition held in 2025, bringing together MSc and MPhil students from Computer Science, Data Science, and IT for Business programmes.",
-    desc2:         about.desc2         || "The workshop provides a structured platform for students to present original research, receive expert feedback, and engage with peers and academic staff in a rigorous yet supportive environment.",
-    imageCaption1: about.imageCaption1 || "Advancing Research at UG",
-    imageCaption2: about.imageCaption2 || "Dept. of Computer Science · SPMS",
-    cardText:      about.cardText      || "Following the success of the 2025 inaugural edition, the 2026 workshop expands to include broader participation across all DCS postgraduate programmes, richer parallel tracks, and a formal awards ceremony.",
+  // Seed state from prop (instantly available from siteContent), then upgrade from Firestore
+  const [aboutData, setAboutData] = useState<AboutData>(about);
+  const [loading,   setLoading]   = useState(true);
+  const [fetchError, setFetchError] = useState("");
+
+  useEffect(() => {
+    if (!db || !doc || !getDoc) { setLoading(false); return; }
+    getDoc(doc(db, "about", "main"))
+      .then((snap) => {
+        if (snap.exists()) setAboutData(snap.data() as AboutData);
+        setLoading(false);
+      })
+      .catch((e: Error) => {
+        setFetchError(e.message);
+        setLoading(false);
+      });
+  }, []);
+
+  // Merge priority: Firestore fetch > siteContent prop > hardcoded defaults
+  const a: Required<AboutData> = {
+    badge:         aboutData.badge         || DEFAULTS.badge,
+    title:         aboutData.title         || DEFAULTS.title,
+    desc1:         aboutData.desc1         || DEFAULTS.desc1,
+    desc2:         aboutData.desc2         || DEFAULTS.desc2,
+    imageCaption1: aboutData.imageCaption1 || DEFAULTS.imageCaption1,
+    imageCaption2: aboutData.imageCaption2 || DEFAULTS.imageCaption2,
+    cardText:      aboutData.cardText      || DEFAULTS.cardText,
   };
   const fee = event.fee || 100;
 
+  // ── Loading skeleton ──
+  if (loading) return (
+    <main style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{
+          width: 40, height: 40, border: "3px solid #e0e0e0",
+          borderTopColor: "#1B3A6B", borderRadius: "50%",
+          animation: "spin 0.9s linear infinite", margin: "0 auto 16px",
+        }} />
+        <p style={{ color: "#888", fontSize: 14 }}>Loading about content…</p>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </main>
+  );
+
+  // ── Fetch error notice (non-blocking — still shows content from prop) ──
+  const errorBanner = fetchError ? (
+    <div style={{
+      background: "#fff8e1", border: "1px solid #f5c842",
+      borderRadius: 8, padding: "10px 16px", margin: "16px 0",
+      fontSize: 13, color: "#856404",
+      display: "flex", alignItems: "center", gap: 8,
+    }}>
+      <AlertCircle size={14} style={{ flexShrink: 0 }} />
+      Could not fetch the latest content from the server. Showing cached version.
+    </div>
+  ) : null;
+
   return (
     <main>
+      {errorBanner && <div className="container">{errorBanner}</div>}
 
       {/* ── HERO ── */}
       <section style={{

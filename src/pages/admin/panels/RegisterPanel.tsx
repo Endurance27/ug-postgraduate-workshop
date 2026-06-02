@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { ToggleRow } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function RegisterPanel({ event, onChange }) {
+export default function RegisterPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const event = siteContent.event as Record<string, any>;
+  const onChange = (v: unknown) => updateContent("event", v);
   const [form, setForm] = useState({ ...event });
   const [saved, setSaved] = useState(false);
   const save = () => {

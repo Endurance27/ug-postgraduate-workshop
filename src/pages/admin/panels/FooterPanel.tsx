@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function FooterPanel({ footer = {} as Record<string, any>, onChange }) {
+export default function FooterPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const footer = (siteContent.footer as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("footer", v);
   const [form, setForm] = useState({
     tagline: footer.tagline || "",
     dates: footer.dates || "",

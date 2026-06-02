@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function ContactPanel({ contact = {}, onChange }) {
+export default function ContactPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const contact = (siteContent.contact as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("contact", v);
   const [form, setForm] = useState({
     email: "",
     website: "",

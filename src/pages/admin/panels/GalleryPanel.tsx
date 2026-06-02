@@ -1,8 +1,12 @@
 import { useState, useRef } from "react";
 import { Image, Upload, ArrowRight, Check, X } from "lucide-react";
 import { uploadToStorage, storageErrorMsg } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function GalleryPanel({ gallery = [], onChange }) {
+export default function GalleryPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const gallery = (siteContent.gallery as any[]) || [];
+  const onChange = (v: unknown) => updateContent("gallery", v);
   const [items, setItems] = useState(gallery.map((p) => ({ ...p })));
   const [saved, setSaved] = useState(false);
   const [uploadingIdx, setUploadingIdx] = useState(null);

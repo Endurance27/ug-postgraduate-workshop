@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Check, ArrowRight, X } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function RecordingsPanel({ recordings = [], onChange }) {
+export default function RecordingsPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const recordings = (siteContent.recordings as any[]) || [];
+  const onChange = (v: unknown) => updateContent("recordings", v);
   const [items, setItems] = useState(recordings.map((r) => ({ ...r })));
   const [saved, setSaved] = useState(false);
 

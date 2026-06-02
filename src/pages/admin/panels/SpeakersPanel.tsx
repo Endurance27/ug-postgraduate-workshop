@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Check, ArrowRight, X } from "lucide-react";
 import { uid, ImageUploadField } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function SpeakersPanel({ speakers = {} as Record<string, any>, onChange }) {
+export default function SpeakersPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const speakers = (siteContent.speakers as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("speakers", v);
   const [keynote, setKeynote] = useState({ ...(speakers.keynote || {}) });
   const [panelists, setPanelists] = useState(
     (speakers.panelists || []).map((p) => ({ ...p })),

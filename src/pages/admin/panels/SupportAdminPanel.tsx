@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function SupportAdminPanel({ contact = {}, onChange, faqs = [], onChangeFaqs }) {
+export default function SupportAdminPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const contact = (siteContent.contact as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("contact", v);
+  const faqs = (siteContent.faqs as any[]) || [];
+  const onChangeFaqs = (v: unknown) => updateContent("faqs", v);
   const [form, setForm] = useState({ email: "", website: "", location: "", hours: "", whatsapp: "", phone: "", ...contact });
   const [contactSaved, setContactSaved] = useState(false);
 

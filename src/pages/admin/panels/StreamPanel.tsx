@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { ToggleRow } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function StreamPanel({ stream = {} as Record<string, any>, onChange }) {
+export default function StreamPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const stream = (siteContent.stream as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("stream", v);
   const [form, setForm] = useState({
     live: stream.live || false,
     note: stream.note || "",

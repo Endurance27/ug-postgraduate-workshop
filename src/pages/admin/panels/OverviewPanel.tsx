@@ -1,7 +1,8 @@
 import { ToggleRow } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function OverviewPanel({ siteContent, updateContent }: { siteContent: { [key: string]: any }; updateContent: (section: string | Record<string, unknown>, value?: unknown) => void }) {
+export default function OverviewPanel() {
+  const { siteContent, updateContent } = useAdminContext();
   const event = siteContent.event || {};
   const participants = siteContent.participants || [];
   const submissions = siteContent.submissions || [];

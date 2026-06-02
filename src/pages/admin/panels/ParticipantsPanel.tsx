@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function ParticipantsPanel({ participants, onChange }) {
+export default function ParticipantsPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const participants = siteContent.participants as any[];
+  const onChange = (v: unknown) => updateContent("participants", v);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 

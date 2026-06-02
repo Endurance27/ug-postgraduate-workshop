@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { uid, TRACK_OPTIONS, TYPE_OPTIONS } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function ScheduleEditor({ schedule, onChange }) {
+export default function ScheduleEditor() {
+  const { siteContent, updateContent } = useAdminContext();
+  const schedule = siteContent.schedule as any[];
+  const onChange = (v: unknown) => updateContent("schedule", v);
   const [activeDay, setActiveDay] = useState(0);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState<Record<string, string>>({});

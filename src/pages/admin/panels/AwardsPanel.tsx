@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { ImageUploadField } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function AwardsPanel({
-  awards,
-  onChange,
-  pastWinners = [],
-  onChangePastWinners,
-}) {
+export default function AwardsPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const awards = siteContent.awards as any[];
+  const onChange = (v: unknown) => updateContent("awards", v);
+  const pastWinners = (siteContent.pastWinners as any[]) || [];
+  const onChangePastWinners = (v: unknown) => updateContent("pastWinners", v);
   const [forms, setForms] = useState(
     awards.map((a) => ({ winner: a.winner, paper: a.paper })),
   );

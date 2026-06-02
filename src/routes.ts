@@ -106,27 +106,27 @@ export function getRouteByPathname(pathname: string): Route {
 }
 
 // ─── Admin child routes ───────────────────────────────────────────────────────
-import OverviewRoute from "./pages/admin/OverviewRoute.jsx";
-import HomeRoute from "./pages/admin/HomeRoute.jsx";
-import AboutRoute from "./pages/admin/AboutRoute.jsx";
-import ScheduleRoute from "./pages/admin/ScheduleRoute.jsx";
-import StreamRoute from "./pages/admin/StreamRoute.jsx";
-import SpeakersRoute from "./pages/admin/SpeakersRoute.jsx";
-import AwardsRoute from "./pages/admin/AwardsRoute.jsx";
-import SponsorsRoute from "./pages/admin/SponsorsRoute.jsx";
-import ContactRoute from "./pages/admin/ContactRoute.jsx";
-import RegisterRoute from "./pages/admin/RegisterRoute.jsx";
-import GalleryRoute from "./pages/admin/GalleryRoute.jsx";
-import RecordingsRoute from "./pages/admin/RecordingsRoute.jsx";
-import SupportRoute from "./pages/admin/SupportRoute.jsx";
-import ParticipantsRoute from "./pages/admin/ParticipantsRoute.jsx";
-import PaymentsRoute from "./pages/admin/PaymentsRoute.jsx";
-import SubmissionsRoute from "./pages/admin/SubmissionsRoute.jsx";
-import AnnouncementsRoute from "./pages/admin/AnnouncementsRoute.jsx";
-import FeedRoute from "./pages/admin/FeedRoute.jsx";
-import ImagesRoute from "./pages/admin/ImagesRoute.jsx";
-import FooterRoute from "./pages/admin/FooterRoute.jsx";
-import SecurityRoute from "./pages/admin/SecurityRoute.jsx";
+import OverviewPanel from "./pages/admin/panels/OverviewPanel.jsx";
+import HomePanel from "./pages/admin/panels/HomePanel.jsx";
+import AboutPanel from "./pages/admin/panels/AboutPanel.jsx";
+import ScheduleEditor from "./pages/admin/panels/ScheduleEditor.jsx";
+import StreamPanel from "./pages/admin/panels/StreamPanel.jsx";
+import SpeakersPanel from "./pages/admin/panels/SpeakersPanel.jsx";
+import AwardsPanel from "./pages/admin/panels/AwardsPanel.jsx";
+import SponsorsAdminPanel from "./pages/admin/panels/SponsorsAdminPanel.jsx";
+import ContactPanel from "./pages/admin/panels/ContactPanel.jsx";
+import RegisterPanel from "./pages/admin/panels/RegisterPanel.jsx";
+import GalleryPanel from "./pages/admin/panels/GalleryPanel.jsx";
+import RecordingsPanel from "./pages/admin/panels/RecordingsPanel.jsx";
+import SupportAdminPanel from "./pages/admin/panels/SupportAdminPanel.jsx";
+import ParticipantsPanel from "./pages/admin/panels/ParticipantsPanel.jsx";
+import PaymentTrackingPanel from "./pages/admin/panels/PaymentTrackingPanel.jsx";
+import SubmissionsPanel from "./pages/admin/panels/SubmissionsPanel.jsx";
+import AnnouncementsPanel from "./pages/admin/panels/AnnouncementsPanel.jsx";
+import FeedPanel from "./pages/admin/panels/FeedPanel.jsx";
+import ImagesPanel from "./pages/admin/panels/ImagesPanel.jsx";
+import FooterPanel from "./pages/admin/panels/FooterPanel.jsx";
+import SecurityPanel from "./pages/admin/panels/SecurityPanel.jsx";
 
 export interface AdminChildRoute {
   key: string;
@@ -136,27 +136,27 @@ export interface AdminChildRoute {
 }
 
 export const adminChildRoutes: AdminChildRoute[] = [
-  { key: "overview",      path: "overview",      component: OverviewRoute },
-  { key: "home",          path: "home",          component: HomeRoute },
-  { key: "about",         path: "about",         component: AboutRoute },
-  { key: "schedule",      path: "schedule",      component: ScheduleRoute },
-  { key: "stream",        path: "stream",        component: StreamRoute },
-  { key: "speakers",      path: "speakers",      component: SpeakersRoute },
-  { key: "awards",        path: "awards",        component: AwardsRoute },
-  { key: "sponsors",      path: "sponsors",      component: SponsorsRoute },
-  { key: "contact",       path: "contact",       component: ContactRoute },
-  { key: "register",      path: "register",      component: RegisterRoute },
-  { key: "gallery",       path: "gallery",       component: GalleryRoute },
-  { key: "recordings",    path: "recordings",    component: RecordingsRoute },
-  { key: "support",       path: "support",       component: SupportRoute },
-  { key: "participants",  path: "participants",  component: ParticipantsRoute },
-  { key: "payments",      path: "payments",      component: PaymentsRoute },
-  { key: "submissions",   path: "submissions",   component: SubmissionsRoute },
-  { key: "announcements", path: "announcements", component: AnnouncementsRoute },
-  { key: "feed",          path: "feed",          component: FeedRoute },
-  { key: "images",        path: "images",        component: ImagesRoute },
-  { key: "footer",        path: "footer",        component: FooterRoute },
-  { key: "security",      path: "security",      component: SecurityRoute },
+  { key: "overview",      path: "overview",      component: OverviewPanel },
+  { key: "home",          path: "home",          component: HomePanel },
+  { key: "about",         path: "about",         component: AboutPanel },
+  { key: "schedule",      path: "schedule",      component: ScheduleEditor },
+  { key: "stream",        path: "stream",        component: StreamPanel },
+  { key: "speakers",      path: "speakers",      component: SpeakersPanel },
+  { key: "awards",        path: "awards",        component: AwardsPanel },
+  { key: "sponsors",      path: "sponsors",      component: SponsorsAdminPanel },
+  { key: "contact",       path: "contact",       component: ContactPanel },
+  { key: "register",      path: "register",      component: RegisterPanel },
+  { key: "gallery",       path: "gallery",       component: GalleryPanel },
+  { key: "recordings",    path: "recordings",    component: RecordingsPanel },
+  { key: "support",       path: "support",       component: SupportAdminPanel },
+  { key: "participants",  path: "participants",  component: ParticipantsPanel },
+  { key: "payments",      path: "payments",      component: PaymentTrackingPanel },
+  { key: "submissions",   path: "submissions",   component: SubmissionsPanel },
+  { key: "announcements", path: "announcements", component: AnnouncementsPanel },
+  { key: "feed",          path: "feed",          component: FeedPanel },
+  { key: "images",        path: "images",        component: ImagesPanel },
+  { key: "footer",        path: "footer",        component: FooterPanel },
+  { key: "security",      path: "security",      component: SecurityPanel },
 ];
 
 export function getRouteProps(routeKey: string, context: RouteContext): Record<string, unknown> {

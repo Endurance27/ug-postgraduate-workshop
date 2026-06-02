@@ -1,6 +1,10 @@
 import { Check } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function SubmissionsPanel({ submissions, onChange }) {
+export default function SubmissionsPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const submissions = siteContent.submissions as any[];
+  const onChange = (v: unknown) => updateContent("submissions", v);
   const setStatus = (id, status) =>
     onChange(submissions.map((s) => (s.id === id ? { ...s, status } : s)));
 

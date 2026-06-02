@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { uid } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function AnnouncementsPanel({ items, onChange }) {
+export default function AnnouncementsPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const items = siteContent.announcements as any[];
+  const onChange = (v: unknown) => updateContent("announcements", v);
   const [form, setForm] = useState({ text: "", type: "info" });
 
   const add = () => {

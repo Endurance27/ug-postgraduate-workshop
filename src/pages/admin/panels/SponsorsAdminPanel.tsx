@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { uid } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function SponsorsAdminPanel({
-  sponsors = [],
-  onChangeSponsors,
-  footer = {} as Record<string, any>,
-  onChange,
-}) {
+export default function SponsorsAdminPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const sponsors = (siteContent.sponsors as any[]) || [];
+  const onChangeSponsors = (v: unknown) => updateContent("sponsors", v);
+  const footer = (siteContent.footer as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("footer", v);
   const [items, setItems] = useState(sponsors.map((s) => ({ ...s })));
   const [footerForm, setFooterForm] = useState({
     publication: footer.publication || "CBAS Journal",

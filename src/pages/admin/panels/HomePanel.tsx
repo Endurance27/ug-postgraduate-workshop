@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Check, ArrowRight, X } from "lucide-react";
 import { uid, ToggleRow } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
 function makeHomeForm(home: Record<string, any> = {}) {
   return {
@@ -26,7 +27,13 @@ function makeHomeForm(home: Record<string, any> = {}) {
   };
 }
 
-export default function HomePanel({ event, onChange, home = {}, onChangeHome, onSaveAll }) {
+export default function HomePanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const event = siteContent.event as Record<string, any>;
+  const home = (siteContent.home as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("event", v);
+  const onChangeHome = (v: unknown) => updateContent("home", v);
+  const onSaveAll = (v: unknown) => updateContent(v as Record<string, unknown>);
   const [evForm, setEvForm] = useState({ ...event });
   const [homeForm, setHomeForm] = useState(() => makeHomeForm(home));
   const [saved, setSaved] = useState(false);

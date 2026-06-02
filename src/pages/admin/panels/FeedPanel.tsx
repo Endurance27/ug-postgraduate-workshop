@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { uid } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function FeedPanel({ feed, onChange }) {
+export default function FeedPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const feed = (siteContent.feed as any[]) || [];
+  const onChange = (v: unknown) => updateContent("feed", v);
   const [form, setForm] = useState({ text: "", type: "update" });
 
   const typeColor = { update: "#1B3A6B", alert: "#c0392b", info: "#1B6B3A" };

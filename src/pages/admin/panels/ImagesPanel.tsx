@@ -1,8 +1,12 @@
 import { useState, useRef } from "react";
 import { Image, Upload, Check, ArrowRight } from "lucide-react";
 import { uploadToStorage, storageErrorMsg } from "./shared";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function ImagesPanel({ images = {} as Record<string, any>, onChange }) {
+export default function ImagesPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const images = (siteContent.images as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("images", v);
   const [form, setForm] = useState({
     workshop: images.workshop || "/images/workshop-sessions.jpg",
     research: images.research || "/images/research-presentations.jpg",

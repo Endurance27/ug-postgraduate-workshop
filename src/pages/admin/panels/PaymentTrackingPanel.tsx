@@ -14,8 +14,13 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function PaymentTrackingPanel({ payments = [], fee = 100, onChange }) {
+export default function PaymentTrackingPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const payments = (siteContent.payments as any[]) || [];
+  const fee = (siteContent.event as any)?.fee || 100;
+  const onChange = (v: unknown) => updateContent("payments", v);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [sortKey, setSortKey] = useState("date");

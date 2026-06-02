@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { useAdminContext } from "../../../context/AdminContext";
 
-export default function AboutPanel({ about = {} as Record<string, any>, onChange }) {
+export default function AboutPanel() {
+  const { siteContent, updateContent } = useAdminContext();
+  const about = (siteContent.about as Record<string, any>) || {};
+  const onChange = (v: unknown) => updateContent("about", v);
   const [form, setForm] = useState({
     badge: about.badge || "2nd Annual Edition",
     title:

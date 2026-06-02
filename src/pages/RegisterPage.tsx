@@ -58,7 +58,7 @@ const PROGRAMMES = [
   "MPhil Data Science",
   "MSc IT for Business",
   "PhD Computer Science",
-  "Other Postgraduate (UG)",
+  "Other (Specify)",
 ];
 
 const PRESENTATION_TYPES = ["Poster Presentation", "Regular Paper", "Short Paper", "Technical Paper"];
@@ -96,7 +96,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     if (step === 1) {
       if (!form.department.trim()) e.department = "Department is required.";
       if (!form.programme) e.programme = "Programme is required.";
-      if (form.programme === "Other Postgraduate (UG)" && !form.otherProgramme.trim()) e.otherProgramme = "Please specify your programme.";
+      if (form.programme === "Other (Specify)" && !form.otherProgramme.trim()) e.otherProgramme = "Please specify your programme.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -352,7 +352,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                   </select>
                   {errors.programme && <p style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{errors.programme}</p>}
                 </div>
-                {form.programme === "Other Postgraduate (UG)" && (
+                {form.programme === "Other (Specify)" && (
                   <div className="form-group">
                     <label>Specify Programme<span className="req">*</span></label>
                     <input

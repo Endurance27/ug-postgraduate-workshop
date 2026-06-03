@@ -61,20 +61,14 @@ export default function Footer({ footer = {} }: FooterProps) {
 
       <div className="container" style={{ padding: "48px 24px 28px" }}>
 
-        {/* ── Main 4-column grid ──────────────────────────────────── */}
+        {/* ── Brand + Right columns ───────────────────────────────── */}
         <div
-          className="footer-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1.2fr 1fr 1fr",
-            gap: "40px 32px",
-            alignItems: "start",
-            marginBottom: 40,
-          }}
+          className="footer-main"
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 40, marginBottom: 40, flexWrap: "wrap" }}
         >
 
-          {/* Col 1 — Brand ─────────────────────────────────────── */}
-          <div>
+          {/* ── Brand (left) ─────────────────────────────────────── */}
+          <div style={{ maxWidth: 230, flexShrink: 0 }}>
             {/* Logo badge */}
             <div
               style={{
@@ -98,58 +92,61 @@ export default function Footer({ footer = {} }: FooterProps) {
                 <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
               </svg>
             </div>
-
-            {/* Tagline */}
             <p style={{ ...COL_TEXT, marginBottom: 4 }}>{tagline}</p>
             <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.35)" }}>{dates}</p>
           </div>
 
-          {/* Col 2 — Quick Links ────────────────────────────────── */}
-          <div>
-            <p style={COL_HEAD}>Quick Links</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 8 }}>
-              {QUICK_LINKS.map(({ key, label }) => (
-                <Link
-                  key={key}
-                  to={getRoutePath(key)}
-                  style={{ ...COL_TEXT, display: "block", padding: "4px 0", textDecoration: "none" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-                >
-                  {label}
-                </Link>
-              ))}
+          {/* ── Right section (Quick Links · Organizers · Sponsors) ── */}
+          <div
+            className="footer-right"
+            style={{ display: "flex", gap: "0 48px", flexWrap: "wrap", justifyContent: "flex-end", flex: 1 }}
+          >
+
+            {/* Quick Links */}
+            <div style={{ minWidth: 170 }}>
+              <p style={COL_HEAD}>Quick Links</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 10 }}>
+                {QUICK_LINKS.map(({ key, label }) => (
+                  <Link
+                    key={key}
+                    to={getRoutePath(key)}
+                    style={{ ...COL_TEXT, display: "block", padding: "4px 0", textDecoration: "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
+
+            {/* Organizers */}
+            <div style={{ minWidth: 160 }}>
+              <p style={COL_HEAD}>Organizers</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {organizers.map((o, i) => (
+                  <span key={i} style={COL_TEXT}>{o}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Sponsors & Funders */}
+            <div style={{ minWidth: 160 }}>
+              <p style={COL_HEAD}>Sponsors &amp; Funders</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+                {sponsors.map((s, i) => (
+                  <span key={i} style={COL_TEXT}>{s}</span>
+                ))}
+              </div>
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
+                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                  Publication in
+                </p>
+                <span style={{ color: "#C9A84C", fontSize: 13, fontWeight: 500 }}>{publication}</span>
+              </div>
+            </div>
+
           </div>
-
-          {/* Col 3 — Organizers ─────────────────────────────────── */}
-          <div>
-            <p style={COL_HEAD}>Organizers</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {organizers.map((o, i) => (
-                <span key={i} style={COL_TEXT}>{o}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Col 4 — Sponsors & Funders ─────────────────────────── */}
-          <div>
-            <p style={COL_HEAD}>Sponsors &amp; Funders</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-              {sponsors.map((s, i) => (
-                <span key={i} style={COL_TEXT}>{s}</span>
-              ))}
-            </div>
-
-            {/* Publication */}
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 16 }}>
-              <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
-                Publication in
-              </p>
-              <span style={{ color: "#C9A84C", fontSize: 13, fontWeight: 500 }}>{publication}</span>
-            </div>
-          </div>
-
         </div>
 
         {/* ── Bottom bar ─────────────────────────────────────────── */}
@@ -180,10 +177,11 @@ export default function Footer({ footer = {} }: FooterProps) {
       {/* Responsive breakpoints */}
       <style>{`
         @media (max-width: 860px) {
-          .footer-grid { grid-template-columns: 1fr 1fr !important; }
+          .footer-main  { flex-direction: column !important; }
+          .footer-right { justify-content: flex-start !important; gap: 32px !important; }
         }
         @media (max-width: 520px) {
-          .footer-grid { grid-template-columns: 1fr !important; }
+          .footer-right { flex-direction: column !important; gap: 28px !important; }
           .footer-bottom { flex-direction: column !important; align-items: flex-start !important; }
         }
       `}</style>

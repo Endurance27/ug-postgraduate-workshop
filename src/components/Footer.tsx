@@ -30,17 +30,17 @@ const QUICK_LINKS = [
 
 const COL_HEAD = {
   color: "#C9A84C",
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: "0.12em",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: "0.1em",
   textTransform: "uppercase" as const,
   marginBottom: 16,
 };
 
 const COL_TEXT: React.CSSProperties = {
-  color: "rgba(255,255,255,0.5)",
-  fontSize: 13,
-  lineHeight: 1.6,
+  color: "rgba(255,255,255,0.78)",
+  fontSize: 14,
+  lineHeight: 1.7,
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -92,8 +92,8 @@ export default function Footer({ footer = {} }: FooterProps) {
                 <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
               </svg>
             </div>
-            <p style={{ ...COL_TEXT, marginBottom: 4 }}>{tagline}</p>
-            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.35)" }}>{dates}</p>
+            <p style={{ ...COL_TEXT, fontWeight: 500, marginBottom: 4 }}>{tagline}</p>
+            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.55)" }}>{dates}</p>
           </div>
 
           {/* ── Right section (Quick Links · Organizers · Sponsors) ── */}
@@ -139,10 +139,10 @@ export default function Footer({ footer = {} }: FooterProps) {
                 ))}
               </div>
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
-                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Publication in
                 </p>
-                <span style={{ color: "#C9A84C", fontSize: 13, fontWeight: 500 }}>{publication}</span>
+                <span style={{ color: "#C9A84C", fontSize: 14, fontWeight: 600 }}>{publication}</span>
               </div>
             </div>
 
@@ -152,19 +152,19 @@ export default function Footer({ footer = {} }: FooterProps) {
         {/* ── Bottom bar ─────────────────────────────────────────── */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
           <div className="footer-bottom" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.28)", fontSize: 12.5 }}>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
               © 2026 University of Ghana · Department of Computer Science · All rights reserved.
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span style={{ ...COL_TEXT, color: "rgba(255,255,255,0.28)", fontSize: 12.5 }}>
+              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
                 GHS 100 · Hybrid Event · 27–29 Aug 2026
               </span>
-              <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 11 }}>|</span>
+              <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 11 }}>|</span>
               <Link
                 to={getRoutePath("admin")}
-                style={{ color: "rgba(255,255,255,0.28)", fontSize: 12.5, textDecoration: "none" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.65)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}
+                style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
               >
                 Admin
               </Link>

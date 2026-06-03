@@ -9,7 +9,6 @@ interface FooterData {
   sponsors?: string[];
   publication?: string;
 }
-
 interface FooterProps {
   footer?: FooterData;
 }
@@ -29,6 +28,21 @@ const QUICK_LINKS = [
   { key: "register",   label: "Register Now"},
 ];
 
+const COL_HEAD = {
+  color: "#C9A84C",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase" as const,
+  marginBottom: 16,
+};
+
+const COL_TEXT: React.CSSProperties = {
+  color: "rgba(255,255,255,0.5)",
+  fontSize: 13,
+  lineHeight: 1.6,
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function Footer({ footer = {} }: FooterProps) {
   const tagline     = footer.tagline     || "2nd Annual Postgraduate Students Workshop";
@@ -43,23 +57,38 @@ export default function Footer({ footer = {} }: FooterProps) {
       style={{ background: "linear-gradient(175deg, #0F2347 0%, #080F1E 100%)" }}
     >
       {/* Gold accent line */}
-      <div style={{ height: 3, background: "linear-gradient(90deg, transparent, #C9A84C 30%, #C9A84C 70%, transparent)" }} />
+      <div style={{ height: 3, background: "linear-gradient(90deg, transparent, #C9A84C 25%, #C9A84C 75%, transparent)" }} />
 
-      <div className="container px-6 pt-12 pb-6">
+      <div className="container" style={{ padding: "48px 24px 28px" }}>
 
-        {/* ── Main grid ─────────────────────────────────────────── */}
+        {/* ── Main 4-column grid ──────────────────────────────────── */}
         <div
-          className="footer-grid gap-10 mb-10"
-          style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr 1fr", alignItems: "start" }}
+          className="footer-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.2fr 1fr 1fr",
+            gap: "40px 32px",
+            alignItems: "start",
+            marginBottom: 40,
+          }}
         >
 
-          {/* ── Brand col ── */}
+          {/* Col 1 — Brand ─────────────────────────────────────── */}
           <div>
-            {/* Logo in a clean white badge — standard for white-bg institutional logos on dark backgrounds */}
-            <div className="inline-block mb-5 rounded-[10px] overflow-hidden" style={{ background: "#fff", padding: "7px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
+            {/* Logo badge */}
+            <div
+              style={{
+                display: "inline-block",
+                background: "#fff",
+                borderRadius: 8,
+                padding: "6px 12px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                marginBottom: 16,
+              }}
+            >
               <svg
                 viewBox="0 0 430 60"
-                style={{ height: 36, width: "auto", display: "block" }}
+                style={{ height: 32, width: "auto", display: "block" }}
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="University of Ghana — Department of Computer Science"
               >
@@ -69,23 +98,21 @@ export default function Footer({ footer = {} }: FooterProps) {
                 <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
               </svg>
             </div>
-            <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)", maxWidth: 230 }}>
-              {tagline}<br />{dates}
-            </p>
+
+            {/* Tagline */}
+            <p style={{ ...COL_TEXT, marginBottom: 4 }}>{tagline}</p>
+            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.35)" }}>{dates}</p>
           </div>
 
-          {/* ── Quick Links col ── */}
+          {/* Col 2 — Quick Links ────────────────────────────────── */}
           <div>
-            <h4 className="text-ug-gold font-semibold text-[11px] tracking-[0.12em] uppercase mb-4">
-              Quick Links
-            </h4>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 12 }}>
+            <p style={COL_HEAD}>Quick Links</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 8 }}>
               {QUICK_LINKS.map(({ key, label }) => (
                 <Link
                   key={key}
                   to={getRoutePath(key)}
-                  className="block text-[13px] py-[5px] transition-colors duration-150 no-underline"
-                  style={{ color: "rgba(255,255,255,0.5)" }}
+                  style={{ ...COL_TEXT, display: "block", padding: "4px 0", textDecoration: "none" }}
                   onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                   onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
                 >
@@ -95,81 +122,69 @@ export default function Footer({ footer = {} }: FooterProps) {
             </div>
           </div>
 
-          {/* ── Organizers col ── */}
+          {/* Col 3 — Organizers ─────────────────────────────────── */}
           <div>
-            <h4 className="text-ug-gold font-semibold text-[11px] tracking-[0.12em] uppercase mb-4">
-              Organizers
-            </h4>
-            <div className="flex flex-col gap-2.5">
+            <p style={COL_HEAD}>Organizers</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {organizers.map((o, i) => (
-                <span key={i} className="text-[13px]" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
-                  {o}
-                </span>
+                <span key={i} style={COL_TEXT}>{o}</span>
               ))}
             </div>
           </div>
 
-          {/* ── Sponsors & Funders col ── */}
+          {/* Col 4 — Sponsors & Funders ─────────────────────────── */}
           <div>
-            <h4 className="text-ug-gold font-semibold text-[11px] tracking-[0.12em] uppercase mb-4">
-              Sponsors &amp; Funders
-            </h4>
-            <div className="flex flex-col gap-2.5">
+            <p style={COL_HEAD}>Sponsors &amp; Funders</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
               {sponsors.map((s, i) => (
-                <span key={i} className="text-[13px]" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
-                  {s}
-                </span>
+                <span key={i} style={COL_TEXT}>{s}</span>
               ))}
             </div>
-            <div
-              className="mt-4 pt-4"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <div
-                className="text-[11px] uppercase tracking-wider mb-1"
-                style={{ color: "rgba(255,255,255,0.3)" }}
-              >
+
+            {/* Publication */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 16 }}>
+              <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                 Publication in
-              </div>
-              <span className="text-ug-gold text-[13px] font-medium">{publication}</span>
+              </p>
+              <span style={{ color: "#C9A84C", fontSize: 13, fontWeight: 500 }}>{publication}</span>
             </div>
           </div>
 
         </div>
 
-        {/* ── Bottom bar ────────────────────────────────────────── */}
-        <div
-          className="pt-5 flex justify-between items-center flex-wrap gap-3"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            © 2026 University of Ghana · Department of Computer Science · All rights reserved.
-          </p>
-          <div className="flex items-center gap-5">
-            <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-              GHS 100 · Hybrid Event · 27–29 Aug 2026
+        {/* ── Bottom bar ─────────────────────────────────────────── */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
+          <div className="footer-bottom" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.28)", fontSize: 12.5 }}>
+              © 2026 University of Ghana · Department of Computer Science · All rights reserved.
             </p>
-            <Link
-              to={getRoutePath("admin")}
-              className="text-[13px] transition-colors duration-150 no-underline"
-              style={{ color: "rgba(255,255,255,0.3)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.3)")}
-            >
-              Admin
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span style={{ ...COL_TEXT, color: "rgba(255,255,255,0.28)", fontSize: 12.5 }}>
+                GHS 100 · Hybrid Event · 27–29 Aug 2026
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 11 }}>|</span>
+              <Link
+                to={getRoutePath("admin")}
+                style={{ color: "rgba(255,255,255,0.28)", fontSize: 12.5, textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.65)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
 
       </div>
 
-      {/* Responsive: collapse to 2-col then 1-col */}
+      {/* Responsive breakpoints */}
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 860px) {
           .footer-grid { grid-template-columns: 1fr 1fr !important; }
         }
-        @media (max-width: 560px) {
+        @media (max-width: 520px) {
           .footer-grid { grid-template-columns: 1fr !important; }
+          .footer-bottom { flex-direction: column !important; align-items: flex-start !important; }
         }
       `}</style>
     </footer>

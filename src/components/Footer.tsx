@@ -55,26 +55,19 @@ export default function Footer({ footer = {} }: FooterProps) {
 
           {/* ── Brand col ── */}
           <div>
-            {/* Logo: white-filtered so it reads on dark bg */}
-            <div className="flex items-center gap-3 mb-5">
-              <img
-                src="/ug-logo.svg"
-                alt="University of Ghana"
-                className="block"
-                style={{ height: 44, width: "auto", filter: "brightness(0) invert(1)" }}
-              />
-              <div
-                className="self-stretch"
-                style={{ width: 1, background: "rgba(201,168,76,0.5)" }}
-              />
-              <div>
-                <div className="text-white font-bold text-[12px] tracking-wide leading-tight">
-                  UNIVERSITY OF GHANA
-                </div>
-                <div className="text-ug-gold font-semibold text-[10px] tracking-widest mt-0.5">
-                  DEPT. OF COMPUTER SCIENCE
-                </div>
-              </div>
+            {/* Logo in a clean white badge — standard for white-bg institutional logos on dark backgrounds */}
+            <div className="inline-block mb-5 rounded-[10px] overflow-hidden" style={{ background: "#fff", padding: "7px 14px", boxShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
+              <svg
+                viewBox="0 0 430 60"
+                style={{ height: 36, width: "auto", display: "block" }}
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="University of Ghana — Department of Computer Science"
+              >
+                <image href="/ug-logo.svg" x="0" y="0" width="193" height="60" preserveAspectRatio="xMidYMid meet" />
+                <line x1="201" y1="8" x2="201" y2="52" stroke="#C9A84C" strokeWidth="1.5" />
+                <text x="210" y="23" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">DEPARTMENT OF</text>
+                <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
+              </svg>
             </div>
             <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)", maxWidth: 230 }}>
               {tagline}<br />{dates}

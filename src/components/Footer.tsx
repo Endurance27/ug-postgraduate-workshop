@@ -64,7 +64,7 @@ export default function Footer({ footer = {} }: FooterProps) {
         {/* ── Brand + Right columns ───────────────────────────────── */}
         <div
           className="footer-main"
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 40, marginBottom: 40, flexWrap: "wrap" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 0, marginBottom: 40, flexWrap: "wrap" }}
         >
 
           {/* ── Brand (left) ─────────────────────────────────────── */}

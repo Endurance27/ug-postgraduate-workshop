@@ -93,7 +93,7 @@ export default function Footer({ footer = {} }: FooterProps) {
               </svg>
             </div>
             <p style={{ ...COL_TEXT, fontWeight: 500, marginBottom: 4 }}>{tagline}</p>
-            <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.55)" }}>{dates}</p>
+            <p style={{ ...COL_TEXT }}>{dates}</p>
           </div>
 
           {/* ── Right section (Quick Links · Organizers · Sponsors) ── */}
@@ -111,8 +111,8 @@ export default function Footer({ footer = {} }: FooterProps) {
                     key={key}
                     to={getRoutePath(key)}
                     style={{ ...COL_TEXT, display: "block", padding: "4px 0", textDecoration: "none" }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#ffffff")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.78)")}
                   >
                     {label}
                   </Link>
@@ -139,7 +139,7 @@ export default function Footer({ footer = {} }: FooterProps) {
                 ))}
               </div>
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
-                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.78)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Publication in
                 </p>
                 <span style={{ color: "#C9A84C", fontSize: 14, fontWeight: 600 }}>{publication}</span>

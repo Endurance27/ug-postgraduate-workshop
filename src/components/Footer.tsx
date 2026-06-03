@@ -139,7 +139,7 @@ export default function Footer({ footer = {} }: FooterProps) {
                 ))}
               </div>
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
-                <p style={{ ...COL_TEXT, fontSize: 11, color: "rgba(255,255,255,0.78)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.78)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Publication in
                 </p>
                 <span style={{ color: "#C9A84C", fontSize: 14, fontWeight: 600 }}>{publication}</span>

@@ -25,6 +25,8 @@ interface RegistrationForm {
   attendanceMode: string;
   participationType: string;
   presentationType: string;
+  presentationTitle: string;
+  abstract: string;
 }
 
 type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
@@ -75,6 +77,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     department: "", programme: "", otherProgramme: "", level: "Master's", otherLevel: "",
     attendanceMode: "Physical", participationType: "Presenter",
     presentationType: "Regular Paper",
+    presentationTitle: "", abstract: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [paying, setPaying] = useState(false);
@@ -99,6 +102,10 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
       if (!form.programme) e.programme = "Programme is required.";
       if (form.programme === "Other (Specify)" && !form.otherProgramme.trim()) e.otherProgramme = "Please specify your programme.";
       if (form.level === "Other (Specify)" && !form.otherLevel.trim()) e.otherLevel = "Please specify your academic level.";
+    }
+    if (step === 2 && form.participationType !== "Observer") {
+      if (!form.presentationTitle.trim()) e.presentationTitle = "Presentation title is required.";
+      if (!form.abstract.trim()) e.abstract = "Abstract is required.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -384,12 +391,35 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                   </select>
                 </div>
                 {form.participationType !== "Observer" && (
-                  <div className="form-group">
-                    <label>Presentation Type<span className="req">*</span></label>
-                    <select value={form.presentationType} onChange={e => set("presentationType", e.target.value)}>
-                      {PRESENTATION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
+                  <>
+                    <div className="form-group">
+                      <label>Presentation Type<span className="req">*</span></label>
+                      <select value={form.presentationType} onChange={e => set("presentationType", e.target.value)}>
+                        {PRESENTATION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Title of Presentation<span className="req">*</span></label>
+                      <input
+                        type="text"
+                        value={form.presentationTitle}
+                        onChange={e => set("presentationTitle", e.target.value)}
+                        placeholder="Enter the title of your presentation or paper"
+                      />
+                      {errors.presentationTitle && <p className="text-[#c0392b] text-[12px] mt-1">{errors.presentationTitle}</p>}
+                    </div>
+                    <div className="form-group">
+                      <label>Abstract<span className="req">*</span></label>
+                      <textarea
+                        value={form.abstract}
+                        onChange={e => set("abstract", e.target.value)}
+                        placeholder="Provide a brief abstract of your presentation (150–300 words)"
+                        rows={5}
+                        style={{ resize: "vertical", minHeight: 120 }}
+                      />
+                      {errors.abstract && <p className="text-[#c0392b] text-[12px] mt-1">{errors.abstract}</p>}
+                    </div>
+                  </>
                 )}
                 <div className="alert alert-info">
                   <strong>Note:</strong> MSc and MPhil CS/DS students are expected to present their thesis or project work. MSc IT for Business students may choose to observe or present.
@@ -414,6 +444,8 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     ["Attendance Mode", form.attendanceMode],
                     ["Participation", form.participationType],
                     form.participationType !== "Observer" && ["Presentation Type", form.presentationType],
+                    form.participationType !== "Observer" && form.presentationTitle && ["Presentation Title", form.presentationTitle],
+                    form.participationType !== "Observer" && form.abstract && ["Abstract", form.abstract],
                   ].filter(Boolean).map(([k, v]) => (
                     <div key={k} className="flex justify-between py-2 border-b border-[#eee] text-[14px]">
                       <span className="text-[#666]">{k}</span>

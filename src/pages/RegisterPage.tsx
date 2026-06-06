@@ -67,6 +67,10 @@ const PROGRAMMES = [
 
 const PRESENTATION_TYPES = ["Poster Presentation", "Regular Paper", "Short Paper", "Technical Paper"];
 
+// ─── Feature flags ────────────────────────────────────────────────────────────
+// Set to true to re-enable Paystack checkout when payment gateway is ready.
+const PAYMENT_ENABLED = false;
+
 const ABSTRACT_MAX_WORDS = 250;
 const countWords = (text: string) =>
   text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
@@ -298,6 +302,23 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     setDone(true);
   };
 
+  // ── Registration-only path (PAYMENT_ENABLED = false) ──────────────────────
+  // Saves the record straight to Firebase with paymentStatus "Pending".
+  // No external redirect. Re-enable payment by setting PAYMENT_ENABLED = true.
+  const completeRegistration = () => {
+    setRegistrationError("");
+    setPaying(true);
+    const ref = `REG-${Date.now()}`;
+    try {
+      finishRegistration("Pending", ref, "offline");
+    } catch (e) {
+      setRegistrationError("Registration could not be saved. Please try again.");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // ── Paystack path (PAYMENT_ENABLED = true) ─────────────────────────────────
   const initPaystack = () => {
     setRegistrationError("");
     const paystackKey = (event.paystackKey || "").trim();
@@ -386,17 +407,32 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
           <p className="text-[#555] mb-6 leading-[1.7]">
             {paymentConfirmed ? (
               <>Your payment has been confirmed and your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> is complete.</>
-            ) : (
+            ) : PAYMENT_ENABLED ? (
               <>Your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> has been saved. Your payment is still pending.</>
+            ) : (
+              <>Your registration for the <strong>{event.title || "2nd UG Postgraduate Workshop"} ({event.dates || "27–29 Aug 2026"})</strong> has been received successfully.
+              Payment instructions will be sent to <strong>{form.email}</strong> once payment opens.</>
             )}
           </p>
           <div className="alert alert-success text-left">
-            {paymentConfirmed && confirmationRef
-              ? <><strong>Payment reference:</strong> {confirmationRef}</>
-              : <><strong>Next step:</strong> Complete your workshop payment to confirm your place.</>}
+            {paymentConfirmed && confirmationRef ? (
+              <><strong>Payment reference:</strong> {confirmationRef}</>
+            ) : PAYMENT_ENABLED ? (
+              <><strong>Next step:</strong> Complete your workshop payment to confirm your place.</>
+            ) : (
+              <>
+                <strong>Registration reference:</strong> {confirmationRef}
+                <br />
+                <span className="text-[13px]">Keep this reference for your records. Payment details will be communicated soon.</span>
+              </>
+            )}
           </div>
           <div className="flex gap-3 justify-center mt-6">
-            {!paymentConfirmed && <button className="btn-primary" onClick={() => navigate("payment")}><span className="inline-flex items-center gap-1.5">Pay Registration Fee <ArrowRight size={14} /></span></button>}
+            {PAYMENT_ENABLED && !paymentConfirmed && (
+              <button className="btn-primary" onClick={() => navigate("payment")}>
+                <span className="inline-flex items-center gap-1.5">Pay Registration Fee <ArrowRight size={14} /></span>
+              </button>
+            )}
             <button className="btn-outline" onClick={() => navigate("home")}>Back to Home</button>
           </div>
         </div>
@@ -662,13 +698,24 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     {registrationError}
                   </div>
                 )}
+                {!PAYMENT_ENABLED && (
+                  <div className="alert alert-info mb-5">
+                    <strong>Payment note:</strong> Online payment is not yet active.
+                    Your registration will be saved and you will be contacted with payment instructions.
+                  </div>
+                )}
                 <button
                   className="btn-gold"
-                  onClick={initPaystack}
+                  onClick={PAYMENT_ENABLED ? initPaystack : completeRegistration}
                   disabled={paying}
                   style={{ width: "100%", justifyContent: "center", fontSize: 16, padding: "14px" }}
                 >
-                  {paying ? "Processing..." : <span className="inline-flex items-center gap-1.5">Pay GHS {fee} via Paystack <ArrowRight size={14} /></span>}
+                  {paying
+                    ? "Saving registration…"
+                    : PAYMENT_ENABLED
+                      ? <span className="inline-flex items-center gap-1.5">Pay GHS {fee} via Paystack <ArrowRight size={14} /></span>
+                      : <span className="inline-flex items-center gap-1.5">Complete Registration <ArrowRight size={14} /></span>
+                  }
                 </button>
               </div>
             )}

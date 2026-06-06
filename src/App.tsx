@@ -32,9 +32,13 @@ interface Participant {
   mode?: string;
   attendanceMode?: string;
   presentationType?: string;
+  nationality?: string;
+  presentationTitle?: string;
+  abstract?: string;
   registeredAt?: string;
   updatedAt?: string;
   payRef?: string;
+  paymentMethod?: string;
 }
 
 interface PaymentRecord {
@@ -480,8 +484,12 @@ export default function App() {
       mode: registration.attendanceMode || registration.mode || "Physical",
       attendanceMode: registration.attendanceMode || registration.mode || "Physical",
       presentationType: registration.presentationType || "",
+      nationality: (registration as Record<string, unknown>).nationality as string || "",
+      presentationTitle: (registration as Record<string, unknown>).presentationTitle as string || "",
+      abstract: (registration as Record<string, unknown>).abstract as string || "",
       registeredAt: registration.registeredAt || now,
       updatedAt: now,
+      paymentMethod: options.method || "offline",
     };
 
     if (options.paymentReference) (participantRecord as Participant).payRef = options.paymentReference;

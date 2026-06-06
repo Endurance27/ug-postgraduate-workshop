@@ -40,6 +40,11 @@ interface Participant {
   updatedAt?: string;
   payRef?: string;
   paymentMethod?: string;
+  // Email notification metadata — written by the Cloud Function, never by the frontend
+  emailSent?:           boolean;
+  emailSentAt?:         string | null;
+  emailDeliveryStatus?: "processing" | "delivered" | "failed" | null;
+  emailError?:          string | null;
 }
 
 interface PaymentRecord {

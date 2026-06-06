@@ -27,6 +27,10 @@ interface Participant {
   payRef?: string;
   registeredAt?: string;
   updatedAt?: string;
+  emailSent?: boolean;
+  emailSentAt?: string | null;
+  emailDeliveryStatus?: "processing" | "delivered" | "failed" | null;
+  emailError?: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -338,6 +342,12 @@ export default function ParticipantsPanel() {
                               ["Payment Method", fmt(p.paymentMethod)],
                               p.payRef && ["Payment Ref", fmt(p.payRef)],
                               ["Last Updated", fmtDate(p.updatedAt)],
+                              ["Email Notification",
+                                p.emailDeliveryStatus === "delivered" ? "✅ Sent" :
+                                p.emailDeliveryStatus === "processing" ? "⏳ Sending…" :
+                                p.emailDeliveryStatus === "failed" ? `❌ Failed${p.emailError ? ` — ${p.emailError.slice(0, 60)}` : ""}` :
+                                "⏳ Pending"
+                              ],
                             ].filter(Boolean).map(([label, val]) => (
                               <div key={label as string}>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: "#999", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { auth, db, doc, setDoc, collection, getDocs, onSnapshot, onAuthStateChanged } from "./firebase.js";
+import { auth, db, doc, setDoc, collection, onSnapshot, onAuthStateChanged } from "./firebase.js";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import {
@@ -370,33 +370,7 @@ export default function App() {
     }
     let alive = true;
 
-    const loadFirebaseRecords = () => {
-      if (!collection || !getDocs) return;
-      Promise.all([
-        getDocs(collection(db, "registrations")),
-        getDocs(collection(db, "payments")),
-      ])
-        .then(([registrationSnap, paymentSnap]) => {
-          if (!alive) return;
-          const firebaseParticipants = registrationSnap.docs.map(snap => ({
-            id: snap.data().id || snap.id,
-            ...snap.data(),
-          }));
-          const firebasePayments = paymentSnap.docs.map(snap => ({
-            id: snap.data().id || snap.id,
-            ...snap.data(),
-          }));
-          setSiteContent(c => ({
-            ...c,
-            participants: mergeRecords(c.participants || [], firebaseParticipants as Participant[], participantKey),
-            payments: mergeRecords(c.payments || [], firebasePayments as PaymentRecord[], paymentKey),
-          }) as SiteContent);
-        })
-        .catch(() => {});
-    };
-
-    // Root cause: public pages only loaded cached content once, so admin updates never flowed through.
-    // Fix: subscribe to Firestore for live updates and surface load errors.
+    // ── Live listener: site content (admin edits) ──────────────────────────
     const unsubscribe = onSnapshot(
       doc(db, "workshop", "siteContent"),
       (snap) => {
@@ -415,15 +389,51 @@ export default function App() {
       }
     );
 
-    loadFirebaseRecords();
-    const unsubAuth = auth && onAuthStateChanged
-      ? onAuthStateChanged(auth, user => { if (user) loadFirebaseRecords(); })
+    // ── Live listener: registrations collection ────────────────────────────
+    // onSnapshot fires immediately with the current state, then on every change,
+    // so the admin sees new registrations in real-time without a page reload.
+    const unsubRegistrations = collection
+      ? onSnapshot(
+          collection(db, "registrations"),
+          (snap) => {
+            if (!alive) return;
+            const participants = snap.docs.map(d => ({
+              id: d.data().id || d.id,
+              ...d.data(),
+            }));
+            setSiteContent(c => ({
+              ...c,
+              participants: participants as Participant[],
+            }) as SiteContent);
+          },
+          (err) => console.warn("Registrations listener:", err.message)
+        )
+      : null;
+
+    // ── Live listener: payments collection ────────────────────────────────
+    const unsubPayments = collection
+      ? onSnapshot(
+          collection(db, "payments"),
+          (snap) => {
+            if (!alive) return;
+            const payments = snap.docs.map(d => ({
+              id: d.data().id || d.id,
+              ...d.data(),
+            }));
+            setSiteContent(c => ({
+              ...c,
+              payments: payments as PaymentRecord[],
+            }) as SiteContent);
+          },
+          (err) => console.warn("Payments listener:", err.message)
+        )
       : null;
 
     return () => {
       alive = false;
-      if (unsubAuth) unsubAuth();
       unsubscribe();
+      unsubRegistrations?.();
+      unsubPayments?.();
     };
   }, []);
 

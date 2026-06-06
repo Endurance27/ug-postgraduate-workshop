@@ -285,13 +285,18 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
   const back = () => setStep(s => Math.max(s - 1, 0));
 
   const saveRegistrationRecord = (paymentStatus: string, reference = "", method = "paystack") => {
-    const saved = onRegister?.(form, {
+    // Combine surname + otherNames into fullName so saveRegistration can store
+    // a real name instead of falling back to the email address.
+    const fullName = `${form.surname} ${form.otherNames}`.trim();
+    const enrichedForm = { ...form, fullName, name: fullName };
+
+    const saved = onRegister?.(enrichedForm, {
       paymentStatus,
       paymentReference: reference,
       method,
       amount: fee,
-    }) || { ...form, payment: paymentStatus, payRef: reference };
-    setRegistrant?.({ ...form, ...saved, payment: paymentStatus, payRef: reference });
+    }) || { ...enrichedForm, payment: paymentStatus, payRef: reference };
+    setRegistrant?.({ ...enrichedForm, ...saved, payment: paymentStatus, payRef: reference });
     return saved;
   };
 

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Lock, Sparkles, Check, ArrowRight, ArrowLeft } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Lock, Sparkles, Check, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 
 declare global {
   interface Window {
@@ -25,6 +25,7 @@ interface RegistrationForm {
   attendanceMode: string;
   participationType: string;
   presentationType: string;
+  nationality: string;
   presentationTitle: string;
   abstract: string;
 }
@@ -70,6 +71,165 @@ const ABSTRACT_MAX_WORDS = 250;
 const countWords = (text: string) =>
   text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 
+// ─── Nationalities (ISO 3166-1 / UN-recognised) ───────────────────────────────
+const NATIONALITIES: string[] = [
+  "Afghan", "Albanian", "Algerian", "American", "Andorran", "Angolan",
+  "Antiguan and Barbudan", "Argentine", "Armenian", "Australian", "Austrian",
+  "Azerbaijani", "Bahamian", "Bahraini", "Bangladeshi", "Barbadian",
+  "Belarusian", "Belgian", "Belizean", "Beninese", "Bhutanese", "Bolivian",
+  "Bosnian and Herzegovinian", "Botswanan", "Brazilian", "Bruneian",
+  "Bulgarian", "Burkinabé", "Burundian", "Cabo Verdean", "Cambodian",
+  "Cameroonian", "Canadian", "Central African", "Chadian", "Chilean",
+  "Chinese", "Colombian", "Comorian", "Congolese (DRC)", "Congolese (Republic)",
+  "Costa Rican", "Croatian", "Cuban", "Cypriot", "Czech",
+  "Danish", "Djiboutian", "Dominican", "Dominican Republican",
+  "Ecuadorian", "Egyptian", "Emirati", "Equatorial Guinean", "Eritrean",
+  "Estonian", "Eswatini", "Ethiopian",
+  "Fijian", "Filipino", "Finnish", "French",
+  "Gabonese", "Gambian", "Georgian", "German", "Ghanaian", "Greek",
+  "Grenadian", "Guatemalan", "Guinean", "Guinea-Bissauan", "Guyanese",
+  "Haitian", "Honduran", "Hungarian",
+  "Icelander", "Indian", "Indonesian", "Iranian", "Iraqi", "Irish",
+  "Israeli", "Italian", "Ivorian",
+  "Jamaican", "Japanese", "Jordanian",
+  "Kazakhstani", "Kenyan", "Kiribatian", "Kuwaiti", "Kyrgyz",
+  "Laotian", "Latvian", "Lebanese", "Lesothan", "Liberian", "Libyan",
+  "Liechtensteiner", "Lithuanian", "Luxembourger",
+  "Malagasy", "Malawian", "Malaysian", "Maldivian", "Malian", "Maltese",
+  "Marshallese", "Mauritanian", "Mauritian", "Mexican", "Micronesian",
+  "Moldovan", "Monacan", "Mongolian", "Montenegrin", "Moroccan", "Mozambican",
+  "Namibian", "Nauruan", "Nepali", "New Zealander", "Nicaraguan",
+  "Nigerian", "Nigerien", "North Korean", "North Macedonian", "Norwegian",
+  "Omani",
+  "Pakistani", "Palauan", "Palestinian", "Panamanian", "Papua New Guinean",
+  "Paraguayan", "Peruvian", "Polish", "Portuguese",
+  "Qatari",
+  "Romanian", "Russian", "Rwandan",
+  "Saint Kitts and Nevisian", "Saint Lucian", "Saint Vincentian and Grenadinian",
+  "Samoan", "San Marinese", "São Toméan", "Saudi", "Senegalese", "Serbian",
+  "Seychellois", "Sierra Leonean", "Singaporean", "Slovak", "Slovenian",
+  "Solomon Islander", "Somali", "South African", "South Korean", "South Sudanese",
+  "Spanish", "Sri Lankan", "Sudanese", "Surinamese", "Swedish", "Swiss", "Syrian",
+  "Taiwanese", "Tajik", "Tanzanian", "Thai", "Timorese", "Togolese",
+  "Tongan", "Trinidadian and Tobagonian", "Tunisian", "Turkish", "Turkmen", "Tuvaluan",
+  "Ugandan", "Ukrainian", "Uruguayan", "Uzbek",
+  "Vanuatuan", "Venezuelan", "Vietnamese",
+  "Yemeni",
+  "Zambian", "Zimbabwean",
+].sort();
+
+// ─── Searchable Nationality Dropdown ─────────────────────────────────────────
+interface NationalitySelectProps {
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+}
+
+function NationalitySelect({ value, onChange, error }: NationalitySelectProps) {
+  const [query, setQuery]   = useState("");
+  const [open, setOpen]     = useState(false);
+  const wrapRef             = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = NATIONALITIES.filter(n =>
+    n.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div className="form-group" ref={wrapRef} style={{ position: "relative" }}>
+      <label>Nationality<span className="req">*</span></label>
+      <div style={{ position: "relative" }}>
+        <input
+          type="text"
+          value={open ? query : value}
+          placeholder="Search or select nationality…"
+          autoComplete="off"
+          onFocus={() => { setOpen(true); setQuery(""); }}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          style={{
+            borderColor: error ? "#c0392b" : undefined,
+            paddingRight: 36,
+            cursor: open ? "text" : "pointer",
+          }}
+        />
+        <ChevronDown
+          size={16}
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+            transition: "transform 0.2s ease",
+            color: "#aaa",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+
+      {open && (
+        <ul style={{
+          position: "absolute",
+          zIndex: 300,
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1px solid #dde1ea",
+          borderTop: "none",
+          borderRadius: "0 0 10px 10px",
+          maxHeight: 220,
+          overflowY: "auto",
+          margin: 0,
+          padding: "4px 0",
+          listStyle: "none",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+        }}>
+          {filtered.length === 0 ? (
+            <li style={{ padding: "10px 14px", color: "#aaa", fontSize: 13 }}>
+              No results found
+            </li>
+          ) : filtered.map(n => (
+            <li
+              key={n}
+              onMouseDown={e => e.preventDefault()}   // prevent blur before click
+              onClick={() => { onChange(n); setOpen(false); setQuery(""); }}
+              style={{
+                padding: "9px 14px",
+                cursor: "pointer",
+                fontSize: 14,
+                background: n === value ? "#E5EAF3" : "transparent",
+                color:      n === value ? "#1B3A6B"  : "#333",
+                fontWeight: n === value ? 600 : 400,
+              }}
+              onMouseEnter={e => {
+                if (n !== value) (e.currentTarget as HTMLLIElement).style.background = "#f5f7fa";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLLIElement).style.background = n === value ? "#E5EAF3" : "transparent";
+              }}
+            >
+              {n}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {error && <p className="text-[#c0392b] text-[12px] mt-1">{error}</p>}
+    </div>
+  );
+}
+
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
 export default function RegisterPage({ navigate, setRegistrant, event = {}, onRegister }: RegisterPageProps) {
@@ -77,7 +237,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
 
   const [step, setStep] = useState<number>(0);
   const [form, setForm] = useState<RegistrationForm>({
-    surname: "", otherNames: "", gender: "", email: "", phone: "", studentId: "",
+    surname: "", otherNames: "", gender: "", nationality: "", email: "", phone: "", studentId: "",
     department: "", programme: "", otherProgramme: "", level: "Master's", otherLevel: "",
     attendanceMode: "Physical", participationType: "Presenter",
     presentationType: "Regular Paper",
@@ -98,6 +258,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
       if (!form.surname.trim()) e.surname = "Surname is required.";
       if (!form.otherNames.trim()) e.otherNames = "Other names are required.";
       if (!form.gender) e.gender = "Please select a gender.";
+      if (!form.nationality) e.nationality = "Nationality is required.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
       if (!form.phone.trim()) e.phone = "Phone number is required.";
     }
@@ -319,6 +480,11 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                   </select>
                   {errors.gender && <p className="text-[#c0392b] text-[12px] mt-1">{errors.gender}</p>}
                 </div>
+                <NationalitySelect
+                  value={form.nationality}
+                  onChange={v => set("nationality", v)}
+                  error={errors.nationality}
+                />
                 <div className="form-row">
                   {field("Email Address", "email", "email")}
                   {field("Phone Number", "phone", "tel")}
@@ -465,6 +631,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                     ["Surname", form.surname],
                     ["Other Names", form.otherNames],
                     ["Gender", form.gender],
+                    ["Nationality", form.nationality],
                     ["Email", form.email],
                     ["Phone", form.phone],
                     form.studentId && ["Student ID", form.studentId],

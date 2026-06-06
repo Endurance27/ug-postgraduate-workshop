@@ -18,6 +18,7 @@ import "./index.css";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Participant {
   id: string | number;
+  _docId?: string;   // Firestore document ID — populated by the registrations listener
   name: string;
   fullName?: string;
   email: string;
@@ -140,14 +141,9 @@ const INIT_SCHEDULE = [
   }
 ];
 
-const INIT_PARTICIPANTS = [
-  { id: 1, name: "Kwame Asante",   email: "k.asante@ug.edu.gh",   programme: "MSc Computer Science",   type: "Presenter", payment: "Confirmed", mode: "Physical" },
-  { id: 2, name: "Abena Mensah",   email: "a.mensah@ug.edu.gh",   programme: "MPhil Data Science",     type: "Presenter", payment: "Confirmed", mode: "Virtual"  },
-  { id: 3, name: "Kofi Boateng",   email: "k.boateng@ug.edu.gh",  programme: "PhD Computer Science",   type: "Presenter", payment: "Pending",   mode: "Physical" },
-  { id: 4, name: "Ama Owusu",      email: "a.owusu@ug.edu.gh",    programme: "MSc IT for Business",    type: "Observer",  payment: "Confirmed", mode: "Virtual"  },
-  { id: 5, name: "Yaw Darko",      email: "y.darko@ug.edu.gh",    programme: "MPhil Computer Science", type: "Presenter", payment: "Confirmed", mode: "Physical" },
-  { id: 6, name: "Efua Amponsah",  email: "e.amponsah@ug.edu.gh", programme: "MSc Data Science",       type: "Presenter", payment: "Pending",   mode: "Hybrid"   },
-];
+// Participants are loaded exclusively from the "registrations" Firestore collection.
+// Do NOT put hardcoded records here — they would appear in the admin dashboard as real students.
+const INIT_PARTICIPANTS: Participant[] = [];
 
 const INIT_SUBMISSIONS = [
   { id: 1, title: "Deep Learning for Malaria Detection in Ghana",      author: "Kwame Asante",  category: "Regular Paper",   status: "Under Review" },
@@ -297,9 +293,14 @@ const INIT_CONTENT = {
 };
 
 function mergeRemote(base: SiteContent, remote: Partial<SiteContent>): SiteContent {
+  // Exclude participants and payments: they are managed exclusively by their own
+  // Firestore collection listeners (onSnapshot on "registrations" / "payments").
+  // Spreading them from workshop/siteContent would overwrite real-time data with stale snapshots.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { participants: _p, payments: _pay, ...restRemote } = remote;
   return {
     ...base,
-    ...remote,
+    ...restRemote,
     event:       { ...INIT_CONTENT.event,    ...(remote.event    || {}) },
     about:       remote.about       || base.about,
     pastWinners: remote.pastWinners || base.pastWinners,
@@ -398,6 +399,7 @@ export default function App() {
           (snap) => {
             if (!alive) return;
             const participants = snap.docs.map(d => ({
+              _docId: d.id,            // Firestore document ID, used for admin updates
               id: d.data().id || d.id,
               ...d.data(),
             }));
@@ -439,10 +441,16 @@ export default function App() {
 
   // 3. On every change: save to localStorage immediately + Firestore (debounced 800 ms)
   useEffect(() => {
-    const stripped = stripBase64(siteContent);
+    const stripped = stripBase64(siteContent) as Record<string, unknown>;
+
+    // Exclude registrations/payments: they live in their own Firestore collections.
+    // Writing them into workshop/siteContent would cause mergeRemote to overwrite
+    // live collection data with a stale snapshot on the next siteContent update.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { participants: _p, payments: _pay, ...contentToSave } = stripped;
 
     try {
-      localStorage.setItem("dcs-workshop-content", JSON.stringify(stripped));
+      localStorage.setItem("dcs-workshop-content", JSON.stringify(contentToSave));
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
@@ -450,7 +458,7 @@ export default function App() {
     if (!db || !doc || !setDoc) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      setDoc(doc(db, "workshop", "siteContent"), stripped)
+      setDoc(doc(db, "workshop", "siteContent"), contentToSave)
         .catch(e => console.warn("Firestore save failed — add security rules:", e.message));
     }, 800);
   }, [siteContent]);
@@ -464,12 +472,31 @@ export default function App() {
     routerNavigate(getRoutePath(routeKeyOrPath));
   };
 
-  const updateContent = (section: string | Record<string, unknown>, value?: unknown) =>
+  const updateContent = (section: string | Record<string, unknown>, value?: unknown) => {
+    // Participants are owned by the "registrations" collection.
+    // When the admin updates a participant (e.g. confirms payment), write the
+    // changed record directly to Firestore so onSnapshot propagates it in real-time.
+    if (section === "participants" && Array.isArray(value) && db && doc && setDoc) {
+      const updated = value as Participant[];
+      const prev = siteContent.participants || [];
+      updated.forEach(p => {
+        const old = prev.find(pp => pp.id === p.id);
+        if (!old || JSON.stringify(old) !== JSON.stringify(p)) {
+          const docId = p._docId || makeDocId(String(p.studentId || ""), normalizeEmail(p.email));
+          setDoc(
+            doc(db, "registrations", docId),
+            { ...p, updatedAt: new Date().toISOString() },
+            { merge: true }
+          ).catch(e => console.warn("Participant update failed:", e.message));
+        }
+      });
+    }
     setSiteContent(c => (
       section && typeof section === "object"
         ? { ...c, ...(section as Partial<SiteContent>) } as SiteContent
         : { ...c, [section as string]: value } as SiteContent
     ));
+  };
 
   const saveRegistration = (registration: Partial<Participant>, options: SaveOptions = {}): Participant => {
     const now = new Date().toISOString();

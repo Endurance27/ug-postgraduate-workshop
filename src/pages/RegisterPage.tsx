@@ -66,6 +66,10 @@ const PROGRAMMES = [
 
 const PRESENTATION_TYPES = ["Poster Presentation", "Regular Paper", "Short Paper", "Technical Paper"];
 
+const ABSTRACT_MAX_WORDS = 250;
+const countWords = (text: string) =>
+  text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
 export default function RegisterPage({ navigate, setRegistrant, event = {}, onRegister }: RegisterPageProps) {
@@ -106,6 +110,7 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
     if (step === 2 && form.participationType !== "Observer") {
       if (!form.presentationTitle.trim()) e.presentationTitle = "Presentation title is required.";
       if (!form.abstract.trim()) e.abstract = "Abstract is required.";
+      else if (countWords(form.abstract) > ABSTRACT_MAX_WORDS) e.abstract = `Abstract must not exceed ${ABSTRACT_MAX_WORDS} words (currently ${countWords(form.abstract)}).`;
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -413,11 +418,35 @@ export default function RegisterPage({ navigate, setRegistrant, event = {}, onRe
                       <textarea
                         value={form.abstract}
                         onChange={e => set("abstract", e.target.value)}
-                        placeholder="Provide a brief abstract of your presentation (150–300 words)"
-                        rows={5}
-                        style={{ resize: "vertical", minHeight: 120 }}
+                        placeholder={
+                          "Provide a standard structured abstract of your presentation:\n" +
+                          "• Aim\n" +
+                          "• Method\n" +
+                          "• Results\n" +
+                          "• Conclusion"
+                        }
+                        rows={7}
+                        style={{
+                          resize: "vertical",
+                          minHeight: 140,
+                          borderColor: countWords(form.abstract) > ABSTRACT_MAX_WORDS ? "#c0392b" : undefined,
+                        }}
                       />
-                      {errors.abstract && <p className="text-[#c0392b] text-[12px] mt-1">{errors.abstract}</p>}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                        <span>
+                          {errors.abstract && <span className="text-[#c0392b] text-[12px]">{errors.abstract}</span>}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: countWords(form.abstract) > ABSTRACT_MAX_WORDS ? 600 : 400,
+                            color: countWords(form.abstract) > ABSTRACT_MAX_WORDS ? "#c0392b" : "#999",
+                          }}
+                        >
+                          {countWords(form.abstract)} / {ABSTRACT_MAX_WORDS} words
+                          {countWords(form.abstract) > ABSTRACT_MAX_WORDS && " — limit exceeded"}
+                        </span>
+                      </div>
                     </div>
                   </>
                 )}

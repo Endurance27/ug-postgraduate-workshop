@@ -455,7 +455,7 @@ export default function HomePage({
 
             <h1
               className={`font-serif font-bold text-white leading-[1.12] max-w-[600px] mb-5 ${heroReady ? "animate-fade-up delay-2" : "pre-anim"}`}
-              style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.4rem)" }}
+              style={{ fontSize: "clamp(2.2rem, 4.5vw, .4rem)" }}
             >
               {heroTitle.highlight ?
                 <>

@@ -263,7 +263,7 @@ export default function SchedulePage({
           </div>
           <div className="flex gap-2">
             <a
-              href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("2026 DCS Postgradute Research Conference & Workshop")}&dates=20260827%2F20260830&details=${encodeURIComponent("2nd Annual DCS Postgraduate Research Workshop — Department of Computer Science, University of Ghana")}&location=${encodeURIComponent("University of Ghana, Legon")}`}
+              href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("2026 DCS Postgradute Research Conference & Workshop")}&dates=20260827%2F20260830&details=${encodeURIComponent("2nd Annual DCS Postgradute Research Conference & Workshop — Department of Computer Science, University of Ghana")}&location=${encodeURIComponent("University of Ghana, Legon")}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 bg-ug-blue-light text-ug-blue border-[1.5px] border-[#c5d0e8] rounded-lg px-[14px] py-[7px] text-[13px] font-semibold no-underline transition-[background] duration-150"

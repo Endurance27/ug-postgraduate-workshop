@@ -12,7 +12,6 @@ import {
   doc,
   setDoc,
   collection,
-  getDocs,
   onSnapshot,
   onAuthStateChanged,
 } from "./firebase.js";
@@ -33,6 +32,7 @@ import "./index.css";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Participant {
   id: string | number;
+  _docId?: string; // Firestore document ID — populated by the registrations listener
   name: string;
   fullName?: string;
   email: string;
@@ -47,9 +47,18 @@ interface Participant {
   mode?: string;
   attendanceMode?: string;
   presentationType?: string;
+  nationality?: string;
+  presentationTitle?: string;
+  abstract?: string;
   registeredAt?: string;
   updatedAt?: string;
   payRef?: string;
+  paymentMethod?: string;
+  // Email notification metadata — written by the Cloud Function, never by the frontend
+  emailSent?: boolean;
+  emailSentAt?: string | null;
+  emailDeliveryStatus?: "processing" | "delivered" | "failed" | null;
+  emailError?: string | null;
 }
 
 interface PaymentRecord {
@@ -317,62 +326,9 @@ const INIT_SCHEDULE = [
   },
 ];
 
-const INIT_PARTICIPANTS = [
-  {
-    id: 1,
-    name: "Kwame Asante",
-    email: "k.asante@ug.edu.gh",
-    programme: "MSc Computer Science",
-    type: "Presenter",
-    payment: "Confirmed",
-    mode: "Physical",
-  },
-  {
-    id: 2,
-    name: "Abena Mensah",
-    email: "a.mensah@ug.edu.gh",
-    programme: "MPhil Data Science",
-    type: "Presenter",
-    payment: "Confirmed",
-    mode: "Virtual",
-  },
-  {
-    id: 3,
-    name: "Kofi Boateng",
-    email: "k.boateng@ug.edu.gh",
-    programme: "PhD Computer Science",
-    type: "Presenter",
-    payment: "Pending",
-    mode: "Physical",
-  },
-  {
-    id: 4,
-    name: "Ama Owusu",
-    email: "a.owusu@ug.edu.gh",
-    programme: "MSc IT for Business",
-    type: "Observer",
-    payment: "Confirmed",
-    mode: "Virtual",
-  },
-  {
-    id: 5,
-    name: "Yaw Darko",
-    email: "y.darko@ug.edu.gh",
-    programme: "MPhil Computer Science",
-    type: "Presenter",
-    payment: "Confirmed",
-    mode: "Physical",
-  },
-  {
-    id: 6,
-    name: "Efua Amponsah",
-    email: "e.amponsah@ug.edu.gh",
-    programme: "MSc Data Science",
-    type: "Presenter",
-    payment: "Pending",
-    mode: "Hybrid",
-  },
-];
+// Participants are loaded exclusively from the "registrations" Firestore collection.
+// Do NOT put hardcoded records here — they would appear in the admin dashboard as real students.
+const INIT_PARTICIPANTS: Participant[] = [];
 
 const INIT_SUBMISSIONS = [
   {
@@ -888,9 +844,14 @@ function mergeRemote(
   base: SiteContent,
   remote: Partial<SiteContent>,
 ): SiteContent {
+  // Exclude participants and payments: they are managed exclusively by their own
+  // Firestore collection listeners (onSnapshot on "registrations" / "payments").
+  // Spreading them from workshop/siteContent would overwrite real-time data with stale snapshots.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { participants: _p, payments: _pay, ...restRemote } = remote;
   return {
     ...base,
-    ...remote,
+    ...restRemote,
     event: { ...INIT_CONTENT.event, ...(remote.event || {}) },
     about: remote.about || base.about,
     pastWinners: remote.pastWinners || base.pastWinners,
@@ -975,44 +936,7 @@ export default function App() {
     }
     let alive = true;
 
-    const loadFirebaseRecords = () => {
-      if (!collection || !getDocs) return;
-      Promise.all([
-        getDocs(collection(db, "registrations")),
-        getDocs(collection(db, "payments")),
-      ])
-        .then(([registrationSnap, paymentSnap]) => {
-          if (!alive) return;
-          const firebaseParticipants = registrationSnap.docs.map((snap) => ({
-            id: snap.data().id || snap.id,
-            ...snap.data(),
-          }));
-          const firebasePayments = paymentSnap.docs.map((snap) => ({
-            id: snap.data().id || snap.id,
-            ...snap.data(),
-          }));
-          setSiteContent(
-            (c) =>
-              ({
-                ...c,
-                participants: mergeRecords(
-                  c.participants || [],
-                  firebaseParticipants as Participant[],
-                  participantKey,
-                ),
-                payments: mergeRecords(
-                  c.payments || [],
-                  firebasePayments as PaymentRecord[],
-                  paymentKey,
-                ),
-              }) as SiteContent,
-          );
-        })
-        .catch(() => {});
-    };
-
-    // Root cause: public pages only loaded cached content once, so admin updates never flowed through.
-    // Fix: subscribe to Firestore for live updates and surface load errors.
+    // ── Live listener: site content (admin edits) ──────────────────────────
     const unsubscribe = onSnapshot(
       doc(db, "workshop", "siteContent"),
       (snap) => {
@@ -1034,27 +958,78 @@ export default function App() {
       },
     );
 
-    loadFirebaseRecords();
-    const unsubAuth =
-      auth && onAuthStateChanged ?
-        onAuthStateChanged(auth, (user) => {
-          if (user) loadFirebaseRecords();
-        })
+    // ── Live listener: registrations collection ────────────────────────────
+    // onSnapshot fires immediately with the current state, then on every change,
+    // so the admin sees new registrations in real-time without a page reload.
+    const unsubRegistrations =
+      collection ?
+        onSnapshot(
+          collection(db, "registrations"),
+          (snap) => {
+            if (!alive) return;
+            const participants = snap.docs.map((d) => ({
+              _docId: d.id, // Firestore document ID, used for admin updates
+              id: d.data().id || d.id,
+              ...d.data(),
+            }));
+            setSiteContent(
+              (c) =>
+                ({
+                  ...c,
+                  participants: participants as Participant[],
+                }) as SiteContent,
+            );
+          },
+          (err) => console.warn("Registrations listener:", err.message),
+        )
+      : null;
+
+    // ── Live listener: payments collection ────────────────────────────────
+    const unsubPayments =
+      collection ?
+        onSnapshot(
+          collection(db, "payments"),
+          (snap) => {
+            if (!alive) return;
+            const payments = snap.docs.map((d) => ({
+              id: d.data().id || d.id,
+              ...d.data(),
+            }));
+            setSiteContent(
+              (c) =>
+                ({
+                  ...c,
+                  payments: payments as PaymentRecord[],
+                }) as SiteContent,
+            );
+          },
+          (err) => console.warn("Payments listener:", err.message),
+        )
       : null;
 
     return () => {
       alive = false;
-      if (unsubAuth) unsubAuth();
       unsubscribe();
+      unsubRegistrations?.();
+      unsubPayments?.();
     };
   }, []);
 
   // 3. On every change: save to localStorage immediately + Firestore (debounced 800 ms)
   useEffect(() => {
-    const stripped = stripBase64(siteContent);
+    const stripped = stripBase64(siteContent) as Record<string, unknown>;
+
+    // Exclude registrations/payments: they live in their own Firestore collections.
+    // Writing them into workshop/siteContent would cause mergeRemote to overwrite
+    // live collection data with a stale snapshot on the next siteContent update.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { participants: _p, payments: _pay, ...contentToSave } = stripped;
 
     try {
-      localStorage.setItem("dcs-workshop-content", JSON.stringify(stripped));
+      localStorage.setItem(
+        "dcs-workshop-content",
+        JSON.stringify(contentToSave),
+      );
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
@@ -1062,7 +1037,7 @@ export default function App() {
     if (!db || !doc || !setDoc) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      setDoc(doc(db, "workshop", "siteContent"), stripped).catch((e) =>
+      setDoc(doc(db, "workshop", "siteContent"), contentToSave).catch((e) =>
         console.warn("Firestore save failed — add security rules:", e.message),
       );
     }, 800);
@@ -1079,12 +1054,39 @@ export default function App() {
   const updateContent = (
     section: string | Record<string, unknown>,
     value?: unknown,
-  ) =>
+  ) => {
+    // Participants are owned by the "registrations" collection.
+    // When the admin updates a participant (e.g. confirms payment), write the
+    // changed record directly to Firestore so onSnapshot propagates it in real-time.
+    if (
+      section === "participants" &&
+      Array.isArray(value) &&
+      db &&
+      doc &&
+      setDoc
+    ) {
+      const updated = value as Participant[];
+      const prev = siteContent.participants || [];
+      updated.forEach((p) => {
+        const old = prev.find((pp) => pp.id === p.id);
+        if (!old || JSON.stringify(old) !== JSON.stringify(p)) {
+          const docId =
+            p._docId ||
+            makeDocId(String(p.studentId || ""), normalizeEmail(p.email));
+          setDoc(
+            doc(db, "registrations", docId),
+            { ...p, updatedAt: new Date().toISOString() },
+            { merge: true },
+          ).catch((e) => console.warn("Participant update failed:", e.message));
+        }
+      });
+    }
     setSiteContent((c) =>
       section && typeof section === "object" ?
         ({ ...c, ...(section as Partial<SiteContent>) } as SiteContent)
       : ({ ...c, [section as string]: value } as SiteContent),
     );
+  };
 
   const saveRegistration = (
     registration: Partial<Participant>,
@@ -1115,8 +1117,16 @@ export default function App() {
       attendanceMode:
         registration.attendanceMode || registration.mode || "Physical",
       presentationType: registration.presentationType || "",
+      nationality:
+        ((registration as Record<string, unknown>).nationality as string) || "",
+      presentationTitle:
+        ((registration as Record<string, unknown>)
+          .presentationTitle as string) || "",
+      abstract:
+        ((registration as Record<string, unknown>).abstract as string) || "",
       registeredAt: registration.registeredAt || now,
       updatedAt: now,
+      paymentMethod: options.method || "offline",
     };
 
     if (options.paymentReference)

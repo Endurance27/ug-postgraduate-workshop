@@ -1,3 +1,5 @@
+// Fix: was prop-only (App.tsx one-time fetch); now subscribes to
+// workshop/siteContent via onSnapshot for real-time admin updates.
 import React, { useState, useEffect, useRef, RefObject } from "react";
 import {
   Calendar,
@@ -16,6 +18,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Countdown from "../components/Countdown";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface EventData {
@@ -85,7 +88,6 @@ interface HomeData {
   importantDates?: ImportantDate[];
   featuredSessions?: FeaturedSession[];
   testimonials?: Testimonial[];
-  // Admin-editable overrides
   workshopDays?: number;
   presentationTracks?: number;
   awardPositions?: number;
@@ -148,7 +150,7 @@ const makeStats = (
   },
 ];
 
-const tracks = [
+const DEFAULT_TRACKS = [
   {
     title: "Regular Paper",
     desc: "Full research papers presenting completed or ongoing thesis work.",
@@ -171,7 +173,7 @@ const tracks = [
   },
 ];
 
-const programmes = [
+const DEFAULT_PROGRAMMES = [
   { name: "MSc Computer Science", role: "Presenter", required: true },
   { name: "MPhil Computer Science", role: "Presenter", required: true },
   { name: "MSc Data Science", role: "Presenter", required: true },
@@ -203,7 +205,7 @@ const organizers = [
   },
 ];
 
-const sponsors = [
+const DEFAULT_SPONSORS = [
   {
     name: "University of Ghana",
     tier: "Principal Funder",
@@ -237,12 +239,29 @@ function splitHeroTitle(title: string | undefined): {
 
 export default function HomePage({
   navigate,
-  event,
-  announcements,
-  feed = [],
-  images = {},
-  home = {},
+  event: eventProp,
+  announcements: announcementsProp,
+  feed: feedProp = [],
+  images: imagesProp = {},
+  home: homeProp = {},
 }: HomePageProps) {
+  // Real-time subscription to workshop/siteContent
+  const { data: sc } = useSiteContent();
+
+  // Merge Firestore data over props (Firestore wins once loaded)
+  const event = {
+    ...(eventProp || {}),
+    ...((sc.event as EventData) || {}),
+  } as EventData;
+  const home = {
+    ...(homeProp || {}),
+    ...((sc.home as HomeData) || {}),
+  } as HomeData;
+  const announcements =
+    (sc.announcements as Announcement[]) ?? (announcementsProp || []);
+  const feed = (sc.feed as FeedItem[]) ?? feedProp;
+  const images = { ...imagesProp, ...(sc.images || {}) };
+
   const img = {
     workshop: images.workshop || "/images/workshop-sessions.jpg",
     research: images.research || "/images/research-presentations.jpg",
@@ -254,19 +273,35 @@ export default function HomePage({
     { src: img.research, label: "Research Presentations" },
     { src: img.networking, label: "Collaboration & Networking" },
   ];
-  // Use admin-edited arrays when present, otherwise fall back to built-in defaults
+
   const activeTracks =
     Array.isArray(home?.tracks) && (home.tracks as unknown[]).length > 0 ?
-      (home.tracks as typeof tracks)
-    : tracks;
+      (home.tracks as typeof DEFAULT_TRACKS)
+    : DEFAULT_TRACKS;
   const activeProgrammes =
     (
       Array.isArray(home?.programmes) &&
       (home.programmes as unknown[]).length > 0
     ) ?
-      (home.programmes as typeof programmes)
-    : programmes;
-  const stats = makeStats(event, home);
+      (home.programmes as typeof DEFAULT_PROGRAMMES)
+    : DEFAULT_PROGRAMMES;
+
+  // Sponsors: use Firestore sponsors array if available, else icon-based defaults
+  const rawSponsors = sc.sponsors as {
+    name?: string;
+    tier?: string;
+    logo?: string;
+  }[];
+  const activeSponsors =
+    rawSponsors && rawSponsors.length > 0 ?
+      rawSponsors.map((s) => ({
+        name: s.name || "",
+        tier: s.tier || "Partner",
+        icon: <Landmark size={32} color="#1B3A6B" />,
+      }))
+    : DEFAULT_SPONSORS;
+
+  const stats = makeStats(event, home as Record<string, unknown>);
   const [heroReady, setHeroReady] = useState(false);
   const [statsRef, statsVisible] = useReveal();
   const [aboutRef, aboutVisible] = useReveal();
@@ -667,7 +702,9 @@ export default function HomePage({
                   borderTop: `3px solid ${d.done ? "#4ade80" : "#C9A84C"}`,
                 }}
               >
-                <span className="flex">{d.icon}</span>
+                <span className="flex">
+                  {typeof d.icon === "string" ? d.icon : d.icon}
+                </span>
                 <div>
                   <div className="text-[12px] text-white/75 tracking-[0.04em] mb-[6px] leading-[1.4]">
                     {d.label}
@@ -1023,7 +1060,7 @@ export default function HomePage({
                     border: `2px solid ${s.accent}30`,
                   }}
                 >
-                  {s.icon}
+                  {typeof s.icon === "string" ? s.icon : s.icon}
                 </div>
 
                 <div
@@ -1109,7 +1146,7 @@ export default function HomePage({
             </h2>
           </div>
           <div className="flex gap-5 justify-center flex-wrap">
-            {sponsors.map((s, i) => (
+            {activeSponsors.map((s, i) => (
               <div
                 key={i}
                 className="bg-white border border-[#e8e0cc] rounded-[14px] p-[24px_32px] text-center min-w-[200px] transition-shadow duration-200"

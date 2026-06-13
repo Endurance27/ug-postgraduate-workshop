@@ -9,10 +9,39 @@ interface FooterData {
   sponsors?: string[];
   publication?: string;
 }
-
 interface FooterProps {
   footer?: FooterData;
 }
+
+const QUICK_LINKS = [
+  { key: "home",       label: "Home"        },
+  { key: "about",      label: "About"       },
+  { key: "schedule",   label: "Schedule"    },
+  { key: "speakers",   label: "Speakers"    },
+  { key: "awards",     label: "Awards"      },
+  { key: "stream",     label: "Livestream"  },
+  { key: "gallery",    label: "Gallery"     },
+  { key: "recordings", label: "Recordings"  },
+  { key: "sponsors",   label: "Sponsors"    },
+  { key: "support",    label: "Support"     },
+  { key: "contact",    label: "Contact"     },
+  { key: "register",   label: "Register Now"},
+];
+
+const COL_HEAD = {
+  color: "#C9A84C",
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase" as const,
+  marginBottom: 16,
+};
+
+const COL_TEXT: React.CSSProperties = {
+  color: "rgba(255,255,255,0.78)",
+  fontSize: 14,
+  lineHeight: 1.7,
+};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function Footer({ footer = {} }: FooterProps) {
@@ -23,80 +52,139 @@ export default function Footer({ footer = {} }: FooterProps) {
   const publication = footer.publication || "CBAS Journal";
 
   return (
-    <footer className="bg-ug-navy text-white mt-auto">
-      <div className="container px-6 pt-14 pb-8">
-        <div className="flex justify-between items-start gap-[34px] mb-10 flex-wrap row-gap-8">
+    <footer
+      className="text-white mt-auto"
+      style={{ background: "linear-gradient(175deg, #0F2347 0%, #080F1E 100%)" }}
+    >
+      {/* Gold accent line */}
+      <div style={{ height: 3, background: "linear-gradient(90deg, transparent, #C9A84C 25%, #C9A84C 75%, transparent)" }} />
 
-          {/* ── Logo (left) ── */}
-          <div className="shrink-0">
-            <div className="mb-4">
-              <div className="inline-block bg-white p-[8px_14px]">
-                <svg viewBox="0 0 430 60" className="h-8 w-auto block"
-                  xmlns="http://www.w3.org/2000/svg" aria-label="University of Ghana — Department of Computer Science">
-                  <image href="/ug-logo.svg" x="0" y="0" width="193" height="60" preserveAspectRatio="xMidYMid meet" />
-                  <line x1="201" y1="8" x2="201" y2="52" stroke="#C9A84C" strokeWidth="1.5" />
-                  <text x="210" y="23" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">DEPARTMENT OF</text>
-                  <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
-                </svg>
+      <div className="container" style={{ padding: "48px 24px 28px" }}>
+
+        {/* ── Brand + Right columns ───────────────────────────────── */}
+        <div
+          className="footer-main"
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 0, marginBottom: 40, flexWrap: "wrap" }}
+        >
+
+          {/* ── Brand (left) ─────────────────────────────────────── */}
+          <div style={{ maxWidth: 230, flexShrink: 0 }}>
+            {/* Logo badge */}
+            <div
+              style={{
+                display: "inline-block",
+                background: "#fff",
+                borderRadius: 8,
+                padding: "6px 12px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                marginBottom: 16,
+              }}
+            >
+              <svg
+                viewBox="0 0 430 60"
+                style={{ height: 32, width: "auto", display: "block" }}
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="University of Ghana — Department of Computer Science"
+              >
+                <image href="/ug-logo.svg" x="0" y="0" width="193" height="60" preserveAspectRatio="xMidYMid meet" />
+                <line x1="201" y1="8" x2="201" y2="52" stroke="#C9A84C" strokeWidth="1.5" />
+                <text x="210" y="23" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">DEPARTMENT OF</text>
+                <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>
+              </svg>
+            </div>
+            <p style={{ ...COL_TEXT, fontWeight: 500, marginBottom: 4 }}>{tagline}</p>
+            <p style={{ ...COL_TEXT }}>{dates}</p>
+          </div>
+
+          {/* ── Right section (Quick Links · Organizers · Sponsors) ── */}
+          <div
+            className="footer-right"
+            style={{ display: "flex", gap: "0 48px", flexWrap: "wrap", justifyContent: "flex-end", flex: 1 }}
+          >
+
+            {/* Quick Links */}
+            <div style={{ minWidth: 170 }}>
+              <p style={COL_HEAD}>Quick Links</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 10 }}>
+                {QUICK_LINKS.map(({ key, label }) => (
+                  <Link
+                    key={key}
+                    to={getRoutePath(key)}
+                    style={{ ...COL_TEXT, display: "block", padding: "4px 0", textDecoration: "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "#ffffff")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.78)")}
+                  >
+                    {label}
+                  </Link>
+                ))}
               </div>
             </div>
-            <p className="text-[13px] text-[#ccc] leading-[1.7]">
-              {tagline}<br />{dates}
+
+            {/* Organizers */}
+            <div style={{ minWidth: 160 }}>
+              <p style={COL_HEAD}>Organizers</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {organizers.map((o, i) => (
+                  <span key={i} style={COL_TEXT}>{o}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Sponsors & Funders */}
+            <div style={{ minWidth: 160 }}>
+              <p style={COL_HEAD}>Sponsors &amp; Funders</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+                {sponsors.map((s, i) => (
+                  <span key={i} style={COL_TEXT}>{s}</span>
+                ))}
+              </div>
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
+                <p style={{ ...COL_TEXT, color: "rgba(255,255,255,0.78)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                  Publication in
+                </p>
+                <span style={{ color: "#C9A84C", fontSize: 14, fontWeight: 600 }}>{publication}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Bottom bar ─────────────────────────────────────────── */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20 }}>
+          <div className="footer-bottom" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+              © 2026 University of Ghana · Department of Computer Science · All rights reserved.
             </p>
-          </div>
-
-          {/* ── Right group (Quick Links · Organizers · Sponsors) ── */}
-          <div className="footer-right flex gap-[50px] flex-wrap justify-end">
-
-            <div>
-              <h4 className="font-serif text-base mb-4 text-ug-gold">Quick Links</h4>
-              {[
-                { key: "home",       label: "Home"        },
-                { key: "about",      label: "About"       },
-                { key: "schedule",   label: "Schedule"    },
-                { key: "speakers",   label: "Speakers"    },
-                { key: "awards",     label: "Awards"      },
-                { key: "stream",     label: "Livestream"  },
-                { key: "gallery",    label: "Gallery"     },
-                { key: "recordings", label: "Recordings"  },
-                { key: "sponsors",   label: "Sponsors"    },
-                { key: "support",    label: "Support"     },
-                { key: "contact",    label: "Contact"     },
-                { key: "register",   label: "Register Now"},
-              ].map(({ key, label }) => (
-                <Link key={key} to={getRoutePath(key)} className="block bg-transparent border-0 text-[#ccc] text-[13px] py-1 cursor-pointer text-left no-underline">{label}</Link>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                GHS 100 · Hybrid Event · 27–29 Aug 2026
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 11 }}>|</span>
+              <Link
+                to={getRoutePath("admin")}
+                style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+              >
+                Admin
+              </Link>
             </div>
-
-            <div>
-              <h4 className="font-serif text-base mb-4 text-ug-gold">Organizers</h4>
-              <p className="text-[13px] text-[#ccc] leading-[1.9]">
-                {organizers.map((o, i) => <span key={i}>{o}{i < organizers.length - 1 && <br />}</span>)}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-serif text-base mb-4 text-ug-gold">Sponsors &amp; Funders</h4>
-              <p className="text-[13px] text-[#ccc] leading-[1.9]">
-                {sponsors.map((s, i) => <span key={i}>{s}{i < sponsors.length - 1 && <br />}</span>)}
-              </p>
-              <div className="mt-4">
-                <span className="text-[12px] text-[#bbb]">Publication in:</span><br />
-                <span className="text-[13px] text-ug-gold font-medium">{publication}</span>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <div className="border-t border-[#1A2E50] pt-6 flex justify-between items-center flex-wrap gap-3">
-          <p className="text-[14.5px] text-[#aaa] ml-0">© 2026 University of Ghana · Department of Computer Science · All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <p className="text-[14.5px] text-[#aaa]">Registration Fee: GHS 100 · Hybrid Event · 27–29 Aug 2026</p>
-            <Link to={getRoutePath("admin")} className="bg-transparent border-0 text-[#aaa] text-[14.5px] cursor-pointer p-0 underline no-underline hover:underline">Admin</Link>
-          </div>
-        </div>
       </div>
+
+      {/* Responsive breakpoints */}
+      <style>{`
+        @media (max-width: 860px) {
+          .footer-main  { flex-direction: column !important; }
+          .footer-right { justify-content: flex-start !important; gap: 32px !important; }
+        }
+        @media (max-width: 520px) {
+          .footer-right { flex-direction: column !important; gap: 28px !important; }
+          .footer-bottom { flex-direction: column !important; align-items: flex-start !important; }
+        }
+      `}</style>
     </footer>
   );
 }

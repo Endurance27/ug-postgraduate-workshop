@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Lock, Sparkles, Check, ArrowRight, ArrowLeft } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Lock,
+  Sparkles,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+} from "lucide-react";
 
 declare global {
   interface Window {
@@ -25,6 +32,9 @@ interface RegistrationForm {
   attendanceMode: string;
   participationType: string;
   presentationType: string;
+  nationality: string;
+  presentationTitle: string;
+  abstract: string;
 }
 
 type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
@@ -72,6 +82,339 @@ const PRESENTATION_TYPES = [
   "Technical Paper",
 ];
 
+// ─── Feature flags ────────────────────────────────────────────────────────────
+// Set to true to re-enable Paystack checkout when payment gateway is ready.
+const PAYMENT_ENABLED = false;
+
+const ABSTRACT_MAX_WORDS = 250;
+const countWords = (text: string) =>
+  text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+
+// ─── Nationalities (ISO 3166-1 / UN-recognised) ───────────────────────────────
+const NATIONALITIES: string[] = [
+  "Afghan",
+  "Albanian",
+  "Algerian",
+  "American",
+  "Andorran",
+  "Angolan",
+  "Antiguan and Barbudan",
+  "Argentine",
+  "Armenian",
+  "Australian",
+  "Austrian",
+  "Azerbaijani",
+  "Bahamian",
+  "Bahraini",
+  "Bangladeshi",
+  "Barbadian",
+  "Belarusian",
+  "Belgian",
+  "Belizean",
+  "Beninese",
+  "Bhutanese",
+  "Bolivian",
+  "Bosnian and Herzegovinian",
+  "Botswanan",
+  "Brazilian",
+  "Bruneian",
+  "Bulgarian",
+  "Burkinabé",
+  "Burundian",
+  "Cabo Verdean",
+  "Cambodian",
+  "Cameroonian",
+  "Canadian",
+  "Central African",
+  "Chadian",
+  "Chilean",
+  "Chinese",
+  "Colombian",
+  "Comorian",
+  "Congolese (DRC)",
+  "Congolese (Republic)",
+  "Costa Rican",
+  "Croatian",
+  "Cuban",
+  "Cypriot",
+  "Czech",
+  "Danish",
+  "Djiboutian",
+  "Dominican",
+  "Dominican Republican",
+  "Ecuadorian",
+  "Egyptian",
+  "Emirati",
+  "Equatorial Guinean",
+  "Eritrean",
+  "Estonian",
+  "Eswatini",
+  "Ethiopian",
+  "Fijian",
+  "Filipino",
+  "Finnish",
+  "French",
+  "Gabonese",
+  "Gambian",
+  "Georgian",
+  "German",
+  "Ghanaian",
+  "Greek",
+  "Grenadian",
+  "Guatemalan",
+  "Guinean",
+  "Guinea-Bissauan",
+  "Guyanese",
+  "Haitian",
+  "Honduran",
+  "Hungarian",
+  "Icelander",
+  "Indian",
+  "Indonesian",
+  "Iranian",
+  "Iraqi",
+  "Irish",
+  "Israeli",
+  "Italian",
+  "Ivorian",
+  "Jamaican",
+  "Japanese",
+  "Jordanian",
+  "Kazakhstani",
+  "Kenyan",
+  "Kiribatian",
+  "Kuwaiti",
+  "Kyrgyz",
+  "Laotian",
+  "Latvian",
+  "Lebanese",
+  "Lesothan",
+  "Liberian",
+  "Libyan",
+  "Liechtensteiner",
+  "Lithuanian",
+  "Luxembourger",
+  "Malagasy",
+  "Malawian",
+  "Malaysian",
+  "Maldivian",
+  "Malian",
+  "Maltese",
+  "Marshallese",
+  "Mauritanian",
+  "Mauritian",
+  "Mexican",
+  "Micronesian",
+  "Moldovan",
+  "Monacan",
+  "Mongolian",
+  "Montenegrin",
+  "Moroccan",
+  "Mozambican",
+  "Namibian",
+  "Nauruan",
+  "Nepali",
+  "New Zealander",
+  "Nicaraguan",
+  "Nigerian",
+  "Nigerien",
+  "North Korean",
+  "North Macedonian",
+  "Norwegian",
+  "Omani",
+  "Pakistani",
+  "Palauan",
+  "Palestinian",
+  "Panamanian",
+  "Papua New Guinean",
+  "Paraguayan",
+  "Peruvian",
+  "Polish",
+  "Portuguese",
+  "Qatari",
+  "Romanian",
+  "Russian",
+  "Rwandan",
+  "Saint Kitts and Nevisian",
+  "Saint Lucian",
+  "Saint Vincentian and Grenadinian",
+  "Samoan",
+  "San Marinese",
+  "São Toméan",
+  "Saudi",
+  "Senegalese",
+  "Serbian",
+  "Seychellois",
+  "Sierra Leonean",
+  "Singaporean",
+  "Slovak",
+  "Slovenian",
+  "Solomon Islander",
+  "Somali",
+  "South African",
+  "South Korean",
+  "South Sudanese",
+  "Spanish",
+  "Sri Lankan",
+  "Sudanese",
+  "Surinamese",
+  "Swedish",
+  "Swiss",
+  "Syrian",
+  "Taiwanese",
+  "Tajik",
+  "Tanzanian",
+  "Thai",
+  "Timorese",
+  "Togolese",
+  "Tongan",
+  "Trinidadian and Tobagonian",
+  "Tunisian",
+  "Turkish",
+  "Turkmen",
+  "Tuvaluan",
+  "Ugandan",
+  "Ukrainian",
+  "Uruguayan",
+  "Uzbek",
+  "Vanuatuan",
+  "Venezuelan",
+  "Vietnamese",
+  "Yemeni",
+  "Zambian",
+  "Zimbabwean",
+].sort();
+
+// ─── Searchable Nationality Dropdown ─────────────────────────────────────────
+interface NationalitySelectProps {
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+}
+
+function NationalitySelect({ value, onChange, error }: NationalitySelectProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = NATIONALITIES.filter((n) =>
+    n.toLowerCase().includes(query.toLowerCase()),
+  );
+
+  return (
+    <div className="form-group" ref={wrapRef} style={{ position: "relative" }}>
+      <label>
+        Nationality<span className="req">*</span>
+      </label>
+      <div style={{ position: "relative" }}>
+        <input
+          type="text"
+          value={open ? query : value}
+          placeholder="Search or select nationality…"
+          autoComplete="off"
+          onFocus={() => {
+            setOpen(true);
+            setQuery("");
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          style={{
+            borderColor: error ? "#c0392b" : undefined,
+            paddingRight: 36,
+            cursor: open ? "text" : "pointer",
+          }}
+        />
+        <ChevronDown
+          size={16}
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+            transition: "transform 0.2s ease",
+            color: "#aaa",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+
+      {open && (
+        <ul
+          style={{
+            position: "absolute",
+            zIndex: 300,
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "#fff",
+            border: "1px solid #dde1ea",
+            borderTop: "none",
+            borderRadius: "0 0 10px 10px",
+            maxHeight: 220,
+            overflowY: "auto",
+            margin: 0,
+            padding: "4px 0",
+            listStyle: "none",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+          }}
+        >
+          {filtered.length === 0 ?
+            <li style={{ padding: "10px 14px", color: "#aaa", fontSize: 13 }}>
+              No results found
+            </li>
+          : filtered.map((n) => (
+              <li
+                key={n}
+                onMouseDown={(e) => e.preventDefault()} // prevent blur before click
+                onClick={() => {
+                  onChange(n);
+                  setOpen(false);
+                  setQuery("");
+                }}
+                style={{
+                  padding: "9px 14px",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  background: n === value ? "#E5EAF3" : "transparent",
+                  color: n === value ? "#1B3A6B" : "#333",
+                  fontWeight: n === value ? 600 : 400,
+                }}
+                onMouseEnter={(e) => {
+                  if (n !== value)
+                    (e.currentTarget as HTMLLIElement).style.background =
+                      "#f5f7fa";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLLIElement).style.background =
+                    n === value ? "#E5EAF3" : "transparent";
+                }}
+              >
+                {n}
+              </li>
+            ))
+          }
+        </ul>
+      )}
+
+      {error && <p className="text-[#c0392b] text-[12px] mt-1">{error}</p>}
+    </div>
+  );
+}
+
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
 export default function RegisterPage({
@@ -87,6 +430,7 @@ export default function RegisterPage({
     surname: "",
     otherNames: "",
     gender: "",
+    nationality: "",
     email: "",
     phone: "",
     studentId: "",
@@ -98,6 +442,8 @@ export default function RegisterPage({
     attendanceMode: "Physical",
     participationType: "Presenter",
     presentationType: "Regular Paper",
+    presentationTitle: "",
+    abstract: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [paying, setPaying] = useState(false);
@@ -115,6 +461,7 @@ export default function RegisterPage({
       if (!form.surname.trim()) e.surname = "Surname is required.";
       if (!form.otherNames.trim()) e.otherNames = "Other names are required.";
       if (!form.gender) e.gender = "Please select a gender.";
+      if (!form.nationality) e.nationality = "Nationality is required.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
       if (!form.phone.trim()) e.phone = "Phone number is required.";
     }
@@ -125,6 +472,13 @@ export default function RegisterPage({
         e.otherProgramme = "Please specify your programme.";
       if (form.level === "Other (Specify)" && !form.otherLevel.trim())
         e.otherLevel = "Please specify your academic level.";
+    }
+    if (step === 2 && form.participationType !== "Observer") {
+      if (!form.presentationTitle.trim())
+        e.presentationTitle = "Presentation title is required.";
+      if (!form.abstract.trim()) e.abstract = "Abstract is required.";
+      else if (countWords(form.abstract) > ABSTRACT_MAX_WORDS)
+        e.abstract = `Abstract must not exceed ${ABSTRACT_MAX_WORDS} words (currently ${countWords(form.abstract)}).`;
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -140,14 +494,19 @@ export default function RegisterPage({
     reference = "",
     method = "paystack",
   ) => {
-    const saved = onRegister?.(form, {
+    // Combine surname + otherNames into fullName so saveRegistration can store
+    // a real name instead of falling back to the email address.
+    const fullName = `${form.surname} ${form.otherNames}`.trim();
+    const enrichedForm = { ...form, fullName, name: fullName };
+
+    const saved = onRegister?.(enrichedForm, {
       paymentStatus,
       paymentReference: reference,
       method,
       amount: fee,
-    }) || { ...form, payment: paymentStatus, payRef: reference };
+    }) || { ...enrichedForm, payment: paymentStatus, payRef: reference };
     setRegistrant?.({
-      ...form,
+      ...enrichedForm,
       ...saved,
       payment: paymentStatus,
       payRef: reference,
@@ -166,6 +525,25 @@ export default function RegisterPage({
     setDone(true);
   };
 
+  // ── Registration-only path (PAYMENT_ENABLED = false) ──────────────────────
+  // Saves the record straight to Firebase with paymentStatus "Pending".
+  // No external redirect. Re-enable payment by setting PAYMENT_ENABLED = true.
+  const completeRegistration = () => {
+    setRegistrationError("");
+    setPaying(true);
+    const ref = `REG-${Date.now()}`;
+    try {
+      finishRegistration("Pending", ref, "offline");
+    } catch (e) {
+      setRegistrationError(
+        "Registration could not be saved. Please try again.",
+      );
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // ── Paystack path (PAYMENT_ENABLED = true) ─────────────────────────────────
   const initPaystack = () => {
     setRegistrationError("");
     const paystackKey = (event.paystackKey || "").trim();
@@ -309,13 +687,23 @@ export default function RegisterPage({
                   </strong>{" "}
                   is complete.
                 </>
-              : <>
+              : PAYMENT_ENABLED ?
+                <>
                   Your registration for the{" "}
                   <strong>
                     {event.title || "2nd UG Postgraduate Workshop"} (
                     {event.dates || "27–29 Aug 2026"})
                   </strong>{" "}
                   has been saved. Your payment is still pending.
+                </>
+              : <>
+                  Your registration for the{" "}
+                  <strong>
+                    {event.title || "2nd UG Postgraduate Workshop"} (
+                    {event.dates || "27–29 Aug 2026"})
+                  </strong>{" "}
+                  has been received successfully. Payment instructions will be
+                  sent to <strong>{form.email}</strong> once payment opens.
                 </>
               }
             </p>
@@ -324,14 +712,23 @@ export default function RegisterPage({
                 <>
                   <strong>Payment reference:</strong> {confirmationRef}
                 </>
-              : <>
+              : PAYMENT_ENABLED ?
+                <>
                   <strong>Next step:</strong> Complete your workshop payment to
                   confirm your place.
+                </>
+              : <>
+                  <strong>Registration reference:</strong> {confirmationRef}
+                  <br />
+                  <span className="text-[13px]">
+                    Keep this reference for your records. Payment details will
+                    be communicated soon.
+                  </span>
                 </>
               }
             </div>
             <div className="flex gap-3 justify-center mt-6">
-              {!paymentConfirmed && (
+              {PAYMENT_ENABLED && !paymentConfirmed && (
                 <button
                   className="btn-primary"
                   onClick={() => navigate("payment")}
@@ -344,6 +741,67 @@ export default function RegisterPage({
               <button className="btn-outline" onClick={() => navigate("home")}>
                 Back to Home
               </button>
+            </div>
+          </div>
+          <div className="container section">
+            <div className="max-w-[560px] mx-auto text-center">
+              <div className="mb-5 flex justify-center">
+                <Sparkles size={64} color="#C9A84C" />
+              </div>
+              <h2 className="mb-3">
+                You're registered,{" "}
+                {form.otherNames.split(" ")[0] || form.surname}!
+              </h2>
+              <p className="text-[#555] mb-6 leading-[1.7]">
+                {paymentConfirmed ?
+                  <>
+                    Your payment has been confirmed and your registration for
+                    the{" "}
+                    <strong>
+                      {event.title || "2nd UG Postgraduate Workshop"} (
+                      {event.dates || "27–29 Aug 2026"})
+                    </strong>{" "}
+                    is complete.
+                  </>
+                : <>
+                    Your registration for the{" "}
+                    <strong>
+                      {event.title || "2nd UG Postgraduate Workshop"} (
+                      {event.dates || "27–29 Aug 2026"})
+                    </strong>{" "}
+                    has been saved. Your payment is still pending.
+                  </>
+                }
+              </p>
+              <div className="alert alert-success text-left">
+                {paymentConfirmed && confirmationRef ?
+                  <>
+                    <strong>Payment reference:</strong> {confirmationRef}
+                  </>
+                : <>
+                    <strong>Next step:</strong> Complete your workshop payment
+                    to confirm your place.
+                  </>
+                }
+              </div>
+              <div className="flex gap-3 justify-center mt-6">
+                {!paymentConfirmed && (
+                  <button
+                    className="btn-primary"
+                    onClick={() => navigate("payment")}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      Pay Registration Fee <ArrowRight size={14} />
+                    </span>
+                  </button>
+                )}
+                <button
+                  className="btn-outline"
+                  onClick={() => navigate("home")}
+                >
+                  Back to Home
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -463,6 +921,11 @@ export default function RegisterPage({
                     </p>
                   )}
                 </div>
+                <NationalitySelect
+                  value={form.nationality}
+                  onChange={(v) => set("nationality", v)}
+                  error={errors.nationality}
+                />
                 <div className="form-row">
                   {field("Email Address", "email", "email")}
                   {field("Phone Number", "phone", "tel")}
@@ -580,21 +1043,102 @@ export default function RegisterPage({
                   </select>
                 </div>
                 {form.participationType !== "Observer" && (
-                  <div className="form-group">
-                    <label>
-                      Presentation Type<span className="req">*</span>
-                    </label>
-                    <select
-                      value={form.presentationType}
-                      onChange={(e) => set("presentationType", e.target.value)}
-                    >
-                      {PRESENTATION_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <>
+                    <div className="form-group">
+                      <label>
+                        Presentation Type<span className="req">*</span>
+                      </label>
+                      <select
+                        value={form.presentationType}
+                        onChange={(e) =>
+                          set("presentationType", e.target.value)
+                        }
+                      >
+                        {PRESENTATION_TYPES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>
+                        Title of Presentation<span className="req">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={form.presentationTitle}
+                        onChange={(e) =>
+                          set("presentationTitle", e.target.value)
+                        }
+                        placeholder="Enter the title of your presentation or paper"
+                      />
+                      {errors.presentationTitle && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.presentationTitle}
+                        </p>
+                      )}
+                    </div>
+                    <div className="form-group">
+                      <label>
+                        Abstract<span className="req">*</span>
+                      </label>
+                      <textarea
+                        value={form.abstract}
+                        onChange={(e) => set("abstract", e.target.value)}
+                        placeholder={
+                          "Provide a standard structured abstract of your presentation:\n" +
+                          "• Aim\n" +
+                          "• Method\n" +
+                          "• Results\n" +
+                          "• Conclusion"
+                        }
+                        rows={7}
+                        style={{
+                          resize: "vertical",
+                          minHeight: 140,
+                          borderColor:
+                            countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
+                              "#c0392b"
+                            : undefined,
+                        }}
+                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginTop: 4,
+                        }}
+                      >
+                        <span>
+                          {errors.abstract && (
+                            <span className="text-[#c0392b] text-[12px]">
+                              {errors.abstract}
+                            </span>
+                          )}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight:
+                              countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
+                                600
+                              : 400,
+                            color:
+                              countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
+                                "#c0392b"
+                              : "#999",
+                          }}
+                        >
+                          {countWords(form.abstract)} / {ABSTRACT_MAX_WORDS}{" "}
+                          words
+                          {countWords(form.abstract) > ABSTRACT_MAX_WORDS &&
+                            " — limit exceeded"}
+                        </span>
+                      </div>
+                    </div>
+                  </>
                 )}
                 <div className="alert alert-info">
                   <strong>Note:</strong> MSc and MPhil CS/DS students are
@@ -613,6 +1157,7 @@ export default function RegisterPage({
                     ["Surname", form.surname],
                     ["Other Names", form.otherNames],
                     ["Gender", form.gender],
+                    ["Nationality", form.nationality],
                     ["Email", form.email],
                     ["Phone", form.phone],
                     form.studentId && ["Student ID", form.studentId],
@@ -624,6 +1169,13 @@ export default function RegisterPage({
                       "Presentation Type",
                       form.presentationType,
                     ],
+                    form.participationType !== "Observer" &&
+                      form.presentationTitle && [
+                        "Presentation Title",
+                        form.presentationTitle,
+                      ],
+                    form.participationType !== "Observer" &&
+                      form.abstract && ["Abstract", form.abstract],
                   ]
                     .filter(Boolean)
                     .map(([k, v]) => (
@@ -653,9 +1205,18 @@ export default function RegisterPage({
                     {registrationError}
                   </div>
                 )}
+                {!PAYMENT_ENABLED && (
+                  <div className="alert alert-info mb-5">
+                    <strong>Payment note:</strong> Online payment is not yet
+                    active. Your registration will be saved and you will be
+                    contacted with payment instructions.
+                  </div>
+                )}
                 <button
                   className="btn-gold"
-                  onClick={initPaystack}
+                  onClick={
+                    PAYMENT_ENABLED ? initPaystack : completeRegistration
+                  }
                   disabled={paying}
                   style={{
                     width: "100%",
@@ -665,9 +1226,13 @@ export default function RegisterPage({
                   }}
                 >
                   {paying ?
-                    "Processing..."
-                  : <span className="inline-flex items-center gap-1.5">
+                    "Saving registration…"
+                  : PAYMENT_ENABLED ?
+                    <span className="inline-flex items-center gap-1.5">
                       Pay GHS {fee} via Paystack <ArrowRight size={14} />
+                    </span>
+                  : <span className="inline-flex items-center gap-1.5">
+                      Complete Registration <ArrowRight size={14} />
                     </span>
                   }
                 </button>

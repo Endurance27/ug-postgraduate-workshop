@@ -7,14 +7,7 @@ import {
   ArrowLeft,
   ChevronDown,
 } from "lucide-react";
-
-declare global {
-  interface Window {
-    PaystackPop?: {
-      setup: (opts: Record<string, unknown>) => { openIframe: () => void };
-    };
-  }
-}
+import { usePaystackPayment } from "react-paystack";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
@@ -82,9 +75,9 @@ const PRESENTATION_TYPES = [
   "Technical Paper",
 ];
 
-// ─── Feature flags ────────────────────────────────────────────────────────────
-// Set to true to re-enable Paystack checkout when payment gateway is ready.
-const PAYMENT_ENABLED = false;
+// ── Paystack public key — replace with pk_live_… for production ──────────────
+// Public keys are safe to commit. Never put sk_test_/sk_live_ keys here.
+const PAYSTACK_PUBLIC_KEY = "pk_test_7286d5fe706c0c323ea13d3817918f0e5a09a3c2";
 
 const ABSTRACT_MAX_WORDS = 250;
 const countWords = (text: string) =>
@@ -417,6 +410,40 @@ function NationalitySelect({ value, onChange, error }: NationalitySelectProps) {
 
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
+// ── Confirmation persistence ──────────────────────────────────────────────────
+// Survives a page refresh on the success screen by caching the completed
+// registration in sessionStorage (cleared once the user leaves via "Back to Home").
+const CONFIRMATION_STORAGE_KEY = "ugpgw-registration-confirmation";
+
+interface StoredConfirmation {
+  form: RegistrationForm;
+  paymentConfirmed: boolean;
+  confirmationRef: string;
+}
+
+function loadStoredConfirmation(): StoredConfirmation | null {
+  try {
+    const raw = sessionStorage.getItem(CONFIRMATION_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredConfirmation) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredConfirmation(data: StoredConfirmation) {
+  try {
+    sessionStorage.setItem(CONFIRMATION_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* sessionStorage unavailable (e.g. private mode) — confirmation just won't survive a refresh */
+  }
+}
+
+function clearStoredConfirmation() {
+  try {
+    sessionStorage.removeItem(CONFIRMATION_STORAGE_KEY);
+  } catch {}
+}
+
 export default function RegisterPage({
   navigate,
   setRegistrant,
@@ -424,33 +451,66 @@ export default function RegisterPage({
   onRegister,
 }: RegisterPageProps) {
   const fee = event.fee || 100;
+  const [storedConfirmation] = useState(loadStoredConfirmation);
 
   const [step, setStep] = useState<number>(0);
-  const [form, setForm] = useState<RegistrationForm>({
-    surname: "",
-    otherNames: "",
-    gender: "",
-    nationality: "",
-    email: "",
-    phone: "",
-    studentId: "",
-    department: "",
-    programme: "",
-    otherProgramme: "",
-    level: "Master's",
-    otherLevel: "",
-    attendanceMode: "Physical",
-    participationType: "Presenter",
-    presentationType: "Regular Paper",
-    presentationTitle: "",
-    abstract: "",
-  });
+  const [form, setForm] = useState<RegistrationForm>(
+    storedConfirmation?.form || {
+      surname: "",
+      otherNames: "",
+      gender: "",
+      nationality: "",
+      email: "",
+      phone: "",
+      studentId: "",
+      department: "",
+      programme: "",
+      otherProgramme: "",
+      level: "Master's",
+      otherLevel: "",
+      attendanceMode: "Physical",
+      participationType: "Presenter",
+      presentationType: "Regular Paper",
+      presentationTitle: "",
+      abstract: "",
+    },
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [paying, setPaying] = useState(false);
-  const [done, setDone] = useState(false);
-  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const [confirmationRef, setConfirmationRef] = useState("");
+  const [done, setDone] = useState(storedConfirmation !== null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(
+    storedConfirmation?.paymentConfirmed ?? false,
+  );
+  const [confirmationRef, setConfirmationRef] = useState(
+    storedConfirmation?.confirmationRef ?? "",
+  );
   const [registrationError, setRegistrationError] = useState("");
+
+  const initializePayment = usePaystackPayment({
+    publicKey: (event.paystackKey || PAYSTACK_PUBLIC_KEY).trim(),
+    email: form.email,
+    amount: fee * 100,
+    currency: "GHS",
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Name",
+          variable_name: "name",
+          value: `${form.surname} ${form.otherNames}`.trim(),
+        },
+        {
+          display_name: "Student ID",
+          variable_name: "student_id",
+          value: form.studentId,
+        },
+        {
+          display_name: "Programme",
+          variable_name: "programme",
+          value: form.programme,
+        },
+      ],
+    },
+  });
 
   const set = (k: keyof RegistrationForm, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -520,75 +580,37 @@ export default function RegisterPage({
     method = "paystack",
   ) => {
     saveRegistrationRecord(paymentStatus, reference, method);
-    setPaymentConfirmed(paymentStatus === "Confirmed");
+    const confirmed = paymentStatus === "Confirmed";
+    setPaymentConfirmed(confirmed);
     setConfirmationRef(reference);
     setDone(true);
+    saveStoredConfirmation({
+      form,
+      paymentConfirmed: confirmed,
+      confirmationRef: reference,
+    });
   };
 
-  // ── Registration-only path (PAYMENT_ENABLED = false) ──────────────────────
-  // Saves the record straight to Firebase with paymentStatus "Pending".
-  // No external redirect. Re-enable payment by setting PAYMENT_ENABLED = true.
-  const completeRegistration = () => {
-    setRegistrationError("");
-    setPaying(true);
-    const ref = `REG-${Date.now()}`;
-    try {
-      finishRegistration("Pending", ref, "offline");
-    } catch (e) {
-      setRegistrationError(
-        "Registration could not be saved. Please try again.",
-      );
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  // ── Paystack path (PAYMENT_ENABLED = true) ─────────────────────────────────
   const initPaystack = () => {
     setRegistrationError("");
-    const paystackKey = (event.paystackKey || "").trim();
-
-    if (typeof window.PaystackPop === "undefined") {
-      finishRegistration("Pending");
-      return;
-    }
-
-    if (!paystackKey || paystackKey.includes("YOUR_PAYSTACK")) {
-      finishRegistration("Pending");
-      return;
-    }
-
-    saveRegistrationRecord("Pending");
     setPaying(true);
-    try {
-      const handler = window.PaystackPop.setup({
-        key: paystackKey,
+    initializePayment({
+      config: {
+        reference: `UGPGW2026-${Date.now()}`,
         email: form.email,
         amount: fee * 100,
-        currency: "GHS",
-        ref: `UGPGW2026-${Date.now()}`,
-        metadata: {
-          name: `${form.surname} ${form.otherNames}`,
-          studentId: form.studentId,
-          programme: form.programme,
-        },
-        callback: (response) => {
-          setPaying(false);
-          finishRegistration("Confirmed", response.reference, "paystack");
-        },
-        onClose: () => {
-          setPaying(false);
-          setRegistrationError(
-            "Your registration has been saved. Payment was not completed yet.",
-          );
-        },
-      });
-      handler.openIframe();
-    } catch (error) {
-      console.error("Paystack setup failed:", error);
-      setPaying(false);
-      finishRegistration("Pending");
-    }
+      },
+      onSuccess: (response) => {
+        setPaying(false);
+        finishRegistration("Confirmed", response.reference, "paystack");
+      },
+      onClose: () => {
+        setPaying(false);
+        setRegistrationError(
+          "Payment was not completed. Please try again to confirm your registration.",
+        );
+      },
+    });
   };
 
   const field = (
@@ -685,16 +707,8 @@ export default function RegisterPage({
                     {event.title || "2nd UG Postgraduate Workshop"} (
                     {event.dates || "27–29 Aug 2026"})
                   </strong>{" "}
-                  is complete.
-                </>
-              : PAYMENT_ENABLED ?
-                <>
-                  Your registration for the{" "}
-                  <strong>
-                    {event.title || "2nd UG Postgraduate Workshop"} (
-                    {event.dates || "27–29 Aug 2026"})
-                  </strong>{" "}
-                  has been saved. Your payment is still pending.
+                  is complete. A confirmation email with your meeting link has
+                  been sent to <strong>{form.email}</strong>.
                 </>
               : <>
                   Your registration for the{" "}
@@ -702,8 +716,9 @@ export default function RegisterPage({
                     {event.title || "2nd UG Postgraduate Workshop"} (
                     {event.dates || "27–29 Aug 2026"})
                   </strong>{" "}
-                  has been received successfully. Payment instructions will be
-                  sent to <strong>{form.email}</strong> once payment opens.
+                  has been saved. Payment instructions will be sent to{" "}
+                  <strong>{form.email}</strong> once the payment gateway is
+                  ready.
                 </>
               }
             </p>
@@ -711,97 +726,32 @@ export default function RegisterPage({
               {paymentConfirmed && confirmationRef ?
                 <>
                   <strong>Payment reference:</strong> {confirmationRef}
-                </>
-              : PAYMENT_ENABLED ?
-                <>
-                  <strong>Next step:</strong> Complete your workshop payment to
-                  confirm your place.
+                  <br />
+                  <span className="text-[13px]">
+                    Keep this reference for your records. Check your email for
+                    the workshop meeting link and further instructions.
+                  </span>
                 </>
               : <>
                   <strong>Registration reference:</strong> {confirmationRef}
                   <br />
                   <span className="text-[13px]">
-                    Keep this reference for your records. Payment details will
-                    be communicated soon.
+                    Keep this for your records. You will be contacted with
+                    payment details.
                   </span>
                 </>
               }
             </div>
             <div className="flex gap-3 justify-center mt-6">
-              {PAYMENT_ENABLED && !paymentConfirmed && (
-                <button
-                  className="btn-primary"
-                  onClick={() => navigate("payment")}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    Pay Registration Fee <ArrowRight size={14} />
-                  </span>
-                </button>
-              )}
-              <button className="btn-outline" onClick={() => navigate("home")}>
+              <button
+                className="btn-outline"
+                onClick={() => {
+                  clearStoredConfirmation();
+                  navigate("home");
+                }}
+              >
                 Back to Home
               </button>
-            </div>
-          </div>
-          <div className="container section">
-            <div className="max-w-[560px] mx-auto text-center">
-              <div className="mb-5 flex justify-center">
-                <Sparkles size={64} color="#C9A84C" />
-              </div>
-              <h2 className="mb-3">
-                You're registered,{" "}
-                {form.otherNames.split(" ")[0] || form.surname}!
-              </h2>
-              <p className="text-[#555] mb-6 leading-[1.7]">
-                {paymentConfirmed ?
-                  <>
-                    Your payment has been confirmed and your registration for
-                    the{" "}
-                    <strong>
-                      {event.title || "2nd UG Postgraduate Workshop"} (
-                      {event.dates || "27–29 Aug 2026"})
-                    </strong>{" "}
-                    is complete.
-                  </>
-                : <>
-                    Your registration for the{" "}
-                    <strong>
-                      {event.title || "2nd UG Postgraduate Workshop"} (
-                      {event.dates || "27–29 Aug 2026"})
-                    </strong>{" "}
-                    has been saved. Your payment is still pending.
-                  </>
-                }
-              </p>
-              <div className="alert alert-success text-left">
-                {paymentConfirmed && confirmationRef ?
-                  <>
-                    <strong>Payment reference:</strong> {confirmationRef}
-                  </>
-                : <>
-                    <strong>Next step:</strong> Complete your workshop payment
-                    to confirm your place.
-                  </>
-                }
-              </div>
-              <div className="flex gap-3 justify-center mt-6">
-                {!paymentConfirmed && (
-                  <button
-                    className="btn-primary"
-                    onClick={() => navigate("payment")}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      Pay Registration Fee <ArrowRight size={14} />
-                    </span>
-                  </button>
-                )}
-                <button
-                  className="btn-outline"
-                  onClick={() => navigate("home")}
-                >
-                  Back to Home
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1201,22 +1151,20 @@ export default function RegisterPage({
                   Money or debit/credit card.
                 </div>
                 {registrationError && (
-                  <div className="alert alert-info mb-5">
+                  <div
+                    className="mb-5 rounded-[10px] border px-4 py-3 text-[13px] leading-[1.6]"
+                    style={{
+                      background: "#fff5f5",
+                      borderColor: "#fed7d7",
+                      color: "#c0392b",
+                    }}
+                  >
                     {registrationError}
-                  </div>
-                )}
-                {!PAYMENT_ENABLED && (
-                  <div className="alert alert-info mb-5">
-                    <strong>Payment note:</strong> Online payment is not yet
-                    active. Your registration will be saved and you will be
-                    contacted with payment instructions.
                   </div>
                 )}
                 <button
                   className="btn-gold"
-                  onClick={
-                    PAYMENT_ENABLED ? initPaystack : completeRegistration
-                  }
+                  onClick={initPaystack}
                   disabled={paying}
                   style={{
                     width: "100%",
@@ -1226,13 +1174,9 @@ export default function RegisterPage({
                   }}
                 >
                   {paying ?
-                    "Saving registration…"
-                  : PAYMENT_ENABLED ?
-                    <span className="inline-flex items-center gap-1.5">
-                      Pay GHS {fee} via Paystack <ArrowRight size={14} />
-                    </span>
+                    "Processing payment…"
                   : <span className="inline-flex items-center gap-1.5">
-                      Complete Registration <ArrowRight size={14} />
+                      Pay GHS {fee} via Paystack <ArrowRight size={14} />
                     </span>
                   }
                 </button>

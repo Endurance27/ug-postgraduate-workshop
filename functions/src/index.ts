@@ -175,17 +175,21 @@ function row(label: string, value: string): string {
 }
 
 function buildEmailHtml(d: EmailData): string {
+  const isConfirmed = d.paymentStatus === "Confirmed";
   const statusBadge = `
-    <span style="display:inline-block;background:#fdecea;color:#c0392b;
+    <span style="display:inline-block;
+                 background:${isConfirmed ? "#d4edda" : "#fdecea"};
+                 color:${isConfirmed ? "#155724" : "#c0392b"};
                  padding:2px 10px;border-radius:20px;font-size:12px;
-                 font-weight:700;border:1px solid #f5b7b1;">
+                 font-weight:700;
+                 border:1px solid ${isConfirmed ? "#c3e6cb" : "#f5b7b1"};">
       ${d.paymentStatus}
     </span>`;
 
   const steps = [
-    "Payment instructions will be sent by email once the payment gateway is ready.",
-    "After payment is confirmed you will receive your final attendance confirmation.",
-    "The workshop programme and venue details will be shared closer to the event.",
+    "Your registration is fully confirmed. Keep your payment reference for your records.",
+    "Virtual participants: use the Google Meet link below to join sessions during the workshop (27–29 August 2026).",
+    "The full workshop programme, venue details, and daily schedule will be shared closer to the event.",
   ];
 
   const stepsHtml = steps.map((s, i) => `
@@ -274,15 +278,23 @@ function buildEmailHtml(d: EmailData): string {
                 </table>
               </div>
 
-              <!-- Payment notice -->
-              <div style="background:#fffbeb;border:1px solid #fcd34d;
+              <!-- Virtual meeting link -->
+              <div style="background:#eef6ff;border:1px solid #bee3f8;
                           border-radius:10px;padding:16px 20px;
                           margin-bottom:26px;">
-                <p style="color:#78350f;font-size:13px;line-height:1.7;margin:0;">
-                  <strong>💳 About Payment:</strong>&nbsp; Online payment processing is currently
-                  being finalised. You will receive a separate email with a secure payment link
-                  once it is ready. <strong>Your registration is fully reserved</strong> in the
-                  meantime — no action is required from you now.
+                <p style="color:#1a365d;font-size:13px;line-height:1.7;margin:0 0 10px;">
+                  <strong>🎥 Virtual Meeting Link:</strong>&nbsp; Use the link below to join
+                  sessions online during the workshop (27–29 August 2026).
+                </p>
+                <a href="https://meet.google.com/mrx-zihd-tnj"
+                   style="display:inline-block;background:#1B3A6B;color:#ffffff;
+                          text-decoration:none;padding:10px 20px;
+                          border-radius:8px;font-size:13px;font-weight:600;
+                          letter-spacing:0.02em;">
+                  Join Google Meet →
+                </a>
+                <p style="color:#2c5282;font-size:12px;line-height:1.6;margin:10px 0 0;">
+                  meet.google.com/mrx-zihd-tnj
                 </p>
               </div>
 

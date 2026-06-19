@@ -94,7 +94,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
       <section className="relative overflow-hidden text-white py-[72px_0_56px]"
         style={{ background: "linear-gradient(135deg, #0F2347, #1B3A6B)" }}>
         <div className="absolute inset-0 bg-cover bg-center opacity-[0.13]"
-          style={{ backgroundImage: `url('${images.research || "/images/research-presentations.jpg"}')` }} />
+          style={{ backgroundImage: `url('${images.research || `${import.meta.env.BASE_URL}images/research-presentations.jpg`}')` }} />
         <div className="container relative z-[1] py-[72px] pb-[56px]">
           <span className="badge inline-block mb-[14px]"
             style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>
@@ -135,7 +135,7 @@ export default function AboutPage({ navigate, images = {}, about = {}, event = {
 
             <div className="flex flex-col gap-[18px]">
               <div className="rounded-2xl overflow-hidden relative">
-                <img src={images.research || "/images/research-presentations.jpg"} alt="Workshop"
+                <img src={images.research || `${import.meta.env.BASE_URL}images/research-presentations.jpg`} alt="Workshop"
                   className="w-full object-cover block" style={{ height: 220 }} />
                 <div className="absolute inset-0 flex flex-col justify-end p-[18px_20px]"
                   style={{ background: "linear-gradient(transparent 40%, rgba(15,35,71,0.88))" }}>

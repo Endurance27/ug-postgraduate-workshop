@@ -12,27 +12,12 @@ interface GalleryPageProps {
   gallery?: Photo[];
 }
 
+const BASE = import.meta.env.BASE_URL;
 const FALLBACK_PHOTOS = [
-  {
-    src: "/images/workshop-sessions.jpg",
-    caption: "Workshop Sessions",
-    year: "2025",
-  },
-  {
-    src: "/images/research-presentations.jpg",
-    caption: "Research Presentations",
-    year: "2025",
-  },
-  {
-    src: "/images/collaboration-networking.jpeg",
-    caption: "Networking & Collaboration",
-    year: "2025",
-  },
-  {
-    src: "/images/dcs-research.jpg",
-    caption: "Students at Work",
-    year: "2025",
-  },
+  { src: `${BASE}images/workshop-sessions.jpg`,         caption: "Workshop Sessions",          year: "2025" },
+  { src: `${BASE}images/research-presentations.jpg`,    caption: "Research Presentations",     year: "2025" },
+  { src: `${BASE}images/collaboration-networking.jpeg`, caption: "Networking & Collaboration", year: "2025" },
+  { src: `${BASE}images/dcs-research.jpg`,              caption: "Students at Work",           year: "2025" },
 ];
 
 export default function GalleryPage({ gallery }: GalleryPageProps) {

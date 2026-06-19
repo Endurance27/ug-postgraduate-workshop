@@ -110,6 +110,10 @@ interface SiteContent {
   images: Record<string, string>;
 }
 
+// ─── Asset base (resolves /workshop/ in production, / in dev) ─────────────────
+// Use this for every public/ folder reference so the sub-path deploy works.
+const B = import.meta.env.BASE_URL; // e.g. "/workshop/" or "/"
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function stripBase64(obj: unknown): unknown {
   if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
@@ -451,46 +455,14 @@ const INIT_CONTENT = {
       topic:
         "AI and the Future of African Research: Opportunities, Challenges and Responsibilities",
       bio: "Professor Sarfo-Mensah is a distinguished faculty member at the Department of Computer Science, University of Ghana, with over 20 years of experience in artificial intelligence, machine learning, and their applications to African development challenges. He leads the AI for Africa research group and has published extensively in top-tier international journals and conferences.",
-      photo: "/images/dcs-research.jpg",
+      photo: `${B}images/dcs-research.jpg`,
       tags: "Artificial Intelligence, Machine Learning, Africa Tech",
     },
     panelists: [
-      {
-        id: 1,
-        name: "Dr. Abena Osei-Bonsu",
-        title: "Senior Lecturer, Data Science",
-        institution: "Dept. of Computer Science, UG",
-        role: "Panel Moderator",
-        bio: "Specialises in data science applications for healthcare and agriculture in West Africa.",
-        photo: "/images/research-presentations.jpg",
-      },
-      {
-        id: 2,
-        name: "Dr. Kwaku Darko-Mensah",
-        title: "Lecturer, Computer Networks",
-        institution: "Dept. of Computer Science, UG",
-        role: "Panelist",
-        bio: "Research interests include network security, IoT systems, and rural connectivity solutions.",
-        photo: "/images/workshop-sessions.jpg",
-      },
-      {
-        id: 3,
-        name: "Dr. Efua Asante",
-        title: "Lecturer, Software Engineering",
-        institution: "Dept. of Computer Science, UG",
-        role: "Panelist",
-        bio: "Works on human-computer interaction, accessibility, and software development methodologies.",
-        photo: "/images/collaboration-networking.jpeg",
-      },
-      {
-        id: 4,
-        name: "Dr. Kofi Oppong-Nkrumah",
-        title: "Lecturer, Cybersecurity",
-        institution: "Dept. of Computer Science, UG",
-        role: "Panelist",
-        bio: "Expert in cybersecurity, digital forensics, and information assurance for African institutions.",
-        photo: "/images/dcs-research.jpg",
-      },
+      { id: 1, name: "Dr. Abena Osei-Bonsu",     title: "Senior Lecturer, Data Science",   institution: "Dept. of Computer Science, UG", role: "Panel Moderator", bio: "Specialises in data science applications for healthcare and agriculture in West Africa.",                              photo: `${B}images/research-presentations.jpg` },
+      { id: 2, name: "Dr. Kwaku Darko-Mensah",   title: "Lecturer, Computer Networks",     institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Research interests include network security, IoT systems, and rural connectivity solutions.",                         photo: `${B}images/workshop-sessions.jpg` },
+      { id: 3, name: "Dr. Efua Asante",           title: "Lecturer, Software Engineering",  institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Works on human-computer interaction, accessibility, and software development methodologies.",                         photo: `${B}images/collaboration-networking.jpeg` },
+      { id: 4, name: "Dr. Kofi Oppong-Nkrumah",  title: "Lecturer, Cybersecurity",         institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Expert in cybersecurity, digital forensics, and information assurance for African institutions.",                     photo: `${B}images/dcs-research.jpg` },
     ],
     committee: [
       {
@@ -555,10 +527,10 @@ const INIT_CONTENT = {
     publication: "CBAS Journal",
   },
   images: {
-    workshop: "/images/workshop-sessions.jpg",
-    research: "/images/research-presentations.jpg",
-    networking: "/images/collaboration-networking.jpeg",
-    students: "/images/dcs-research.jpg",
+    workshop:   `${B}images/workshop-sessions.jpg`,
+    research:   `${B}images/research-presentations.jpg`,
+    networking: `${B}images/collaboration-networking.jpeg`,
+    students:   `${B}images/dcs-research.jpg`,
   },
   stream: {
     live: false,
@@ -568,46 +540,14 @@ const INIT_CONTENT = {
     day3Id: "NUAZDcQ_lJs",
   },
   gallery: [
-    {
-      src: "/images/workshop-sessions.jpg",
-      caption: "Workshop Sessions",
-      year: "2025",
-    },
-    {
-      src: "/images/research-presentations.jpg",
-      caption: "Research Presentations",
-      year: "2025",
-    },
-    {
-      src: "/images/collaboration-networking.jpeg",
-      caption: "Networking & Collaboration",
-      year: "2025",
-    },
-    {
-      src: "/images/dcs-research.jpg",
-      caption: "Students at Work",
-      year: "2025",
-    },
-    {
-      src: "/images/workshop-sessions.jpg",
-      caption: "Parallel Track Sessions",
-      year: "2025",
-    },
-    {
-      src: "/images/collaboration-networking.jpeg",
-      caption: "Department of CS Group",
-      year: "2025",
-    },
-    {
-      src: "/images/research-presentations.jpg",
-      caption: "Panel Discussions",
-      year: "2025",
-    },
-    {
-      src: "/images/dcs-research.jpg",
-      caption: "Individual Research Work",
-      year: "2025",
-    },
+    { src: `${B}images/workshop-sessions.jpg`,         caption: "Workshop Sessions",          year: "2025" },
+    { src: `${B}images/research-presentations.jpg`,    caption: "Research Presentations",     year: "2025" },
+    { src: `${B}images/collaboration-networking.jpeg`, caption: "Networking & Collaboration", year: "2025" },
+    { src: `${B}images/dcs-research.jpg`,              caption: "Students at Work",           year: "2025" },
+    { src: `${B}images/workshop-sessions.jpg`,         caption: "Parallel Track Sessions",    year: "2025" },
+    { src: `${B}images/collaboration-networking.jpeg`, caption: "Department of CS Group",     year: "2025" },
+    { src: `${B}images/research-presentations.jpg`,    caption: "Panel Discussions",          year: "2025" },
+    { src: `${B}images/dcs-research.jpg`,              caption: "Individual Research Work",   year: "2025" },
   ],
   recordings: [
     {

@@ -256,7 +256,7 @@ export default function SupportPage({ contact = {}, faqs: faqsProp }: SupportPag
 
               <div className="flex flex-col gap-5">
                 <div className="rounded-2xl overflow-hidden relative">
-                  <img src="/images/collaboration-networking.jpeg" alt="DCS Department"
+                  <img src={`${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`} alt="DCS Department"
                     className="w-full object-cover block" style={{ height: 180 }} />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(15,35,71,0.85)] flex items-end px-4 py-[14px]">
                     <p className="text-white text-[13px] font-semibold m-0">Department of Computer Science, UG</p>

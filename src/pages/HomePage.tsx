@@ -263,10 +263,10 @@ export default function HomePage({
   const images = { ...imagesProp, ...(sc.images || {}) };
 
   const img = {
-    workshop: images.workshop || "/images/workshop-sessions.jpg",
-    research: images.research || "/images/research-presentations.jpg",
-    networking: images.networking || "/images/collaboration-networking.jpeg",
-    students: images.students || "/images/dcs-research.jpg",
+    workshop:   images.workshop   || `${import.meta.env.BASE_URL}images/workshop-sessions.jpg`,
+    research:   images.research   || `${import.meta.env.BASE_URL}images/research-presentations.jpg`,
+    networking: images.networking || `${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`,
+    students:   images.students   || `${import.meta.env.BASE_URL}images/dcs-research.jpg`,
   };
   const PHOTOS = [
     { src: img.workshop, label: "Workshop Sessions" },

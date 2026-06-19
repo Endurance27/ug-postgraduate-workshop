@@ -52,7 +52,7 @@ export default function SpeakersPage({ speakers = {}, images = {} }: SpeakersPag
       <section className="relative overflow-hidden bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-[0.18]"
-          style={{ backgroundImage: `url('${images.networking || "/images/collaboration-networking.jpeg"}')` }}
+          style={{ backgroundImage: `url('${images.networking || `${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`}')` }}
         />
         <div className="container relative z-10">
           <span className="badge inline-block mb-[14px]" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>

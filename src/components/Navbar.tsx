@@ -23,7 +23,7 @@ export default function Navbar() {
             aria-label="University of Ghana — Department of Computer Science"
           >
             <image
-              href="/ug-logo.svg"
+              href={`${import.meta.env.BASE_URL}ug-logo.svg`}
               x="0"
               y="0"
               width="193"

@@ -77,17 +77,12 @@ function firebaseErrorMsg(code) {
 }
 
 
+const BASE = import.meta.env.BASE_URL;
 const SLIDE_IMAGES = [
-  { src: "/images/dcs-research.jpg", caption: "Research in Action" },
-  {
-    src: "/images/collaboration-networking.jpeg",
-    caption: "Collaboration & Networking",
-  },
-  {
-    src: "/images/research-presentations.jpg",
-    caption: "Academic Presentations",
-  },
-  { src: "/images/workshop-sessions.jpg", caption: "Workshop Excellence" },
+  { src: `${BASE}images/dcs-research.jpg`,              caption: "Research in Action" },
+  { src: `${BASE}images/collaboration-networking.jpeg`, caption: "Collaboration & Networking" },
+  { src: `${BASE}images/research-presentations.jpg`,    caption: "Academic Presentations" },
+  { src: `${BASE}images/workshop-sessions.jpg`,         caption: "Workshop Excellence" },
 ];
 
 const SIDEBAR_PAGES = [

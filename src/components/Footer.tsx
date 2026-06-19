@@ -86,7 +86,7 @@ export default function Footer({ footer = {} }: FooterProps) {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="University of Ghana — Department of Computer Science"
               >
-                <image href="/ug-logo.svg" x="0" y="0" width="193" height="60" preserveAspectRatio="xMidYMid meet" />
+                <image href={`${import.meta.env.BASE_URL}ug-logo.svg`} x="0" y="0" width="193" height="60" preserveAspectRatio="xMidYMid meet" />
                 <line x1="201" y1="8" x2="201" y2="52" stroke="#C9A84C" strokeWidth="1.5" />
                 <text x="210" y="23" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">DEPARTMENT OF</text>
                 <text x="210" y="50" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="20" fill="#1B3A6B" letterSpacing="0.5">COMPUTER SCIENCE</text>

@@ -67,7 +67,7 @@ export default function ContactPage({ contact = {}, images = {} }: ContactPagePr
       <section className="relative overflow-hidden bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: `url('${images.networking || "/images/collaboration-networking.jpeg"}')` }}
+          style={{ backgroundImage: `url('${images.networking || `${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`}')` }}
         />
         <div className="container relative z-10">
           <span
@@ -148,7 +148,7 @@ export default function ContactPage({ contact = {}, images = {} }: ContactPagePr
             <div className="flex flex-col gap-5">
               <div className="rounded-2xl overflow-hidden relative">
                 <img
-                  src={images.networking || "/images/collaboration-networking.jpeg"}
+                  src={images.networking || `${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`}
                   alt="DCS Department"
                   className="w-full h-[180px] object-cover block"
                 />

@@ -30,7 +30,7 @@ export default function RecordingsPage({ recordings }: RecordingsPageProps) {
       >
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: "url('/images/research-presentations.jpg')" }}
+          style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/research-presentations.jpg')` }}
         />
         <div className="container relative z-10">
           <span className="badge inline-block mb-[14px]" style={{ background: "rgba(201,168,76,0.25)", color: "#C9A84C" }}>

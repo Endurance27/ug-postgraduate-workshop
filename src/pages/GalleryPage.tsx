@@ -34,7 +34,7 @@ export default function GalleryPage({ gallery }: GalleryPageProps) {
       <section className="relative overflow-hidden bg-gradient-to-br from-ug-navy to-ug-blue text-white py-[72px] pb-14">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('/images/collaboration-networking.jpeg')" }}
+          style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/collaboration-networking.jpeg')` }}
         />
         <div className="container relative z-10">
           <span

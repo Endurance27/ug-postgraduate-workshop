@@ -76,15 +76,15 @@ export default function SchedulePage({
 }: SchedulePageProps) {
   const heroPhotos = [
     {
-      src: images.research || "/images/research-presentations.jpg",
+      src: images.research || `${import.meta.env.BASE_URL}images/research-presentations.jpg`,
       label: "Research Sessions",
     },
     {
-      src: images.workshop || "/images/workshop-sessions.jpg",
+      src: images.workshop || `${import.meta.env.BASE_URL}images/workshop-sessions.jpg`,
       label: "Panel Discussions",
     },
     {
-      src: images.networking || "/images/collaboration-networking.jpeg",
+      src: images.networking || `${import.meta.env.BASE_URL}images/collaboration-networking.jpeg`,
       label: "Networking",
     },
   ];

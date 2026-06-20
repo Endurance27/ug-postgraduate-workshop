@@ -41,29 +41,30 @@ interface SlotStatus {
 
 // ─── Image slot definitions ───────────────────────────────────────────────────
 
+const B = import.meta.env.BASE_URL;
 const IMAGE_DEFS = [
   {
     key: "workshop",
     label: "Workshop Sessions",
-    defaultUrl: "/images/workshop-sessions.jpg",
+    defaultUrl: `${B}images/workshop-sessions.jpg`,
     usedOn: "Home hero background · Home photo strip · Home testimonials",
   },
   {
     key: "research",
     label: "Research Presentations",
-    defaultUrl: "/images/research-presentations.jpg",
+    defaultUrl: `${B}images/research-presentations.jpg`,
     usedOn: "Home 'About' section · Home photo strip · About page hero",
   },
   {
     key: "networking",
     label: "Networking & Events",
-    defaultUrl: "/images/collaboration-networking.jpeg",
+    defaultUrl: `${B}images/collaboration-networking.jpeg`,
     usedOn: "Home CTA background · Contact page · Speakers page · Sponsors page",
   },
   {
     key: "students",
     label: "Students / DCS Research",
-    defaultUrl: "/images/dcs-research.jpg",
+    defaultUrl: `${B}images/dcs-research.jpg`,
     usedOn: "Home hero card photo · Home awards background · Home testimonials",
   },
 ] as const;

@@ -95,7 +95,7 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
       >
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: "url('/images/workshop-sessions.jpg')" }}
+          style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/workshop-sessions.jpg')` }}
         />
         <div className="container relative z-10">
           <span

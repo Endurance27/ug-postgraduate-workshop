@@ -124,6 +124,11 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const nationality     = data.nationality     || "—";
     const participation   = data.participationType || data.type || "—";
     const attendance      = data.attendanceMode  || data.mode  || "—";
+    const sessionPref     = data.sessionPreference || "";
+    const sessionLabel    =
+      sessionPref === "Morning"   ? "Morning Session (9:00 AM – 1:00 PM)"
+      : sessionPref === "Afternoon" ? "Afternoon Session (2:00 PM – 5:00 PM)"
+      : "—";
     const presentationType = data.presentationType || "—";
     const paymentStatus   = data.payment         || "Pending";
 
@@ -143,6 +148,7 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       nationality,
       participation,
       attendance,
+      sessionLabel,
       presentationType,
       paymentStatus,
       registeredAt,
@@ -203,6 +209,7 @@ interface EmailData {
   nationality:      string;
   participation:    string;
   attendance:       string;
+  sessionLabel:     string;
   presentationType: string;
   paymentStatus:    string;
   registeredAt:     string;
@@ -317,6 +324,8 @@ function buildEmailHtml(d: EmailData): string {
                   ${row("Nationality",       d.nationality)}
                   ${row("Participation",     d.participation)}
                   ${row("Attendance Mode",   d.attendance)}
+                  ${d.sessionLabel !== "—" ? row("Session", d.sessionLabel) : ""}
+                  ${row("Event Dates",       "27–29 August 2026")}
                   ${d.presentationType !== "—" ? row("Presentation Type", d.presentationType) : ""}
                   ${row("Submitted On",      d.registeredAt)}
                   ${row("Payment Status",    statusBadge)}

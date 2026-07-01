@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
 import * as nodemailer from "nodemailer";
 
@@ -24,6 +24,7 @@ interface RegistrationData {
   type?: string;
   attendanceMode?: string;
   mode?: string;
+  sessionPreference?: string;
   presentationType?: string;
   presentationTitle?: string;
   payment?: string;
@@ -34,23 +35,67 @@ interface RegistrationData {
 }
 
 // ─── Cloud Function ───────────────────────────────────────────────────────────
-export const sendRegistrationConfirmation = onDocumentCreated(
+export const sendRegistrationConfirmation = onDocumentWritten(
   {
     document: "registrations/{registrationId}",
     region:   "us-central1",
     secrets:  [emailUser, emailPass],
   },
   async (event) => {
-    const snap = event.data;
-    if (!snap) return;
+    // onDocumentWritten fires on create, update, and delete.
+    // `after` is null on delete — skip those.
+    const snap = event.data?.after;
+    if (!snap?.exists) return;
 
     const data = snap.data() as RegistrationData;
     const docRef = snap.ref;
     const registrationId = event.params.registrationId;
 
+    // ── Update session counts in workshop/siteContent ──────────────────────
+    // Runs on every create/update so counts stay accurate as registrations change.
+    {
+      const beforeData = event.data?.before?.exists
+        ? (event.data.before.data() as RegistrationData)
+        : null;
+      const beforeSession = beforeData?.sessionPreference;
+      const afterSession = data.sessionPreference;
+      const beforeInPerson = beforeData?.attendanceMode !== "Virtual";
+      const afterInPerson = data.attendanceMode !== "Virtual";
+
+      let morningDelta = 0;
+      let afternoonDelta = 0;
+      if (beforeData && beforeInPerson && beforeSession === "Morning") morningDelta--;
+      if (beforeData && beforeInPerson && beforeSession === "Afternoon") afternoonDelta--;
+      if (afterInPerson && afterSession === "Morning") morningDelta++;
+      if (afterInPerson && afterSession === "Afternoon") afternoonDelta++;
+
+      if (morningDelta !== 0 || afternoonDelta !== 0) {
+        const updates: Record<string, admin.firestore.FieldValue> = {};
+        if (morningDelta !== 0)
+          updates["event.sessionCounts.morning"] = admin.firestore.FieldValue.increment(morningDelta);
+        if (afternoonDelta !== 0)
+          updates["event.sessionCounts.afternoon"] = admin.firestore.FieldValue.increment(afternoonDelta);
+        const siteRef = admin.firestore().doc("workshop/siteContent");
+        await siteRef.update(updates).catch(async () => {
+          // Initialise the nested field if the document doesn't have it yet
+          await siteRef.set(
+            { event: { sessionCounts: { morning: 0, afternoon: 0 } } },
+            { merge: true },
+          );
+          await siteRef.update(updates);
+        });
+        console.log(`[${registrationId}] Session counts updated — morningΔ:${morningDelta} afternoonΔ:${afternoonDelta}`);
+      }
+    }
+
+    // ── Only send confirmation when payment is confirmed ───────────────────
+    if (data.payment !== "Confirmed") {
+      console.log(`[${registrationId}] Payment not confirmed (status: ${data.payment ?? "none"}) — skipping email.`);
+      return;
+    }
+
     // ── Deduplication guard ────────────────────────────────────────────────
-    // If the email was already sent or is being processed, do nothing.
-    // This prevents duplicate sends if the function is retried.
+    // Prevent duplicate sends on retries or repeated updates.
     if (data.emailSent === true || data.emailDeliveryStatus === "processing") {
       console.log(`[${registrationId}] Email already sent or processing — skipping.`);
       return;

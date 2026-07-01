@@ -368,6 +368,9 @@ const INIT_CONTENT = {
     paystackKey: "",
     registrationOpen: true,
     submissionsOpen: true,
+    morningCapacity: 60,
+    afternoonCapacity: 60,
+    sessionCounts: { morning: 0, afternoon: 0 },
     description:
       "A flagship academic event by the Department of Computer Science, University of Ghana — now in its second edition.",
   },
@@ -865,19 +868,24 @@ export default function App() {
     return INIT_CONTENT as SiteContent;
   });
 
-  // 2. On mount: keep site content in sync with Firestore
+  // Track whether the current user is a signed-in admin.
+  // Admin-only Firestore operations (writing siteContent, reading registrations/payments)
+  // are gated behind this flag to avoid permission errors for public visitors.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!auth || !onAuthStateChanged) return;
+    const unsub = onAuthStateChanged(auth, (user) => setIsAdmin(!!user));
+    return () => unsub();
+  }, []);
+
+  // 2a. Always-on listener: public site content (event details, schedule, etc.)
   useEffect(() => {
     if (!db || !doc || !onSnapshot) {
-      setContentStatus({
-        loading: false,
-        error: "Firestore is not configured for this app.",
-      });
+      setContentStatus({ loading: false, error: "Firestore is not configured." });
       return;
     }
     let alive = true;
-
-    // ── Live listener: site content (admin edits) ──────────────────────────
-    const unsubscribe = onSnapshot(
+    const unsub = onSnapshot(
       doc(db, "workshop", "siteContent"),
       (snap) => {
         if (!alive) return;
@@ -885,10 +893,7 @@ export default function App() {
           setSiteContent((c) => mergeRemote(c, snap.data()));
           setContentStatus({ loading: false, error: "" });
         } else {
-          setContentStatus({
-            loading: false,
-            error: "No site content found in Firestore yet.",
-          });
+          setContentStatus({ loading: false, error: "No site content found in Firestore yet." });
         }
       },
       (err) => {
@@ -897,91 +902,63 @@ export default function App() {
         setContentStatus({ loading: false, error: err.message });
       },
     );
-
-    // ── Live listener: registrations collection ────────────────────────────
-    // onSnapshot fires immediately with the current state, then on every change,
-    // so the admin sees new registrations in real-time without a page reload.
-    const unsubRegistrations =
-      collection ?
-        onSnapshot(
-          collection(db, "registrations"),
-          (snap) => {
-            if (!alive) return;
-            const participants = snap.docs.map((d) => ({
-              _docId: d.id, // Firestore document ID, used for admin updates
-              id: d.data().id || d.id,
-              ...d.data(),
-            }));
-            setSiteContent(
-              (c) =>
-                ({
-                  ...c,
-                  participants: participants as Participant[],
-                }) as SiteContent,
-            );
-          },
-          (err) => console.warn("Registrations listener:", err.message),
-        )
-      : null;
-
-    // ── Live listener: payments collection ────────────────────────────────
-    const unsubPayments =
-      collection ?
-        onSnapshot(
-          collection(db, "payments"),
-          (snap) => {
-            if (!alive) return;
-            const payments = snap.docs.map((d) => ({
-              id: d.data().id || d.id,
-              ...d.data(),
-            }));
-            setSiteContent(
-              (c) =>
-                ({
-                  ...c,
-                  payments: payments as PaymentRecord[],
-                }) as SiteContent,
-            );
-          },
-          (err) => console.warn("Payments listener:", err.message),
-        )
-      : null;
-
-    return () => {
-      alive = false;
-      unsubscribe();
-      unsubRegistrations?.();
-      unsubPayments?.();
-    };
+    return () => { alive = false; unsub(); };
   }, []);
 
-  // 3. On every change: save to localStorage immediately + Firestore (debounced 800 ms)
+  // 2b. Admin-only listeners: registrations + payments collections.
+  // Only starts after sign-in; torn down on sign-out to avoid permission errors.
+  useEffect(() => {
+    if (!isAdmin || !db || !collection || !onSnapshot) return;
+    let alive = true;
+
+    const unsubReg = onSnapshot(
+      collection(db, "registrations"),
+      (snap) => {
+        if (!alive) return;
+        const participants = snap.docs.map((d) => ({
+          _docId: d.id,
+          id: d.data().id || d.id,
+          ...d.data(),
+        }));
+        setSiteContent((c) => ({ ...c, participants: participants as Participant[] }) as SiteContent);
+      },
+      (err) => console.warn("Registrations listener:", err.message),
+    );
+
+    const unsubPay = onSnapshot(
+      collection(db, "payments"),
+      (snap) => {
+        if (!alive) return;
+        const payments = snap.docs.map((d) => ({ id: d.data().id || d.id, ...d.data() }));
+        setSiteContent((c) => ({ ...c, payments: payments as PaymentRecord[] }) as SiteContent);
+      },
+      (err) => console.warn("Payments listener:", err.message),
+    );
+
+    return () => { alive = false; unsubReg(); unsubPay(); };
+  }, [isAdmin]);
+
+  // 3. On every content change: always save to localStorage; save to Firestore only when admin.
   useEffect(() => {
     const stripped = stripBase64(siteContent) as Record<string, unknown>;
-
-    // Exclude registrations/payments: they live in their own Firestore collections.
-    // Writing them into workshop/siteContent would cause mergeRemote to overwrite
-    // live collection data with a stale snapshot on the next siteContent update.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { participants: _p, payments: _pay, ...contentToSave } = stripped;
 
     try {
-      localStorage.setItem(
-        "dcs-workshop-content",
-        JSON.stringify(contentToSave),
-      );
+      localStorage.setItem("dcs-workshop-content", JSON.stringify(contentToSave));
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
 
-    if (!db || !doc || !setDoc) return;
+    // Only admins can write to workshop/siteContent — skip for public visitors
+    if (!isAdmin || !db || !doc || !setDoc) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       setDoc(doc(db, "workshop", "siteContent"), contentToSave).catch((e) =>
-        console.warn("Firestore save failed — add security rules:", e.message),
+        console.warn("Firestore save failed:", e.message),
       );
     }, 800);
-  }, [siteContent]);
+  }, [siteContent, isAdmin]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1028,10 +1005,10 @@ export default function App() {
     );
   };
 
-  const saveRegistration = (
+  const saveRegistration = async (
     registration: Partial<Participant>,
     options: SaveOptions = {},
-  ): Participant => {
+  ): Promise<Participant> => {
     const now = new Date().toISOString();
     const email = normalizeEmail(registration.email);
     const studentId = String(registration.studentId || "").trim();
@@ -1064,6 +1041,8 @@ export default function App() {
           .presentationTitle as string) || "",
       abstract:
         ((registration as Record<string, unknown>).abstract as string) || "",
+      sessionPreference:
+        ((registration as Record<string, unknown>).sessionPreference as string) || "",
       registeredAt: registration.registeredAt || now,
       updatedAt: now,
       paymentMethod: options.method || "offline",
@@ -1130,16 +1109,18 @@ export default function App() {
 
     if (db && doc && setDoc) {
       const registrationDocId = makeDocId(studentId, email);
-      setDoc(doc(db, "registrations", registrationDocId), participantRecord, {
-        merge: true,
-      }).catch((e) => console.warn("Registration save failed:", e.message));
-      if (paymentRecord) {
-        setDoc(
-          doc(db, "payments", makeDocId(paymentRecord.transactionId)),
-          paymentRecord,
-          { merge: true },
-        ).catch((e) => console.warn("Payment save failed:", e.message));
+      // Exclude Cloud-Function-only fields so the Firestore update rule doesn't reject them
+      const { emailSent: _es, emailDeliveryStatus: _eds, emailSentAt: _esa, emailError: _ee, ...safeRecord } =
+        participantRecord as Record<string, unknown>;
+      try {
+        await setDoc(doc(db, "registrations", registrationDocId), safeRecord, { merge: true });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("Registration save failed:", msg);
+        throw new Error(msg);
       }
+      // Payment records require admin auth to write — the Cloud Function writes
+      // payment metadata via Admin SDK instead. Skip the frontend write entirely.
     }
 
     return participantRecord;

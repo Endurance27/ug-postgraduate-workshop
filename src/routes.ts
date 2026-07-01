@@ -31,7 +31,7 @@ export interface RouteContext {
   siteContent: Record<string, unknown>;
   navigate: (page: string) => void;
   setRegistrant: (r: unknown) => void;
-  saveRegistration: (data: unknown) => void;
+  saveRegistration: (data: unknown, options?: unknown) => Promise<unknown>;
   updateContent: (key: string, value: unknown) => void;
 }
 

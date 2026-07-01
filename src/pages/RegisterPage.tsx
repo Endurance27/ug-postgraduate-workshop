@@ -8,10 +8,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
+import { isMobilePhone } from "validator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
-  surname: string;
+  firstName: string;
+  lastName: string;
   otherNames: string;
   gender: string;
   email: string;
@@ -23,6 +25,7 @@ interface RegistrationForm {
   level: string;
   otherLevel: string;
   attendanceMode: string;
+  sessionPreference: string;
   participationType: string;
   presentationType: string;
   nationality: string;
@@ -46,6 +49,9 @@ interface EventData {
   dates?: string;
   title?: string;
   registrationOpen?: boolean;
+  morningCapacity?: number;
+  afternoonCapacity?: number;
+  sessionCounts?: { morning: number; afternoon: number };
 }
 
 interface RegisterPageProps {
@@ -55,7 +61,7 @@ interface RegisterPageProps {
   onRegister?: (
     form: RegistrationForm,
     options: PaymentOptions,
-  ) => Record<string, unknown>;
+  ) => Promise<Record<string, unknown>>;
 }
 
 const PROGRAMMES = [
@@ -68,6 +74,15 @@ const PROGRAMMES = [
   "Other (Specify)",
 ];
 
+// Programmes that require in-person attendance (cannot choose Virtual)
+const CS_DS_PROGRAMMES = new Set([
+  "MSc Computer Science",
+  "MPhil Computer Science",
+  "MSc Data Science",
+  "MPhil Data Science",
+  "PhD Computer Science",
+]);
+
 const PRESENTATION_TYPES = [
   "Poster Presentation",
   "Regular Paper",
@@ -79,7 +94,7 @@ const PRESENTATION_TYPES = [
 // Public keys are safe to commit. Never put sk_test_/sk_live_ keys here.
 const PAYSTACK_PUBLIC_KEY = "pk_test_7286d5fe706c0c323ea13d3817918f0e5a09a3c2";
 
-const ABSTRACT_MAX_WORDS = 250;
+const ABSTRACT_MAX_WORDS = 360;
 const countWords = (text: string) =>
   text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 
@@ -408,6 +423,374 @@ function NationalitySelect({ value, onChange, error }: NationalitySelectProps) {
   );
 }
 
+// ─── Country phone codes ──────────────────────────────────────────────────────
+interface CountryPhone {
+  name: string;
+  code: string;
+  dial: string;
+  flag: string;
+  locale: string | null; // validator.js isMobilePhone locale, null = basic length check
+}
+
+const COUNTRY_PHONES: CountryPhone[] = [
+  // Ghana first (default)
+  { name: "Ghana", code: "GH", dial: "+233", flag: "🇬🇭", locale: "en-GH" },
+  // Africa
+  { name: "Algeria", code: "DZ", dial: "+213", flag: "🇩🇿", locale: "ar-DZ" },
+  { name: "Angola", code: "AO", dial: "+244", flag: "🇦🇴", locale: "pt-AO" },
+  { name: "Benin", code: "BJ", dial: "+229", flag: "🇧🇯", locale: "fr-BJ" },
+  { name: "Botswana", code: "BW", dial: "+267", flag: "🇧🇼", locale: "en-BW" },
+  {
+    name: "Burkina Faso",
+    code: "BF",
+    dial: "+226",
+    flag: "🇧🇫",
+    locale: "fr-BF",
+  },
+  { name: "Burundi", code: "BI", dial: "+257", flag: "🇧🇮", locale: null },
+  { name: "Cabo Verde", code: "CV", dial: "+238", flag: "🇨🇻", locale: null },
+  { name: "Cameroon", code: "CM", dial: "+237", flag: "🇨🇲", locale: "fr-CM" },
+  {
+    name: "Central African Republic",
+    code: "CF",
+    dial: "+236",
+    flag: "🇨🇫",
+    locale: "fr-CF",
+  },
+  { name: "Chad", code: "TD", dial: "+235", flag: "🇹🇩", locale: null },
+  { name: "Comoros", code: "KM", dial: "+269", flag: "🇰🇲", locale: null },
+  {
+    name: "Congo (DRC)",
+    code: "CD",
+    dial: "+243",
+    flag: "🇨🇩",
+    locale: "fr-CD",
+  },
+  {
+    name: "Congo (Republic)",
+    code: "CG",
+    dial: "+242",
+    flag: "🇨🇬",
+    locale: null,
+  },
+  { name: "Djibouti", code: "DJ", dial: "+253", flag: "🇩🇯", locale: "fr-DJ" },
+  { name: "Egypt", code: "EG", dial: "+20", flag: "🇪🇬", locale: "ar-EG" },
+  {
+    name: "Equatorial Guinea",
+    code: "GQ",
+    dial: "+240",
+    flag: "🇬🇶",
+    locale: null,
+  },
+  { name: "Eritrea", code: "ER", dial: "+291", flag: "🇪🇷", locale: null },
+  { name: "Eswatini", code: "SZ", dial: "+268", flag: "🇸🇿", locale: null },
+  { name: "Ethiopia", code: "ET", dial: "+251", flag: "🇪🇹", locale: null },
+  { name: "Gabon", code: "GA", dial: "+241", flag: "🇬🇦", locale: null },
+  { name: "Gambia", code: "GM", dial: "+220", flag: "🇬🇲", locale: null },
+  { name: "Guinea", code: "GN", dial: "+224", flag: "🇬🇳", locale: null },
+  { name: "Guinea-Bissau", code: "GW", dial: "+245", flag: "🇬🇼", locale: null },
+  { name: "Ivory Coast", code: "CI", dial: "+225", flag: "🇨🇮", locale: null },
+  { name: "Kenya", code: "KE", dial: "+254", flag: "🇰🇪", locale: "en-KE" },
+  { name: "Lesotho", code: "LS", dial: "+266", flag: "🇱🇸", locale: "en-LS" },
+  { name: "Liberia", code: "LR", dial: "+231", flag: "🇱🇷", locale: null },
+  { name: "Libya", code: "LY", dial: "+218", flag: "🇱🇾", locale: "ar-LY" },
+  { name: "Madagascar", code: "MG", dial: "+261", flag: "🇲🇬", locale: "mg-MG" },
+  { name: "Malawi", code: "MW", dial: "+265", flag: "🇲🇼", locale: "en-MW" },
+  { name: "Mali", code: "ML", dial: "+223", flag: "🇲🇱", locale: null },
+  { name: "Mauritania", code: "MR", dial: "+222", flag: "🇲🇷", locale: null },
+  { name: "Mauritius", code: "MU", dial: "+230", flag: "🇲🇺", locale: "en-MU" },
+  { name: "Morocco", code: "MA", dial: "+212", flag: "🇲🇦", locale: "ar-MA" },
+  { name: "Mozambique", code: "MZ", dial: "+258", flag: "🇲🇿", locale: "mz-MZ" },
+  { name: "Namibia", code: "NA", dial: "+264", flag: "🇳🇦", locale: null },
+  { name: "Niger", code: "NE", dial: "+227", flag: "🇳🇪", locale: null },
+  { name: "Nigeria", code: "NG", dial: "+234", flag: "🇳🇬", locale: "en-NG" },
+  { name: "Rwanda", code: "RW", dial: "+250", flag: "🇷🇼", locale: "en-RW" },
+  {
+    name: "São Tomé and Príncipe",
+    code: "ST",
+    dial: "+239",
+    flag: "🇸🇹",
+    locale: null,
+  },
+  { name: "Senegal", code: "SN", dial: "+221", flag: "🇸🇳", locale: null },
+  {
+    name: "Sierra Leone",
+    code: "SL",
+    dial: "+232",
+    flag: "🇸🇱",
+    locale: "en-SL",
+  },
+  { name: "Somalia", code: "SO", dial: "+252", flag: "🇸🇴", locale: "so-SO" },
+  {
+    name: "South Africa",
+    code: "ZA",
+    dial: "+27",
+    flag: "🇿🇦",
+    locale: "en-ZA",
+  },
+  {
+    name: "South Sudan",
+    code: "SS",
+    dial: "+211",
+    flag: "🇸🇸",
+    locale: "en-SS",
+  },
+  { name: "Sudan", code: "SD", dial: "+249", flag: "🇸🇩", locale: "ar-SD" },
+  { name: "Tanzania", code: "TZ", dial: "+255", flag: "🇹🇿", locale: "en-TZ" },
+  { name: "Togo", code: "TG", dial: "+228", flag: "🇹🇬", locale: null },
+  { name: "Tunisia", code: "TN", dial: "+216", flag: "🇹🇳", locale: "ar-TN" },
+  { name: "Uganda", code: "UG", dial: "+256", flag: "🇺🇬", locale: "en-UG" },
+  { name: "Zambia", code: "ZM", dial: "+260", flag: "🇿🇲", locale: "en-ZM" },
+  { name: "Zimbabwe", code: "ZW", dial: "+263", flag: "🇿🇼", locale: "en-ZW" },
+  // International
+  { name: "Australia", code: "AU", dial: "+61", flag: "🇦🇺", locale: "en-AU" },
+  { name: "Brazil", code: "BR", dial: "+55", flag: "🇧🇷", locale: "pt-BR" },
+  { name: "Canada", code: "CA", dial: "+1", flag: "🇨🇦", locale: "en-CA" },
+  { name: "China", code: "CN", dial: "+86", flag: "🇨🇳", locale: "zh-CN" },
+  { name: "France", code: "FR", dial: "+33", flag: "🇫🇷", locale: "fr-FR" },
+  { name: "Germany", code: "DE", dial: "+49", flag: "🇩🇪", locale: "de-DE" },
+  { name: "India", code: "IN", dial: "+91", flag: "🇮🇳", locale: "en-IN" },
+  { name: "Italy", code: "IT", dial: "+39", flag: "🇮🇹", locale: "it-IT" },
+  { name: "Japan", code: "JP", dial: "+81", flag: "🇯🇵", locale: "ja-JP" },
+  { name: "Netherlands", code: "NL", dial: "+31", flag: "🇳🇱", locale: "nl-NL" },
+  { name: "New Zealand", code: "NZ", dial: "+64", flag: "🇳🇿", locale: "en-NZ" },
+  { name: "Norway", code: "NO", dial: "+47", flag: "🇳🇴", locale: "nb-NO" },
+  { name: "Pakistan", code: "PK", dial: "+92", flag: "🇵🇰", locale: "en-PK" },
+  { name: "Portugal", code: "PT", dial: "+351", flag: "🇵🇹", locale: "pt-PT" },
+  { name: "Russia", code: "RU", dial: "+7", flag: "🇷🇺", locale: "ru-RU" },
+  {
+    name: "Saudi Arabia",
+    code: "SA",
+    dial: "+966",
+    flag: "🇸🇦",
+    locale: "ar-SA",
+  },
+  { name: "South Korea", code: "KR", dial: "+82", flag: "🇰🇷", locale: "ko-KR" },
+  { name: "Spain", code: "ES", dial: "+34", flag: "🇪🇸", locale: "es-ES" },
+  { name: "Sweden", code: "SE", dial: "+46", flag: "🇸🇪", locale: "sv-SE" },
+  { name: "Switzerland", code: "CH", dial: "+41", flag: "🇨🇭", locale: "de-CH" },
+  { name: "Turkey", code: "TR", dial: "+90", flag: "🇹🇷", locale: "tr-TR" },
+  { name: "UAE", code: "AE", dial: "+971", flag: "🇦🇪", locale: "ar-AE" },
+  {
+    name: "United Kingdom",
+    code: "GB",
+    dial: "+44",
+    flag: "🇬🇧",
+    locale: "en-GB",
+  },
+  {
+    name: "United States",
+    code: "US",
+    dial: "+1",
+    flag: "🇺🇸",
+    locale: "en-US",
+  },
+];
+
+// ─── Phone Input with country dial-code selector ──────────────────────────────
+interface PhoneInputProps {
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+}
+
+function PhoneInput({ value, onChange, error }: PhoneInputProps) {
+  const defaultCountry = COUNTRY_PHONES[0]; // Ghana
+
+  const [country, setCountry] = useState<CountryPhone>(() => {
+    if (value) {
+      const match = COUNTRY_PHONES.find((c) => value.startsWith(c.dial));
+      if (match) return match;
+    }
+    return defaultCountry;
+  });
+
+  const [localNum, setLocalNum] = useState(() => {
+    if (value && value.startsWith(country.dial))
+      return value.slice(country.dial.length);
+    return value || "";
+  });
+
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (open) setTimeout(() => searchRef.current?.focus(), 50);
+  }, [open]);
+
+  const selectCountry = (c: CountryPhone) => {
+    setCountry(c);
+    setOpen(false);
+    setQuery("");
+    onChange(`${c.dial}${localNum}`);
+  };
+
+  const handleNumber = (v: string) => {
+    const clean = v.replace(/[^\d\s\-]/g, "");
+    setLocalNum(clean);
+    onChange(`${country.dial}${clean}`);
+  };
+
+  const filtered = COUNTRY_PHONES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(query.toLowerCase()) ||
+      c.dial.includes(query),
+  );
+
+  return (
+    <div className="form-group" ref={wrapRef} style={{ position: "relative" }}>
+      <label>
+        Phone Number<span className="req">*</span>
+      </label>
+      <div style={{ display: "flex" }}>
+        {/* Dial-code selector */}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "0 10px",
+            border: `1px solid ${error ? "#c0392b" : "#dde1ea"}`,
+            borderRight: "none",
+            borderRadius: "10px 0 0 10px",
+            background: "#f8f9fb",
+            cursor: "pointer",
+            fontSize: 13,
+            whiteSpace: "nowrap",
+            minWidth: 96,
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>{country.flag}</span>
+          <span style={{ fontWeight: 500 }}>{country.dial}</span>
+          <ChevronDown
+            size={13}
+            style={{
+              color: "#aaa",
+              transform: `rotate(${open ? 180 : 0}deg)`,
+              transition: "transform 0.2s",
+            }}
+          />
+        </button>
+
+        {/* Number input */}
+        <input
+          type="tel"
+          value={localNum}
+          onChange={(e) => handleNumber(e.target.value)}
+          placeholder="Phone number"
+          style={{
+            flex: 1,
+            borderRadius: "0 10px 10px 0",
+            borderColor: error ? "#c0392b" : undefined,
+          }}
+        />
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 400,
+            top: "100%",
+            left: 0,
+            width: 290,
+            background: "#fff",
+            border: "1px solid #dde1ea",
+            borderRadius: 10,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+            overflow: "hidden",
+            marginTop: 2,
+          }}
+        >
+          <div style={{ padding: "8px 10px", borderBottom: "1px solid #eee" }}>
+            <input
+              ref={searchRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search country or code…"
+              style={{
+                width: "100%",
+                border: "1px solid #dde1ea",
+                borderRadius: 7,
+                padding: "6px 10px",
+                fontSize: 13,
+                outline: "none",
+              }}
+            />
+          </div>
+          <ul
+            style={{
+              maxHeight: 220,
+              overflowY: "auto",
+              margin: 0,
+              padding: "4px 0",
+              listStyle: "none",
+            }}
+          >
+            {filtered.length === 0 ?
+              <li style={{ padding: "10px 14px", color: "#aaa", fontSize: 13 }}>
+                No results
+              </li>
+            : filtered.map((c) => (
+                <li
+                  key={c.code}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => selectCountry(c)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "8px 14px",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    background:
+                      c.code === country.code ? "#E5EAF3" : "transparent",
+                    color: c.code === country.code ? "#1B3A6B" : "#333",
+                    fontWeight: c.code === country.code ? 600 : 400,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (c.code !== country.code)
+                      (e.currentTarget as HTMLLIElement).style.background =
+                        "#f5f7fa";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLLIElement).style.background =
+                      c.code === country.code ? "#E5EAF3" : "transparent";
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>{c.flag}</span>
+                  <span style={{ flex: 1 }}>{c.name}</span>
+                  <span style={{ color: "#888", fontSize: 12 }}>{c.dial}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      )}
+
+      {error && <p className="text-[#c0392b] text-[12px] mt-1">{error}</p>}
+    </div>
+  );
+}
+
 const steps = ["Personal Details", "Academic Info", "Participation", "Payment"];
 
 // ── Confirmation persistence ──────────────────────────────────────────────────
@@ -451,12 +834,19 @@ export default function RegisterPage({
   onRegister,
 }: RegisterPageProps) {
   const fee = event.fee || 100;
+  const morningCapacity = event.morningCapacity ?? 60;
+  const afternoonCapacity = event.afternoonCapacity ?? 60;
+  const sessionCounts = event.sessionCounts ?? { morning: 0, afternoon: 0 };
+  const morningAvailable = Math.max(0, morningCapacity - (sessionCounts.morning || 0));
+  const afternoonAvailable = Math.max(0, afternoonCapacity - (sessionCounts.afternoon || 0));
+
   const [storedConfirmation] = useState(loadStoredConfirmation);
 
   const [step, setStep] = useState<number>(0);
   const [form, setForm] = useState<RegistrationForm>(
     storedConfirmation?.form || {
-      surname: "",
+      firstName: "",
+      lastName: "",
       otherNames: "",
       gender: "",
       nationality: "",
@@ -469,6 +859,7 @@ export default function RegisterPage({
       level: "Master's",
       otherLevel: "",
       attendanceMode: "Physical",
+      sessionPreference: "",
       participationType: "Presenter",
       presentationType: "Regular Paper",
       presentationTitle: "",
@@ -496,7 +887,7 @@ export default function RegisterPage({
         {
           display_name: "Name",
           variable_name: "name",
-          value: `${form.surname} ${form.otherNames}`.trim(),
+          value: `${form.firstName} ${form.lastName}`.trim(),
         },
         {
           display_name: "Student ID",
@@ -515,15 +906,56 @@ export default function RegisterPage({
   const set = (k: keyof RegistrationForm, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  // Force in-person attendance for CS / Data Science programmes
+  useEffect(() => {
+    if (CS_DS_PROGRAMMES.has(form.programme)) {
+      setForm((f) => ({ ...f, attendanceMode: "Physical" }));
+    }
+  }, [form.programme]);
+
+  // Clear session preference when switching to virtual attendance
+  useEffect(() => {
+    if (form.attendanceMode === "Virtual") {
+      setForm((f) => ({ ...f, sessionPreference: "" }));
+    }
+  }, [form.attendanceMode]);
+
   const validate = (): boolean => {
     const e: FormErrors = {};
     if (step === 0) {
-      if (!form.surname.trim()) e.surname = "Surname is required.";
-      if (!form.otherNames.trim()) e.otherNames = "Other names are required.";
+      if (!form.firstName.trim()) e.firstName = "First name is required.";
+      if (!form.lastName.trim()) e.lastName = "Last name is required.";
       if (!form.gender) e.gender = "Please select a gender.";
       if (!form.nationality) e.nationality = "Nationality is required.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
-      if (!form.phone.trim()) e.phone = "Phone number is required.";
+      (() => {
+        const phoneCountry = COUNTRY_PHONES.find((c) =>
+          form.phone.startsWith(c.dial),
+        );
+        const clean = form.phone.replace(/[\s\-]/g, "");
+        // Try the number as-is, then also without a trunk prefix 0 (e.g. 054… → 54…)
+        const localPart = clean.slice(phoneCountry?.dial.length ?? 0);
+        const cleanAlt =
+          phoneCountry ?
+            phoneCountry.dial + localPart.replace(/^0+/, "")
+          : clean;
+        const valid =
+          phoneCountry?.locale ?
+            isMobilePhone(
+              clean,
+              phoneCountry.locale as Parameters<typeof isMobilePhone>[1],
+            ) ||
+            isMobilePhone(
+              cleanAlt,
+              phoneCountry.locale as Parameters<typeof isMobilePhone>[1],
+            )
+          : clean.replace(/\D/g, "").length >= 7;
+        if (!valid)
+          e.phone =
+            phoneCountry ?
+              `Please enter a valid ${phoneCountry.name} phone number.`
+            : "Please enter a valid phone number.";
+      })();
     }
     if (step === 1) {
       if (!form.department.trim()) e.department = "Department is required.";
@@ -533,12 +965,22 @@ export default function RegisterPage({
       if (form.level === "Other (Specify)" && !form.otherLevel.trim())
         e.otherLevel = "Please specify your academic level.";
     }
-    if (step === 2 && form.participationType !== "Observer") {
-      if (!form.presentationTitle.trim())
-        e.presentationTitle = "Presentation title is required.";
-      if (!form.abstract.trim()) e.abstract = "Abstract is required.";
-      else if (countWords(form.abstract) > ABSTRACT_MAX_WORDS)
-        e.abstract = `Abstract must not exceed ${ABSTRACT_MAX_WORDS} words (currently ${countWords(form.abstract)}).`;
+    if (step === 2) {
+      if (form.attendanceMode !== "Virtual") {
+        if (!form.sessionPreference)
+          e.sessionPreference = "Please select a session (Morning or Afternoon).";
+        else if (form.sessionPreference === "Morning" && morningAvailable <= 0)
+          e.sessionPreference = "The Morning session is full. Please select the Afternoon session.";
+        else if (form.sessionPreference === "Afternoon" && afternoonAvailable <= 0)
+          e.sessionPreference = "The Afternoon session is full. Please select the Morning session.";
+      }
+      if (form.participationType !== "Observer") {
+        if (!form.presentationTitle.trim())
+          e.presentationTitle = "Presentation title is required.";
+        if (!form.abstract.trim()) e.abstract = "Abstract is required.";
+        else if (countWords(form.abstract) > ABSTRACT_MAX_WORDS)
+          e.abstract = `Abstract must not exceed ${ABSTRACT_MAX_WORDS} words (currently ${countWords(form.abstract)}).`;
+      }
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -549,22 +991,22 @@ export default function RegisterPage({
   };
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
-  const saveRegistrationRecord = (
+  const saveRegistrationRecord = async (
     paymentStatus: string,
     reference = "",
     method = "paystack",
   ) => {
-    // Combine surname + otherNames into fullName so saveRegistration can store
-    // a real name instead of falling back to the email address.
-    const fullName = `${form.surname} ${form.otherNames}`.trim();
+    const fullName =
+      `${form.firstName} ${form.otherNames} ${form.lastName}`.trim();
     const enrichedForm = { ...form, fullName, name: fullName };
 
-    const saved = onRegister?.(enrichedForm, {
+    const saved = (await onRegister?.(enrichedForm, {
       paymentStatus,
       paymentReference: reference,
       method,
       amount: fee,
-    }) || { ...enrichedForm, payment: paymentStatus, payRef: reference };
+    })) ?? { ...enrichedForm, payment: paymentStatus, payRef: reference };
+
     setRegistrant?.({
       ...enrichedForm,
       ...saved,
@@ -574,12 +1016,12 @@ export default function RegisterPage({
     return saved;
   };
 
-  const finishRegistration = (
+  const finishRegistration = async (
     paymentStatus: string,
     reference = "",
     method = "paystack",
   ) => {
-    saveRegistrationRecord(paymentStatus, reference, method);
+    await saveRegistrationRecord(paymentStatus, reference, method);
     const confirmed = paymentStatus === "Confirmed";
     setPaymentConfirmed(confirmed);
     setConfirmationRef(reference);
@@ -600,9 +1042,15 @@ export default function RegisterPage({
         email: form.email,
         amount: fee * 100,
       },
-      onSuccess: (response) => {
-        setPaying(false);
-        finishRegistration("Confirmed", response.reference, "paystack");
+      onSuccess: async (response) => {
+        try {
+          await finishRegistration("Confirmed", response.reference, "paystack");
+        } catch {
+          setPaying(false);
+          setRegistrationError(
+            `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
+          );
+        }
       },
       onClose: () => {
         setPaying(false);
@@ -696,8 +1144,7 @@ export default function RegisterPage({
               <Sparkles size={64} color="#C9A84C" />
             </div>
             <h2 className="mb-3">
-              You're registered, {form.otherNames.split(" ")[0] || form.surname}
-              !
+              You're registered, {form.firstName || form.lastName}!
             </h2>
             <p className="text-[#555] mb-6 leading-[1.7]">
               {paymentConfirmed ?
@@ -850,9 +1297,10 @@ export default function RegisterPage({
               <div>
                 <h3 className="mb-6">Personal Details</h3>
                 <div className="form-row">
-                  {field("Surname", "surname")}
-                  {field("Othername(s)", "otherNames")}
+                  {field("First Name", "firstName")}
+                  {field("Last Name", "lastName")}
                 </div>
+                {field("Other Names", "otherNames", "required", false)}
                 <div className="form-group">
                   <label>
                     Gender<span className="req">*</span>
@@ -876,10 +1324,12 @@ export default function RegisterPage({
                   onChange={(v) => set("nationality", v)}
                   error={errors.nationality}
                 />
-                <div className="form-row">
-                  {field("Email Address", "email", "email")}
-                  {field("Phone Number", "phone", "tel")}
-                </div>
+                {field("Email Address", "email", "email")}
+                <PhoneInput
+                  value={form.phone}
+                  onChange={(v) => set("phone", v)}
+                  error={errors.phone}
+                />
                 {field("Student ID (optional)", "studentId", "text", false)}
               </div>
             )}
@@ -966,19 +1416,90 @@ export default function RegisterPage({
             {step === 2 && (
               <div>
                 <h3 className="mb-6">Participation Details</h3>
-                <div className="form-group">
-                  <label>
-                    Attendance Mode<span className="req">*</span>
-                  </label>
-                  <select
-                    value={form.attendanceMode}
-                    onChange={(e) => set("attendanceMode", e.target.value)}
-                  >
-                    <option value="Physical">Physical (On-campus)</option>
-                    <option value="Virtual">Virtual (Online)</option>
-                    <option value="Hybrid">Both (Hybrid)</option>
-                  </select>
-                </div>
+
+                {CS_DS_PROGRAMMES.has(form.programme) ? (
+                  <div className="alert alert-info mb-5" style={{ fontSize: 14 }}>
+                    <strong>In-person attendance required.</strong>{" "}
+                    Students in {form.programme} must attend the workshop
+                    physically on campus.
+                  </div>
+                ) : (
+                  <div className="form-group">
+                    <label>
+                      Attendance Mode<span className="req">*</span>
+                    </label>
+                    <select
+                      value={form.attendanceMode}
+                      onChange={(e) => set("attendanceMode", e.target.value)}
+                    >
+                      <option value="Physical">Physical (On-campus)</option>
+                      <option value="Virtual">Virtual (Online)</option>
+                    </select>
+                  </div>
+                )}
+
+                {form.attendanceMode !== "Virtual" && (
+                  <div className="form-group">
+                    <label>
+                      Session Preference<span className="req">*</span>
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 4 }}>
+                      {(
+                        [
+                          { key: "Morning", time: "9:00 AM – 1:00 PM", available: morningAvailable, capacity: morningCapacity },
+                          { key: "Afternoon", time: "2:00 PM – 5:00 PM", available: afternoonAvailable, capacity: afternoonCapacity },
+                        ] as const
+                      ).map(({ key, time, available, capacity }) => {
+                        const full = available <= 0;
+                        const selected = form.sessionPreference === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            disabled={full}
+                            onClick={() => !full && set("sessionPreference", key)}
+                            style={{
+                              padding: "14px 12px",
+                              borderRadius: 10,
+                              border: `2px solid ${selected ? "#1B3A6B" : full ? "#e2e8f0" : "#d1d5db"}`,
+                              background: selected ? "#1B3A6B" : full ? "#f8fafc" : "#fff",
+                              color: selected ? "#fff" : full ? "#aaa" : "#222",
+                              cursor: full ? "not-allowed" : "pointer",
+                              textAlign: "left",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
+                              {key} Session
+                            </div>
+                            <div style={{ fontSize: 12, opacity: selected ? 0.85 : 0.65, marginBottom: 6 }}>
+                              {time}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color:
+                                  full ? "#c0392b"
+                                  : selected ? "#C9A84C"
+                                  : available <= 10 ? "#e67e22"
+                                  : "#27ae60",
+                              }}
+                            >
+                              {full ? "Session full" : `${available} / ${capacity} spots left`}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {errors.sessionPreference && (
+                      <p className="text-[#c0392b] text-[12px] mt-2">
+                        {errors.sessionPreference}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="form-group">
                   <label>
                     Participation Type<span className="req">*</span>
@@ -1031,17 +1552,25 @@ export default function RegisterPage({
                     </div>
                     <div className="form-group">
                       <label>
-                        Abstract<span className="req">*</span>
+                        Abstract & Paper Submission Guidelines:
+                        <span className="req">*</span>
                       </label>
                       <textarea
                         value={form.abstract}
                         onChange={(e) => set("abstract", e.target.value)}
                         placeholder={
-                          "Provide a standard structured abstract of your presentation:\n" +
-                          "• Aim\n" +
-                          "• Method\n" +
-                          "• Results\n" +
-                          "• Conclusion"
+                          "Submissions must be original, unpublished work:\n" +
+                          "- Written in English using the provided template in the registration link\n" +
+                          "- Abstract of 360 words counts is required to present (Oral/Poster) at the conference, you are required to submit an abstract not exceeding 360 words in English via the registration portal, and upload same in MS Word format, as directed below.\n" +
+                          "Failure to adhere to the 360-word limit may affect the selection of your abstract. Abstracts should therefore be structured as follows:\n" +
+                          "• Title\n" +
+                          "• Background    - (Maximum 100 words)\n" +
+                          "• Methods       - (Maximum 100 words)\n" +
+                          "• Results       - (Maximum 100 words)\n" +
+                          "• Significance    - (Maximum 60 words)\n" +
+                          "- All authors must be registered participants\n" +
+                          "- Submitted via the online registration portal\n" +
+                          "- Accepted papers receive certificates of presentation"
                         }
                         rows={7}
                         style={{
@@ -1091,9 +1620,10 @@ export default function RegisterPage({
                   </>
                 )}
                 <div className="alert alert-info">
-                  <strong>Note:</strong> MSc and MPhil CS/DS students are
-                  expected to present their thesis or project work. MSc IT for
-                  Business students may choose to observe or present.
+                  <strong>Note:</strong> CS and Data Science students must
+                  attend in-person. IT for Business students may attend
+                  virtually or in-person. Total capacity: 60 morning + 60
+                  afternoon = 120 seats per day.
                 </div>
               </div>
             )}
@@ -1104,7 +1634,8 @@ export default function RegisterPage({
                 <h3 className="mb-5">Registration Summary &amp; Payment</h3>
                 <div className="bg-ug-surface rounded-[10px] p-5 mb-6">
                   {[
-                    ["Surname", form.surname],
+                    ["First Name", form.firstName],
+                    ["Last Name", form.lastName],
                     ["Other Names", form.otherNames],
                     ["Gender", form.gender],
                     ["Nationality", form.nationality],
@@ -1114,6 +1645,10 @@ export default function RegisterPage({
                     ["Programme", form.programme],
                     ["Level", form.level],
                     ["Attendance Mode", form.attendanceMode],
+                    form.attendanceMode !== "Virtual" && form.sessionPreference && [
+                      "Session",
+                      form.sessionPreference + " Session",
+                    ],
                     ["Participation", form.participationType],
                     form.participationType !== "Observer" && [
                       "Presentation Type",

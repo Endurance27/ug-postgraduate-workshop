@@ -27,17 +27,24 @@ service cloud.firestore {
     }
 
     // Registrations:
-    //   CREATE — public (unauthenticated) users can submit the registration form.
-    //            Basic validation: email field must look like an email address.
-    //   READ / UPDATE / DELETE — admin only.
+    //   CREATE — public users can submit the registration form (email must be valid).
+    //   UPDATE — public users can update their own record (email field cannot change,
+    //            and they cannot manipulate Cloud-Function-only fields like emailSent).
+    //   READ / DELETE — admin only.
     //   Cloud Functions (Admin SDK) bypass all rules and can write email metadata.
     match /registrations/{document} {
       allow create: if request.resource.data.email is string
                     && request.resource.data.email.matches(".*@.*");
-      allow read, update, delete: if request.auth != null;
+      allow update: if request.resource.data.email is string
+                    && request.resource.data.email.matches(".*@.*")
+                    && request.resource.data.email == resource.data.email
+                    && !('emailSent' in request.resource.data)
+                    && !('emailDeliveryStatus' in request.resource.data);
+      allow read, delete: if request.auth != null;
     }
 
-    // Payments — admin only
+    // Payments — written by Cloud Function (Admin SDK) or admin only.
+    // The frontend no longer writes directly to this collection.
     match /payments/{document} {
       allow read, write: if request.auth != null;
     }

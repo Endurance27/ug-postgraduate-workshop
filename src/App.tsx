@@ -370,7 +370,11 @@ const INIT_CONTENT = {
     submissionsOpen: true,
     morningCapacity: 60,
     afternoonCapacity: 60,
-    sessionCounts: { morning: 0, afternoon: 0 },
+    sessionCounts: {
+      "27Aug_Morning": 0, "27Aug_Afternoon": 0,
+      "28Aug_Morning": 0, "28Aug_Afternoon": 0,
+      "29Aug_Morning": 0, "29Aug_Afternoon": 0,
+    },
     description:
       "A flagship academic event by the Department of Computer Science, University of Ghana — now in its second edition.",
   },

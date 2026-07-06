@@ -25,7 +25,8 @@ interface RegistrationForm {
   level: string;
   otherLevel: string;
   attendanceMode: string;
-  sessionPreference: string;
+  eventDay: string;
+  sessionTime: string;
   participationType: string;
   presentationType: string;
   nationality: string;
@@ -51,7 +52,7 @@ interface EventData {
   registrationOpen?: boolean;
   morningCapacity?: number;
   afternoonCapacity?: number;
-  sessionCounts?: { morning: number; afternoon: number };
+  sessionCounts?: Record<string, number>;
 }
 
 interface RegisterPageProps {
@@ -82,6 +83,12 @@ const CS_DS_PROGRAMMES = new Set([
   "MPhil Data Science",
   "PhD Computer Science",
 ]);
+
+const EVENT_DAYS = [
+  { key: "27Aug", label: "27 Aug", full: "Wednesday, 27 August" },
+  { key: "28Aug", label: "28 Aug", full: "Thursday, 28 August" },
+  { key: "29Aug", label: "29 Aug", full: "Friday, 29 August" },
+] as const;
 
 const PRESENTATION_TYPES = [
   "Poster Presentation",
@@ -836,9 +843,11 @@ export default function RegisterPage({
   const fee = event.fee || 100;
   const morningCapacity = event.morningCapacity ?? 60;
   const afternoonCapacity = event.afternoonCapacity ?? 60;
-  const sessionCounts = event.sessionCounts ?? { morning: 0, afternoon: 0 };
-  const morningAvailable = Math.max(0, morningCapacity - (sessionCounts.morning || 0));
-  const afternoonAvailable = Math.max(0, afternoonCapacity - (sessionCounts.afternoon || 0));
+  const sessionCounts = event.sessionCounts ?? {};
+  const getAvailable = (day: string, time: "Morning" | "Afternoon") => {
+    const taken = sessionCounts[`${day}_${time}`] ?? 0;
+    return Math.max(0, (time === "Morning" ? morningCapacity : afternoonCapacity) - taken);
+  };
 
   const [storedConfirmation] = useState(loadStoredConfirmation);
 
@@ -859,7 +868,8 @@ export default function RegisterPage({
       level: "Master's",
       otherLevel: "",
       attendanceMode: "Physical",
-      sessionPreference: "",
+      eventDay: "",
+      sessionTime: "",
       participationType: "Presenter",
       presentationType: "Regular Paper",
       presentationTitle: "",
@@ -913,10 +923,10 @@ export default function RegisterPage({
     }
   }, [form.programme]);
 
-  // Clear session preference when switching to virtual attendance
+  // Clear day/session when switching to virtual attendance
   useEffect(() => {
     if (form.attendanceMode === "Virtual") {
-      setForm((f) => ({ ...f, sessionPreference: "" }));
+      setForm((f) => ({ ...f, eventDay: "", sessionTime: "" }));
     }
   }, [form.attendanceMode]);
 
@@ -967,12 +977,17 @@ export default function RegisterPage({
     }
     if (step === 2) {
       if (form.attendanceMode !== "Virtual") {
-        if (!form.sessionPreference)
-          e.sessionPreference = "Please select a session (Morning or Afternoon).";
-        else if (form.sessionPreference === "Morning" && morningAvailable <= 0)
-          e.sessionPreference = "The Morning session is full. Please select the Afternoon session.";
-        else if (form.sessionPreference === "Afternoon" && afternoonAvailable <= 0)
-          e.sessionPreference = "The Afternoon session is full. Please select the Morning session.";
+        if (!form.eventDay)
+          e.eventDay = "Please select an event day.";
+        else if (!form.sessionTime)
+          e.eventDay = "Please select a session (Morning or Afternoon).";
+        else {
+          const avail = getAvailable(form.eventDay, form.sessionTime as "Morning" | "Afternoon");
+          if (avail <= 0) {
+            const dayLabel = EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay;
+            e.eventDay = `The ${form.sessionTime} session on ${dayLabel} is full. Please choose another slot.`;
+          }
+        }
       }
       if (form.participationType !== "Observer") {
         if (!form.presentationTitle.trim())
@@ -998,7 +1013,9 @@ export default function RegisterPage({
   ) => {
     const fullName =
       `${form.firstName} ${form.otherNames} ${form.lastName}`.trim();
-    const enrichedForm = { ...form, fullName, name: fullName };
+    const sessionPreference =
+      form.eventDay && form.sessionTime ? `${form.eventDay}_${form.sessionTime}` : "";
+    const enrichedForm = { ...form, fullName, name: fullName, sessionPreference };
 
     const saved = (await onRegister?.(enrichedForm, {
       paymentStatus,
@@ -1441,61 +1458,94 @@ export default function RegisterPage({
                 {form.attendanceMode !== "Virtual" && (
                   <div className="form-group">
                     <label>
-                      Session Preference<span className="req">*</span>
+                      Event Day &amp; Session<span className="req">*</span>
                     </label>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 4 }}>
-                      {(
-                        [
-                          { key: "Morning", time: "9:00 AM – 1:00 PM", available: morningAvailable, capacity: morningCapacity },
-                          { key: "Afternoon", time: "2:00 PM – 5:00 PM", available: afternoonAvailable, capacity: afternoonCapacity },
-                        ] as const
-                      ).map(({ key, time, available, capacity }) => {
-                        const full = available <= 0;
-                        const selected = form.sessionPreference === key;
+
+                    {/* ── Day picker ─────────────────────────────────────── */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 6, marginBottom: 12 }}>
+                      {EVENT_DAYS.map(({ key, label, full: dayName }) => {
+                        const daySelected = form.eventDay === key;
                         return (
                           <button
                             key={key}
                             type="button"
-                            disabled={full}
-                            onClick={() => !full && set("sessionPreference", key)}
+                            onClick={() =>
+                              setForm((f) => ({ ...f, eventDay: key, sessionTime: "" }))
+                            }
                             style={{
-                              padding: "14px 12px",
+                              flex: 1,
+                              padding: "12px 8px",
                               borderRadius: 10,
-                              border: `2px solid ${selected ? "#1B3A6B" : full ? "#e2e8f0" : "#d1d5db"}`,
-                              background: selected ? "#1B3A6B" : full ? "#f8fafc" : "#fff",
-                              color: selected ? "#fff" : full ? "#aaa" : "#222",
-                              cursor: full ? "not-allowed" : "pointer",
-                              textAlign: "left",
+                              border: `2px solid ${daySelected ? "#1B3A6B" : "#d1d5db"}`,
+                              background: daySelected ? "#1B3A6B" : "#fff",
+                              color: daySelected ? "#fff" : "#222",
+                              cursor: "pointer",
+                              textAlign: "center",
                               transition: "all 0.15s",
                             }}
                           >
-                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
-                              {key} Session
-                            </div>
-                            <div style={{ fontSize: 12, opacity: selected ? 0.85 : 0.65, marginBottom: 6 }}>
-                              {time}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color:
-                                  full ? "#c0392b"
-                                  : selected ? "#C9A84C"
-                                  : available <= 10 ? "#e67e22"
-                                  : "#27ae60",
-                              }}
-                            >
-                              {full ? "Session full" : `${available} / ${capacity} spots left`}
+                            <div style={{ fontWeight: 700, fontSize: 14 }}>{label}</div>
+                            <div style={{ fontSize: 11, opacity: daySelected ? 0.75 : 0.5, marginTop: 2 }}>
+                              {dayName.split(",")[0]}
                             </div>
                           </button>
                         );
                       })}
                     </div>
-                    {errors.sessionPreference && (
-                      <p className="text-[#c0392b] text-[12px] mt-2">
-                        {errors.sessionPreference}
-                      </p>
+
+                    {/* ── Session picker (visible after a day is chosen) ─── */}
+                    {form.eventDay && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {(["Morning", "Afternoon"] as const).map((time) => {
+                          const available = getAvailable(form.eventDay, time);
+                          const cap = time === "Morning" ? morningCapacity : afternoonCapacity;
+                          const timeLabel = time === "Morning" ? "9:00 AM – 1:00 PM" : "2:00 PM – 5:00 PM";
+                          const full = available <= 0;
+                          const selected = form.sessionTime === time;
+                          return (
+                            <button
+                              key={time}
+                              type="button"
+                              disabled={full}
+                              onClick={() => !full && set("sessionTime", time)}
+                              style={{
+                                padding: "14px 12px",
+                                borderRadius: 10,
+                                border: `2px solid ${selected ? "#1B3A6B" : full ? "#e2e8f0" : "#d1d5db"}`,
+                                background: selected ? "#1B3A6B" : full ? "#f8fafc" : "#fff",
+                                color: selected ? "#fff" : full ? "#aaa" : "#222",
+                                cursor: full ? "not-allowed" : "pointer",
+                                textAlign: "left",
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
+                                {time} Session
+                              </div>
+                              <div style={{ fontSize: 12, opacity: selected ? 0.85 : 0.65, marginBottom: 6 }}>
+                                {timeLabel}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color:
+                                    full ? "#c0392b"
+                                    : selected ? "#C9A84C"
+                                    : available <= 10 ? "#e67e22"
+                                    : "#27ae60",
+                                }}
+                              >
+                                {full ? "Session full" : `${available} / ${cap} spots left`}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {errors.eventDay && (
+                      <p className="text-[#c0392b] text-[12px] mt-2">{errors.eventDay}</p>
                     )}
                   </div>
                 )}
@@ -1645,9 +1695,13 @@ export default function RegisterPage({
                     ["Programme", form.programme],
                     ["Level", form.level],
                     ["Attendance Mode", form.attendanceMode],
-                    form.attendanceMode !== "Virtual" && form.sessionPreference && [
+                    form.attendanceMode !== "Virtual" && form.eventDay && [
+                      "Day",
+                      EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay,
+                    ],
+                    form.attendanceMode !== "Virtual" && form.sessionTime && [
                       "Session",
-                      form.sessionPreference + " Session",
+                      form.sessionTime + " Session",
                     ],
                     ["Participation", form.participationType],
                     form.participationType !== "Observer" && [

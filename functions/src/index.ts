@@ -1,7 +1,7 @@
-import * as admin from "firebase-admin";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
-import { defineSecret } from "firebase-functions/params";
-import * as nodemailer from "nodemailer";
+import * as admin from 'firebase-admin';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+import { defineSecret } from 'firebase-functions/params';
+import * as nodemailer from 'nodemailer';
 
 // ─── Initialise ───────────────────────────────────────────────────────────────
 admin.initializeApp();
@@ -9,8 +9,8 @@ admin.initializeApp();
 // Secrets — set via: firebase functions:secrets:set EMAIL_USER / EMAIL_PASSWORD
 // For Gmail, EMAIL_PASSWORD must be an App Password (not your Google account password).
 // Enable it at: myaccount.google.com/apppasswords
-const emailUser = defineSecret("EMAIL_USER");
-const emailPass = defineSecret("EMAIL_PASSWORD");
+const emailUser = defineSecret('EMAIL_USER');
+const emailPass = defineSecret('EMAIL_PASSWORD');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationData {
@@ -37,9 +37,9 @@ interface RegistrationData {
 // ─── Cloud Function ───────────────────────────────────────────────────────────
 export const sendRegistrationConfirmation = onDocumentWritten(
   {
-    document: "registrations/{registrationId}",
-    region:   "us-central1",
-    secrets:  [emailUser, emailPass],
+    document: 'registrations/{registrationId}',
+    region: 'us-central1',
+    secrets: [emailUser, emailPass],
   },
   async (event) => {
     // onDocumentWritten fires on create, update, and delete.
@@ -54,90 +54,110 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     // ── Update session counts in workshop/siteContent ──────────────────────
     // Runs on every create/update so counts stay accurate as registrations change.
     {
-      const beforeData = event.data?.before?.exists
-        ? (event.data.before.data() as RegistrationData)
+      const beforeData =
+        event.data?.before?.exists ?
+          (event.data.before.data() as RegistrationData)
         : null;
-      const beforeSession = beforeData?.sessionPreference;
-      const afterSession = data.sessionPreference;
-      const beforeInPerson = beforeData?.attendanceMode !== "Virtual";
-      const afterInPerson = data.attendanceMode !== "Virtual";
+      // Session key format: "27Aug_Morning", "28Aug_Afternoon", etc.
+      const beforeKey =
+        beforeData && beforeData.attendanceMode !== 'Virtual' ?
+          (beforeData.sessionPreference ?? null)
+        : null;
+      const afterKey =
+        data.attendanceMode !== 'Virtual' ?
+          (data.sessionPreference ?? null)
+        : null;
 
-      let morningDelta = 0;
-      let afternoonDelta = 0;
-      if (beforeData && beforeInPerson && beforeSession === "Morning") morningDelta--;
-      if (beforeData && beforeInPerson && beforeSession === "Afternoon") afternoonDelta--;
-      if (afterInPerson && afterSession === "Morning") morningDelta++;
-      if (afterInPerson && afterSession === "Afternoon") afternoonDelta++;
-
-      if (morningDelta !== 0 || afternoonDelta !== 0) {
+      if (beforeKey !== afterKey) {
         const updates: Record<string, admin.firestore.FieldValue> = {};
-        if (morningDelta !== 0)
-          updates["event.sessionCounts.morning"] = admin.firestore.FieldValue.increment(morningDelta);
-        if (afternoonDelta !== 0)
-          updates["event.sessionCounts.afternoon"] = admin.firestore.FieldValue.increment(afternoonDelta);
-        const siteRef = admin.firestore().doc("workshop/siteContent");
+        if (beforeKey)
+          updates[`event.sessionCounts.${beforeKey}`] =
+            admin.firestore.FieldValue.increment(-1);
+        if (afterKey)
+          updates[`event.sessionCounts.${afterKey}`] =
+            admin.firestore.FieldValue.increment(1);
+        const siteRef = admin.firestore().doc('workshop/siteContent');
         await siteRef.update(updates).catch(async () => {
-          // Initialise the nested field if the document doesn't have it yet
-          await siteRef.set(
-            { event: { sessionCounts: { morning: 0, afternoon: 0 } } },
-            { merge: true },
-          );
+          await siteRef.set({ event: { sessionCounts: {} } }, { merge: true });
           await siteRef.update(updates);
         });
-        console.log(`[${registrationId}] Session counts updated — morningΔ:${morningDelta} afternoonΔ:${afternoonDelta}`);
+        console.log(
+          `[${registrationId}] Session counts updated — ${beforeKey ?? 'none'} → ${afterKey ?? 'none'}`,
+        );
       }
     }
 
     // ── Only send confirmation when payment is confirmed ───────────────────
-    if (data.payment !== "Confirmed") {
-      console.log(`[${registrationId}] Payment not confirmed (status: ${data.payment ?? "none"}) — skipping email.`);
+    if (data.payment !== 'Confirmed') {
+      console.log(
+        `[${registrationId}] Payment not confirmed (status: ${data.payment ?? 'none'}) — skipping email.`,
+      );
       return;
     }
 
     // ── Deduplication guard ────────────────────────────────────────────────
     // Prevent duplicate sends on retries or repeated updates.
-    if (data.emailSent === true || data.emailDeliveryStatus === "processing") {
-      console.log(`[${registrationId}] Email already sent or processing — skipping.`);
+    if (data.emailSent === true || data.emailDeliveryStatus === 'processing') {
+      console.log(
+        `[${registrationId}] Email already sent or processing — skipping.`,
+      );
       return;
     }
 
     // Validate email address
-    const recipientEmail = (data.email || "").trim();
-    if (!recipientEmail || !recipientEmail.includes("@")) {
-      console.warn(`[${registrationId}] No valid email address — aborting email send.`);
+    const recipientEmail = (data.email || '').trim();
+    if (!recipientEmail || !recipientEmail.includes('@')) {
+      console.warn(
+        `[${registrationId}] No valid email address — aborting email send.`,
+      );
       await docRef.update({
-        emailSent:           false,
-        emailSentAt:         null,
-        emailDeliveryStatus: "failed",
-        emailError:          "No valid email address in registration record",
+        emailSent: false,
+        emailSentAt: null,
+        emailDeliveryStatus: 'failed',
+        emailError: 'No valid email address in registration record',
       });
       return;
     }
 
     // Mark as processing immediately so retries skip this record
-    await docRef.update({ emailDeliveryStatus: "processing" });
+    await docRef.update({ emailDeliveryStatus: 'processing' });
 
     // ── Build content ──────────────────────────────────────────────────────
-    const name            = (data.fullName || data.name || "Participant").trim();
-    const programme       = data.programme       || "—";
-    const level           = data.level           || "—";
-    const nationality     = data.nationality     || "—";
-    const participation   = data.participationType || data.type || "—";
-    const attendance      = data.attendanceMode  || data.mode  || "—";
-    const sessionPref     = data.sessionPreference || "";
-    const sessionLabel    =
-      sessionPref === "Morning"   ? "Morning Session (9:00 AM – 1:00 PM)"
-      : sessionPref === "Afternoon" ? "Afternoon Session (2:00 PM – 5:00 PM)"
-      : "—";
-    const presentationType = data.presentationType || "—";
-    const paymentStatus   = data.payment         || "Pending";
-
-    const registeredAt = data.registeredAt
-      ? new Date(data.registeredAt).toLocaleString("en-GB", {
-          day: "numeric", month: "long", year: "numeric",
-          hour: "2-digit", minute: "2-digit", timeZone: "Africa/Accra",
-        }) + " (GMT+0)"
-      : new Date().toLocaleString("en-GB");
+    const name = (data.fullName || data.name || 'Participant').trim();
+    const programme = data.programme || '—';
+    const level = data.level || '—';
+    const nationality = data.nationality || '—';
+    const participation = data.participationType || data.type || '—';
+    const attendance = data.attendanceMode || data.mode || '—';
+    const sessionPref = data.sessionPreference || '';
+    const SESSION_LABELS: Record<string, string> = {
+      '27Aug_Morning':
+        'Wednesday, 27 August — Morning Session (9:00 AM – 1:00 PM)',
+      '27Aug_Afternoon':
+        'Wednesday, 27 August — Afternoon Session (2:00 PM – 5:00 PM)',
+      '28Aug_Morning':
+        'Thursday, 28 August — Morning Session (9:00 AM – 1:00 PM)',
+      '28Aug_Afternoon':
+        'Thursday, 28 August — Afternoon Session (2:00 PM – 5:00 PM)',
+      '29Aug_Morning':
+        'Friday, 29 August — Morning Session (9:00 AM – 1:00 PM)',
+      '29Aug_Afternoon':
+        'Friday, 29 August — Afternoon Session (2:00 PM – 5:00 PM)',
+    };
+    const sessionLabel = SESSION_LABELS[sessionPref] ?? '—';
+    const presentationType = data.presentationType || '—';
+    const paymentStatus = data.payment || 'Pending';
+    const registeredAt =
+      data.registeredAt ?
+        new Date(data.registeredAt).toLocaleString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Africa/Accra',
+        }) + ' (GMT+0)'
+      : new Date().toLocaleString('en-GB');
 
     const html = buildEmailHtml({
       name,
@@ -156,7 +176,7 @@ export const sendRegistrationConfirmation = onDocumentWritten(
 
     // ── Send ───────────────────────────────────────────────────────────────
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: emailUser.value(),
         pass: emailPass.value(),
@@ -165,54 +185,56 @@ export const sendRegistrationConfirmation = onDocumentWritten(
 
     try {
       await transporter.sendMail({
-        from:    `"DCS Postgraduate Workshop 2026" <${emailUser.value()}>`,
-        to:      recipientEmail,
-        subject: "Registration Received – 2nd Annual DCS Postgraduate Workshop 2026",
+        from: `"DCS Postgraduate Workshop 2026" <${emailUser.value()}>`,
+        to: recipientEmail,
+        subject:
+          'Registration Received – 2nd Annual DCS Postgraduate Workshop 2026',
         html,
       });
 
       // ── Success metadata ─────────────────────────────────────────────────
       await docRef.update({
-        emailSent:           true,
-        emailSentAt:         admin.firestore.FieldValue.serverTimestamp(),
-        emailDeliveryStatus: "delivered",
-        emailError:          null,
+        emailSent: true,
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        emailDeliveryStatus: 'delivered',
+        emailError: null,
       });
 
-      console.log(`[${registrationId}] Confirmation email delivered to ${recipientEmail}`);
-
+      console.log(
+        `[${registrationId}] Confirmation email delivered to ${recipientEmail}`,
+      );
     } catch (err) {
       // ── Failure metadata — registration itself is NOT affected ───────────
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error(`[${registrationId}] Email delivery failed:`, errMsg);
 
       await docRef.update({
-        emailSent:           false,
-        emailSentAt:         null,
-        emailDeliveryStatus: "failed",
-        emailError:          errMsg,
+        emailSent: false,
+        emailSentAt: null,
+        emailDeliveryStatus: 'failed',
+        emailError: errMsg,
       });
 
       // Do NOT rethrow — the registration was saved successfully.
       // An email failure must never roll back or block a registration.
     }
-  }
+  },
 );
 
 // ─── Email template ────────────────────────────────────────────────────────────
 interface EmailData {
-  name:             string;
-  email:            string;
-  registrationId:   string;
-  programme:        string;
-  level:            string;
-  nationality:      string;
-  participation:    string;
-  attendance:       string;
-  sessionLabel:     string;
+  name: string;
+  email: string;
+  registrationId: string;
+  programme: string;
+  level: string;
+  nationality: string;
+  participation: string;
+  attendance: string;
+  sessionLabel: string;
   presentationType: string;
-  paymentStatus:    string;
-  registeredAt:     string;
+  paymentStatus: string;
+  registeredAt: string;
 }
 
 function row(label: string, value: string): string {
@@ -227,30 +249,34 @@ function row(label: string, value: string): string {
 }
 
 function buildEmailHtml(d: EmailData): string {
-  const isConfirmed = d.paymentStatus === "Confirmed";
+  const isConfirmed = d.paymentStatus === 'Confirmed';
   const statusBadge = `
     <span style="display:inline-block;
-                 background:${isConfirmed ? "#d4edda" : "#fdecea"};
-                 color:${isConfirmed ? "#155724" : "#c0392b"};
+                 background:${isConfirmed ? '#d4edda' : '#fdecea'};
+                 color:${isConfirmed ? '#155724' : '#c0392b'};
                  padding:2px 10px;border-radius:20px;font-size:12px;
                  font-weight:700;
-                 border:1px solid ${isConfirmed ? "#c3e6cb" : "#f5b7b1"};">
+                 border:1px solid ${isConfirmed ? '#c3e6cb' : '#f5b7b1'};">
       ${d.paymentStatus}
     </span>`;
 
   const steps = [
-    "Your registration is fully confirmed. Keep your payment reference for your records.",
-    "Virtual participants: use the Google Meet link below to join sessions during the workshop (27–29 August 2026).",
-    "The full workshop programme, venue details, and daily schedule will be shared closer to the event.",
+    'Your registration is fully confirmed. Keep your payment reference for your records.',
+    'Virtual participants: use the Google Meet link below to join sessions during the workshop (27–29 August 2026).',
+    'The full workshop programme, venue details, and daily schedule will be shared closer to the event.',
   ];
 
-  const stepsHtml = steps.map((s, i) => `
+  const stepsHtml = steps
+    .map(
+      (s, i) => `
     <tr>
       <td style="padding:0 10px 12px 0;color:#C9A84C;font-size:16px;
                  font-weight:700;vertical-align:top;">${i + 1}.</td>
       <td style="padding:0 0 12px;color:#555;font-size:13px;
                  line-height:1.7;vertical-align:top;">${s}</td>
-    </tr>`).join("");
+    </tr>`,
+    )
+    .join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -316,19 +342,18 @@ function buildEmailHtml(d: EmailData): string {
                   Your Registration Details
                 </p>
                 <table width="100%" cellpadding="0" cellspacing="0">
-                  ${row("Registration ID",    d.registrationId)}
-                  ${row("Name",              d.name)}
-                  ${row("Email",             d.email)}
-                  ${row("Programme",         d.programme)}
-                  ${row("Level",             d.level)}
-                  ${row("Nationality",       d.nationality)}
-                  ${row("Participation",     d.participation)}
-                  ${row("Attendance Mode",   d.attendance)}
-                  ${d.sessionLabel !== "—" ? row("Session", d.sessionLabel) : ""}
-                  ${row("Event Dates",       "27–29 August 2026")}
-                  ${d.presentationType !== "—" ? row("Presentation Type", d.presentationType) : ""}
-                  ${row("Submitted On",      d.registeredAt)}
-                  ${row("Payment Status",    statusBadge)}
+                  ${row('Registration ID', d.registrationId)}
+                  ${row('Name', d.name)}
+                  ${row('Email', d.email)}
+                  ${row('Programme', d.programme)}
+                  ${row('Level', d.level)}
+                  ${row('Nationality', d.nationality)}
+                  ${row('Participation', d.participation)}
+                  ${row('Attendance Mode', d.attendance)}
+                  ${d.sessionLabel !== '—' ? row('Session', d.sessionLabel) : ''}
+                  ${d.presentationType !== '—' ? row('Presentation Type', d.presentationType) : ''}
+                  ${row('Submitted On', d.registeredAt)}
+                  ${row('Payment Status', statusBadge)}
                 </table>
               </div>
 

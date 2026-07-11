@@ -35,21 +35,30 @@ interface Participant {
   _docId?: string; // Firestore document ID — populated by the registrations listener
   name: string;
   fullName?: string;
+  title?: string;
   email: string;
   phone?: string;
+  institution?: string;
+  otherInstitution?: string;
   studentId?: string;
+  isCsStudent?: string;
   department?: string;
+  otherDepartment?: string;
   programme?: string;
-  level?: string;
+  cohort?: string;
   type?: string;
   participationType?: string;
   payment?: string;
   mode?: string;
   attendanceMode?: string;
+  isSubmittingAbstract?: string;
   presentationType?: string;
   nationality?: string;
   presentationTitle?: string;
-  abstract?: string;
+  abstractBackground?: string;
+  abstractMethods?: string;
+  abstractResults?: string;
+  abstractSignificance?: string;
   registeredAt?: string;
   updatedAt?: string;
   payRef?: string;
@@ -371,9 +380,12 @@ const INIT_CONTENT = {
     morningCapacity: 60,
     afternoonCapacity: 60,
     sessionCounts: {
-      "27Aug_Morning": 0, "27Aug_Afternoon": 0,
-      "28Aug_Morning": 0, "28Aug_Afternoon": 0,
-      "29Aug_Morning": 0, "29Aug_Afternoon": 0,
+      "27Aug_Morning": 0,
+      "27Aug_Afternoon": 0,
+      "28Aug_Morning": 0,
+      "28Aug_Afternoon": 0,
+      "29Aug_Morning": 0,
+      "29Aug_Afternoon": 0,
     },
     description:
       "A flagship academic event by the Department of Computer Science, University of Ghana — now in its second edition.",
@@ -466,10 +478,42 @@ const INIT_CONTENT = {
       tags: "Artificial Intelligence, Machine Learning, Africa Tech",
     },
     panelists: [
-      { id: 1, name: "Dr. Abena Osei-Bonsu",     title: "Senior Lecturer, Data Science",   institution: "Dept. of Computer Science, UG", role: "Panel Moderator", bio: "Specialises in data science applications for healthcare and agriculture in West Africa.",                              photo: `${B}images/research-presentations.jpg` },
-      { id: 2, name: "Dr. Kwaku Darko-Mensah",   title: "Lecturer, Computer Networks",     institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Research interests include network security, IoT systems, and rural connectivity solutions.",                         photo: `${B}images/workshop-sessions.jpg` },
-      { id: 3, name: "Dr. Efua Asante",           title: "Lecturer, Software Engineering",  institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Works on human-computer interaction, accessibility, and software development methodologies.",                         photo: `${B}images/collaboration-networking.jpeg` },
-      { id: 4, name: "Dr. Kofi Oppong-Nkrumah",  title: "Lecturer, Cybersecurity",         institution: "Dept. of Computer Science, UG", role: "Panelist",        bio: "Expert in cybersecurity, digital forensics, and information assurance for African institutions.",                     photo: `${B}images/dcs-research.jpg` },
+      {
+        id: 1,
+        name: "Dr. Abena Osei-Bonsu",
+        title: "Senior Lecturer, Data Science",
+        institution: "Dept. of Computer Science, UG",
+        role: "Panel Moderator",
+        bio: "Specialises in data science applications for healthcare and agriculture in West Africa.",
+        photo: `${B}images/research-presentations.jpg`,
+      },
+      {
+        id: 2,
+        name: "Dr. Kwaku Darko-Mensah",
+        title: "Lecturer, Computer Networks",
+        institution: "Dept. of Computer Science, UG",
+        role: "Panelist",
+        bio: "Research interests include network security, IoT systems, and rural connectivity solutions.",
+        photo: `${B}images/workshop-sessions.jpg`,
+      },
+      {
+        id: 3,
+        name: "Dr. Efua Asante",
+        title: "Lecturer, Software Engineering",
+        institution: "Dept. of Computer Science, UG",
+        role: "Panelist",
+        bio: "Works on human-computer interaction, accessibility, and software development methodologies.",
+        photo: `${B}images/collaboration-networking.jpeg`,
+      },
+      {
+        id: 4,
+        name: "Dr. Kofi Oppong-Nkrumah",
+        title: "Lecturer, Cybersecurity",
+        institution: "Dept. of Computer Science, UG",
+        role: "Panelist",
+        bio: "Expert in cybersecurity, digital forensics, and information assurance for African institutions.",
+        photo: `${B}images/dcs-research.jpg`,
+      },
     ],
     committee: [
       {
@@ -534,10 +578,10 @@ const INIT_CONTENT = {
     publication: "CBAS Journal",
   },
   images: {
-    workshop:   `${B}images/workshop-sessions.jpg`,
-    research:   `${B}images/research-presentations.jpg`,
+    workshop: `${B}images/workshop-sessions.jpg`,
+    research: `${B}images/research-presentations.jpg`,
     networking: `${B}images/collaboration-networking.jpeg`,
-    students:   `${B}images/dcs-research.jpg`,
+    students: `${B}images/dcs-research.jpg`,
   },
   stream: {
     live: false,
@@ -547,14 +591,46 @@ const INIT_CONTENT = {
     day3Id: "NUAZDcQ_lJs",
   },
   gallery: [
-    { src: `${B}images/workshop-sessions.jpg`,         caption: "Workshop Sessions",          year: "2025" },
-    { src: `${B}images/research-presentations.jpg`,    caption: "Research Presentations",     year: "2025" },
-    { src: `${B}images/collaboration-networking.jpeg`, caption: "Networking & Collaboration", year: "2025" },
-    { src: `${B}images/dcs-research.jpg`,              caption: "Students at Work",           year: "2025" },
-    { src: `${B}images/workshop-sessions.jpg`,         caption: "Parallel Track Sessions",    year: "2025" },
-    { src: `${B}images/collaboration-networking.jpeg`, caption: "Department of CS Group",     year: "2025" },
-    { src: `${B}images/research-presentations.jpg`,    caption: "Panel Discussions",          year: "2025" },
-    { src: `${B}images/dcs-research.jpg`,              caption: "Individual Research Work",   year: "2025" },
+    {
+      src: `${B}images/workshop-sessions.jpg`,
+      caption: "Workshop Sessions",
+      year: "2025",
+    },
+    {
+      src: `${B}images/research-presentations.jpg`,
+      caption: "Research Presentations",
+      year: "2025",
+    },
+    {
+      src: `${B}images/collaboration-networking.jpeg`,
+      caption: "Networking & Collaboration",
+      year: "2025",
+    },
+    {
+      src: `${B}images/dcs-research.jpg`,
+      caption: "Students at Work",
+      year: "2025",
+    },
+    {
+      src: `${B}images/workshop-sessions.jpg`,
+      caption: "Parallel Track Sessions",
+      year: "2025",
+    },
+    {
+      src: `${B}images/collaboration-networking.jpeg`,
+      caption: "Department of CS Group",
+      year: "2025",
+    },
+    {
+      src: `${B}images/research-presentations.jpg`,
+      caption: "Panel Discussions",
+      year: "2025",
+    },
+    {
+      src: `${B}images/dcs-research.jpg`,
+      caption: "Individual Research Work",
+      year: "2025",
+    },
   ],
   recordings: [
     {
@@ -885,7 +961,10 @@ export default function App() {
   // 2a. Always-on listener: public site content (event details, schedule, etc.)
   useEffect(() => {
     if (!db || !doc || !onSnapshot) {
-      setContentStatus({ loading: false, error: "Firestore is not configured." });
+      setContentStatus({
+        loading: false,
+        error: "Firestore is not configured.",
+      });
       return;
     }
     let alive = true;
@@ -897,7 +976,10 @@ export default function App() {
           setSiteContent((c) => mergeRemote(c, snap.data()));
           setContentStatus({ loading: false, error: "" });
         } else {
-          setContentStatus({ loading: false, error: "No site content found in Firestore yet." });
+          setContentStatus({
+            loading: false,
+            error: "No site content found in Firestore yet.",
+          });
         }
       },
       (err) => {
@@ -906,7 +988,10 @@ export default function App() {
         setContentStatus({ loading: false, error: err.message });
       },
     );
-    return () => { alive = false; unsub(); };
+    return () => {
+      alive = false;
+      unsub();
+    };
   }, []);
 
   // 2b. Admin-only listeners: registrations + payments collections.
@@ -924,7 +1009,13 @@ export default function App() {
           id: d.data().id || d.id,
           ...d.data(),
         }));
-        setSiteContent((c) => ({ ...c, participants: participants as Participant[] }) as SiteContent);
+        setSiteContent(
+          (c) =>
+            ({
+              ...c,
+              participants: participants as Participant[],
+            }) as SiteContent,
+        );
       },
       (err) => console.warn("Registrations listener:", err.message),
     );
@@ -933,13 +1024,23 @@ export default function App() {
       collection(db, "payments"),
       (snap) => {
         if (!alive) return;
-        const payments = snap.docs.map((d) => ({ id: d.data().id || d.id, ...d.data() }));
-        setSiteContent((c) => ({ ...c, payments: payments as PaymentRecord[] }) as SiteContent);
+        const payments = snap.docs.map((d) => ({
+          id: d.data().id || d.id,
+          ...d.data(),
+        }));
+        setSiteContent(
+          (c) =>
+            ({ ...c, payments: payments as PaymentRecord[] }) as SiteContent,
+        );
       },
       (err) => console.warn("Payments listener:", err.message),
     );
 
-    return () => { alive = false; unsubReg(); unsubPay(); };
+    return () => {
+      alive = false;
+      unsubReg();
+      unsubPay();
+    };
   }, [isAdmin]);
 
   // 3. On every content change: always save to localStorage; save to Firestore only when admin.
@@ -949,7 +1050,10 @@ export default function App() {
     const { participants: _p, payments: _pay, ...contentToSave } = stripped;
 
     try {
-      localStorage.setItem("dcs-workshop-content", JSON.stringify(contentToSave));
+      localStorage.setItem(
+        "dcs-workshop-content",
+        JSON.stringify(contentToSave),
+      );
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
@@ -1024,29 +1128,46 @@ export default function App() {
       id: participantId,
       name: fullName || email,
       fullName: fullName || email,
+      title: registration.title || "",
       email,
       phone: registration.phone || "",
+      institution: registration.institution || "",
+      otherInstitution: registration.otherInstitution || "",
       studentId,
+      isCsStudent: registration.isCsStudent || "",
       department: registration.department || "",
+      otherDepartment: registration.otherDepartment || "",
       programme: registration.programme || "",
-      level: registration.level || "",
-      type: registration.participationType || registration.type || "Presenter",
+      cohort: registration.cohort || "",
+      type: registration.participationType || registration.type || "Observer",
       participationType:
-        registration.participationType || registration.type || "Presenter",
+        registration.participationType || registration.type || "Observer",
       payment: paymentStatus,
       mode: registration.attendanceMode || registration.mode || "Physical",
       attendanceMode:
         registration.attendanceMode || registration.mode || "Physical",
+      isSubmittingAbstract: registration.isSubmittingAbstract || "",
       presentationType: registration.presentationType || "",
       nationality:
         ((registration as Record<string, unknown>).nationality as string) || "",
       presentationTitle:
         ((registration as Record<string, unknown>)
           .presentationTitle as string) || "",
-      abstract:
-        ((registration as Record<string, unknown>).abstract as string) || "",
+      abstractBackground:
+        ((registration as Record<string, unknown>)
+          .abstractBackground as string) || "",
+      abstractMethods:
+        ((registration as Record<string, unknown>).abstractMethods as string) ||
+        "",
+      abstractResults:
+        ((registration as Record<string, unknown>).abstractResults as string) ||
+        "",
+      abstractSignificance:
+        ((registration as Record<string, unknown>)
+          .abstractSignificance as string) || "",
       sessionPreference:
-        ((registration as Record<string, unknown>).sessionPreference as string) || "",
+        ((registration as Record<string, unknown>)
+          .sessionPreference as string) || "",
       registeredAt: registration.registeredAt || now,
       updatedAt: now,
       paymentMethod: options.method || "offline",
@@ -1114,10 +1235,17 @@ export default function App() {
     if (db && doc && setDoc) {
       const registrationDocId = makeDocId(studentId, email);
       // Exclude Cloud-Function-only fields so the Firestore update rule doesn't reject them
-      const { emailSent: _es, emailDeliveryStatus: _eds, emailSentAt: _esa, emailError: _ee, ...safeRecord } =
-        participantRecord as Record<string, unknown>;
+      const {
+        emailSent: _es,
+        emailDeliveryStatus: _eds,
+        emailSentAt: _esa,
+        emailError: _ee,
+        ...safeRecord
+      } = participantRecord as Record<string, unknown>;
       try {
-        await setDoc(doc(db, "registrations", registrationDocId), safeRecord, { merge: true });
+        await setDoc(doc(db, "registrations", registrationDocId), safeRecord, {
+          merge: true,
+        });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error("Registration save failed:", msg);

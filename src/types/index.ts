@@ -8,15 +8,27 @@ export interface User {
 // ─── Registration ────────────────────────────────────────────────────────────
 export interface Registration {
   id?: string;
+  title: string;
   fullName: string;
   email: string;
+  institution: string;
+  otherInstitution?: string;
   studentId: string;
+  isCsStudent: 'Yes' | 'No';
+  department?: string;
+  otherDepartment?: string;
   programme: string;
-  participationType: "Presenter" | "Observer" | "Both";
-  attendanceMode: "Physical" | "Virtual" | "Hybrid";
+  cohort: string;
+  isSubmittingAbstract: 'Yes' | 'No';
+  participationType: 'Presenter' | 'Observer';
+  attendanceMode: 'Physical' | 'Virtual' | 'Hybrid';
   paperTitle?: string;
-  paperType?: string;
-  paymentStatus: "Pending" | "Confirmed";
+  presentationType?: string;
+  abstractBackground?: string;
+  abstractMethods?: string;
+  abstractResults?: string;
+  abstractSignificance?: string;
+  paymentStatus: 'Pending' | 'Confirmed';
   createdAt?: string;
 }
 
@@ -29,9 +41,9 @@ export interface Payment {
   email: string;
   programme: string;
   amount: number;
-  method: "mobile_money" | "card";
+  method: 'mobile_money' | 'card';
   date: string;
-  status: "Confirmed" | "Pending";
+  status: 'Confirmed' | 'Pending';
 }
 
 // ─── Schedule ────────────────────────────────────────────────────────────────

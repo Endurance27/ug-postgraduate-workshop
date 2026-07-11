@@ -1,5 +1,16 @@
 rules_version = '2';
 service cloud.firestore {
+  function withinAbstractCharLimit(data, field) {
+    return !(field in data) || !(data[field] is string) || data[field].size() <= 800;
+  }
+
+  function abstractSectionsWithinLimit(data) {
+    return withinAbstractCharLimit(data, 'abstractBackground')
+        && withinAbstractCharLimit(data, 'abstractMethods')
+        && withinAbstractCharLimit(data, 'abstractResults')
+        && withinAbstractCharLimit(data, 'abstractSignificance');
+  }
+
   match /databases/{database}/documents {
 
     // Public site content — anyone can read, only signed-in admin can write
@@ -32,14 +43,29 @@ service cloud.firestore {
     //            and they cannot manipulate Cloud-Function-only fields like emailSent).
     //   READ / DELETE — admin only.
     //   Cloud Functions (Admin SDK) bypass all rules and can write email metadata.
+    //
+    // Abstract sections (Background/Methods/Results/Significance) are capped at 100
+    // words each in the UI. Security rules can't count words, so as a backend
+    // defense-in-depth check we cap each field at 800 characters — generous enough
+    // for 100 real-world words (~6 chars/word average) without false-rejecting.
+    //
+    // The update rule checks diff(resource.data).affectedKeys() rather than
+    // request.resource.data directly: on a merge write, request.resource.data is the
+    // full POST-merge document, so it always carries over emailSent/emailDeliveryStatus
+    // once the Cloud Function has stamped them — a plain 'in' check would then reject
+    // every future client update forever. affectedKeys() only reports fields this
+    // specific write actually adds/changes/removes, so untouched carried-over fields
+    // don't trip the guard.
     match /registrations/{document} {
       allow create: if request.resource.data.email is string
-                    && request.resource.data.email.matches(".*@.*");
+                    && request.resource.data.email.matches(".*@.*")
+                    && abstractSectionsWithinLimit(request.resource.data);
       allow update: if request.resource.data.email is string
                     && request.resource.data.email.matches(".*@.*")
                     && request.resource.data.email == resource.data.email
-                    && !('emailSent' in request.resource.data)
-                    && !('emailDeliveryStatus' in request.resource.data);
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(['emailSent', 'emailDeliveryStatus'])
+                    && abstractSectionsWithinLimit(request.resource.data);
       allow read, delete: if request.auth != null;
     }
 

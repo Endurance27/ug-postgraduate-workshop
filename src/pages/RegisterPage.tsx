@@ -12,26 +12,34 @@ import { isMobilePhone } from "validator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
+  title: string;
   firstName: string;
   lastName: string;
   otherNames: string;
   gender: string;
   email: string;
   phone: string;
+  institution: string;
+  otherInstitution: string;
   studentId: string;
+  isCsStudent: string;
   department: string;
+  otherDepartment: string;
   programme: string;
   otherProgramme: string;
-  level: string;
-  otherLevel: string;
+  cohort: string;
   attendanceMode: string;
   eventDay: string;
   sessionTime: string;
+  isSubmittingAbstract: string;
   participationType: string;
   presentationType: string;
   nationality: string;
   presentationTitle: string;
-  abstract: string;
+  abstractBackground: string;
+  abstractMethods: string;
+  abstractResults: string;
+  abstractSignificance: string;
 }
 
 type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
@@ -90,20 +98,96 @@ const EVENT_DAYS = [
   { key: "29Aug", label: "29 Aug", full: "Friday, 29 August" },
 ] as const;
 
-const PRESENTATION_TYPES = [
-  "Poster Presentation",
-  "Regular Paper",
-  "Short Paper",
-  "Technical Paper",
+const PRESENTATION_TYPES = ["Oral Presentation", "Poster Presentation"];
+
+const APPLICANT_TITLES = [
+  "Mr.",
+  "Mrs.",
+  "Miss",
+  "Ms.",
+  "Dr.",
+  "Prof.",
+  "Rev.",
+  "Eng.",
+  "Other",
 ];
+
+const COHORTS = [
+  "Regular",
+  "Cohort A (Evening)",
+  "Cohort B (Weekend)",
+  "Cohort C (Weekend)",
+];
+
+const CS_DEPARTMENTS = ["Computer Science"];
+
+const INSTITUTIONS = ["University of Ghana", "Other (Specify)"];
 
 // ── Paystack public key — replace with pk_live_… for production ──────────────
 // Public keys are safe to commit. Never put sk_test_/sk_live_ keys here.
 const PAYSTACK_PUBLIC_KEY = "pk_test_7286d5fe706c0c323ea13d3817918f0e5a09a3c2";
 
-const ABSTRACT_MAX_WORDS = 360;
+const ABSTRACT_SECTION_MAX_WORDS = 100;
 const countWords = (text: string) =>
   text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+
+// Hard-caps a text value at `max` words — used so users physically cannot
+// type past the limit rather than just being shown a validation error.
+const clampWords = (text: string, max: number) => {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= max) return text;
+  return words.slice(0, max).join(" ");
+};
+
+const ABSTRACT_SECTIONS: {
+  key:
+    | "abstractBackground"
+    | "abstractMethods"
+    | "abstractResults"
+    | "abstractSignificance";
+  label: string;
+  placeholder: string;
+}[] = [
+  {
+    key: "abstractBackground",
+    label: "Background",
+    placeholder: "Describe the context and motivation for your research…",
+  },
+  {
+    key: "abstractMethods",
+    label: "Methods",
+    placeholder: "Describe the methodology or approach used…",
+  },
+  {
+    key: "abstractResults",
+    label: "Results",
+    placeholder: "Summarise your key findings…",
+  },
+  {
+    key: "abstractSignificance",
+    label: "Significance",
+    placeholder: "Explain the significance or contribution of your work…",
+  },
+];
+
+const SUBMISSION_GUIDELINES = [
+  "Submissions must be original work that has not been previously published.",
+  "Abstracts must be written in English using the provided template.",
+  "Each abstract is structured into four sections — Background, Methods, Results, and Significance — each with its own word limit.",
+  "All authors must be registered participants of the workshop.",
+  "Submissions are made directly through this online registration portal.",
+  "Accepted papers receive certificates of presentation.",
+];
+
+// Six selectable in-person day/session slots (3 workshop days × Morning/Afternoon)
+const SESSION_OPTIONS = EVENT_DAYS.flatMap((d) =>
+  (["Morning", "Afternoon"] as const).map((time) => ({
+    dayKey: d.key,
+    time,
+    label: `${d.full} — ${time}`,
+    timeRange: time === "Morning" ? "9:00 AM – 1:00 PM" : "2:00 PM – 5:00 PM",
+  })),
+);
 
 // ─── Nationalities (ISO 3166-1 / UN-recognised) ───────────────────────────────
 const NATIONALITIES: string[] = [
@@ -846,7 +930,10 @@ export default function RegisterPage({
   const sessionCounts = event.sessionCounts ?? {};
   const getAvailable = (day: string, time: "Morning" | "Afternoon") => {
     const taken = sessionCounts[`${day}_${time}`] ?? 0;
-    return Math.max(0, (time === "Morning" ? morningCapacity : afternoonCapacity) - taken);
+    return Math.max(
+      0,
+      (time === "Morning" ? morningCapacity : afternoonCapacity) - taken,
+    );
   };
 
   const [storedConfirmation] = useState(loadStoredConfirmation);
@@ -854,6 +941,7 @@ export default function RegisterPage({
   const [step, setStep] = useState<number>(0);
   const [form, setForm] = useState<RegistrationForm>(
     storedConfirmation?.form || {
+      title: "",
       firstName: "",
       lastName: "",
       otherNames: "",
@@ -861,19 +949,26 @@ export default function RegisterPage({
       nationality: "",
       email: "",
       phone: "",
+      institution: INSTITUTIONS[0],
+      otherInstitution: "",
       studentId: "",
+      isCsStudent: "",
       department: "",
+      otherDepartment: "",
       programme: "",
       otherProgramme: "",
-      level: "Master's",
-      otherLevel: "",
+      cohort: "",
       attendanceMode: "Physical",
       eventDay: "",
       sessionTime: "",
-      participationType: "Presenter",
-      presentationType: "Regular Paper",
+      isSubmittingAbstract: "",
+      participationType: "",
+      presentationType: "",
       presentationTitle: "",
-      abstract: "",
+      abstractBackground: "",
+      abstractMethods: "",
+      abstractResults: "",
+      abstractSignificance: "",
     },
   );
   const [errors, setErrors] = useState<FormErrors>({});
@@ -930,13 +1025,64 @@ export default function RegisterPage({
     }
   }, [form.attendanceMode]);
 
+  // Sync department fields to the CS-student question, clearing whichever is now stale
+  useEffect(() => {
+    if (form.isCsStudent === "Yes") {
+      setForm((f) => ({
+        ...f,
+        department: f.department || CS_DEPARTMENTS[0],
+        otherDepartment: "",
+      }));
+    } else if (form.isCsStudent === "No") {
+      setForm((f) => ({ ...f, department: "" }));
+    }
+  }, [form.isCsStudent]);
+
+  // No → force Observer and clear every abstract-only field so stale data isn't submitted
+  useEffect(() => {
+    if (form.isSubmittingAbstract === "No") {
+      setForm((f) => ({
+        ...f,
+        participationType: "Observer",
+        presentationType: "",
+        presentationTitle: "",
+        abstractBackground: "",
+        abstractMethods: "",
+        abstractResults: "",
+        abstractSignificance: "",
+      }));
+    }
+  }, [form.isSubmittingAbstract]);
+
+  // Observers don't present, so they don't need a presentation type or an abstract
+  useEffect(() => {
+    if (form.participationType === "Observer") {
+      setForm((f) => ({
+        ...f,
+        presentationType: "",
+        presentationTitle: "",
+        abstractBackground: "",
+        abstractMethods: "",
+        abstractResults: "",
+        abstractSignificance: "",
+      }));
+    }
+  }, [form.participationType]);
+
   const validate = (): boolean => {
     const e: FormErrors = {};
     if (step === 0) {
+      if (!form.title) e.title = "Please select a title.";
       if (!form.firstName.trim()) e.firstName = "First name is required.";
       if (!form.lastName.trim()) e.lastName = "Last name is required.";
       if (!form.gender) e.gender = "Please select a gender.";
       if (!form.nationality) e.nationality = "Nationality is required.";
+      if (!form.institution) e.institution = "Please select an institution.";
+      if (
+        form.institution === "Other (Specify)" &&
+        !form.otherInstitution.trim()
+      )
+        e.otherInstitution = "Please specify your institution.";
       if (!form.email.includes("@")) e.email = "Valid email required.";
       (() => {
         const phoneCountry = COUNTRY_PHONES.find((c) =>
@@ -968,33 +1114,55 @@ export default function RegisterPage({
       })();
     }
     if (step === 1) {
-      if (!form.department.trim()) e.department = "Department is required.";
+      if (!form.isCsStudent)
+        e.isCsStudent = "Please indicate whether you are a CS student.";
+      if (form.isCsStudent === "Yes" && !form.department)
+        e.department = "Department is required.";
+      if (form.isCsStudent === "No" && !form.otherDepartment.trim())
+        e.otherDepartment = "Please specify your department.";
       if (!form.programme) e.programme = "Programme is required.";
       if (form.programme === "Other (Specify)" && !form.otherProgramme.trim())
         e.otherProgramme = "Please specify your programme.";
-      if (form.level === "Other (Specify)" && !form.otherLevel.trim())
-        e.otherLevel = "Please specify your academic level.";
+      if (!form.cohort) e.cohort = "Please select a cohort.";
     }
     if (step === 2) {
+      if (!form.isSubmittingAbstract)
+        e.isSubmittingAbstract =
+          "Please indicate whether you are submitting an abstract.";
       if (form.attendanceMode !== "Virtual") {
-        if (!form.eventDay)
-          e.eventDay = "Please select an event day.";
-        else if (!form.sessionTime)
-          e.eventDay = "Please select a session (Morning or Afternoon).";
+        if (!form.eventDay || !form.sessionTime)
+          e.eventDay =
+            "Please select the day and session you can attend in person.";
         else {
-          const avail = getAvailable(form.eventDay, form.sessionTime as "Morning" | "Afternoon");
+          const avail = getAvailable(
+            form.eventDay,
+            form.sessionTime as "Morning" | "Afternoon",
+          );
           if (avail <= 0) {
-            const dayLabel = EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay;
+            const dayLabel =
+              EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ??
+              form.eventDay;
             e.eventDay = `The ${form.sessionTime} session on ${dayLabel} is full. Please choose another slot.`;
           }
         }
       }
-      if (form.participationType !== "Observer") {
-        if (!form.presentationTitle.trim())
-          e.presentationTitle = "Presentation title is required.";
-        if (!form.abstract.trim()) e.abstract = "Abstract is required.";
-        else if (countWords(form.abstract) > ABSTRACT_MAX_WORDS)
-          e.abstract = `Abstract must not exceed ${ABSTRACT_MAX_WORDS} words (currently ${countWords(form.abstract)}).`;
+      if (form.isSubmittingAbstract === "Yes") {
+        if (!form.participationType)
+          e.participationType = "Participation type is required.";
+        // Observers don't present, so no presentation type/title/abstract is required
+        if (form.participationType === "Presenter") {
+          if (!form.presentationType)
+            e.presentationType = "Presentation type is required.";
+          if (!form.presentationTitle.trim())
+            e.presentationTitle = "Presentation title is required.";
+          ABSTRACT_SECTIONS.forEach(({ key, label }) => {
+            const value = form[key];
+            if (!value.trim()) e[key] = `${label} is required.`;
+            else if (countWords(value) > ABSTRACT_SECTION_MAX_WORDS)
+              e[key] =
+                `${label} must not exceed ${ABSTRACT_SECTION_MAX_WORDS} words (currently ${countWords(value)}).`;
+          });
+        }
       }
     }
     setErrors(e);
@@ -1014,8 +1182,15 @@ export default function RegisterPage({
     const fullName =
       `${form.firstName} ${form.otherNames} ${form.lastName}`.trim();
     const sessionPreference =
-      form.eventDay && form.sessionTime ? `${form.eventDay}_${form.sessionTime}` : "";
-    const enrichedForm = { ...form, fullName, name: fullName, sessionPreference };
+      form.eventDay && form.sessionTime ?
+        `${form.eventDay}_${form.sessionTime}`
+      : "";
+    const enrichedForm = {
+      ...form,
+      fullName,
+      name: fullName,
+      sessionPreference,
+    };
 
     const saved = (await onRegister?.(enrichedForm, {
       paymentStatus,
@@ -1283,6 +1458,46 @@ export default function RegisterPage({
 
       <div className="container section" style={{ minHeight: "60vh" }}>
         <div className="max-w-[680px] mx-auto">
+          {/* SUBMISSION GUIDELINES PREAMBLE */}
+          <div
+            className="rounded-2xl mb-8"
+            style={{
+              background: "#0F2347",
+              padding: "26px 30px",
+              border: "1px solid #1B3A6B",
+            }}
+          >
+            <h3
+              className="font-serif mb-1"
+              style={{ color: "#C9A84C", fontSize: 18 }}
+            >
+              Submission Guidelines for Abstract Submissions
+            </h3>
+            <p
+              className="mb-4"
+              style={{ color: "rgba(255,255,255,0.7)", fontSize: 13 }}
+            >
+              Please read before completing your registration.
+            </p>
+            <div style={{ display: "grid", gap: 10 }}>
+              {SUBMISSION_GUIDELINES.map((g, i) => (
+                <div
+                  key={i}
+                  className="flex gap-2.5 items-start"
+                  style={{ fontSize: 13.5 }}
+                >
+                  <Check
+                    size={15}
+                    color="#C9A84C"
+                    className="shrink-0"
+                    style={{ marginTop: 2 }}
+                  />
+                  <span style={{ color: "#fff", lineHeight: 1.6 }}>{g}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* STEPPER */}
           <div className="flex gap-0 mb-10 bg-ug-surface rounded-xl p-1 border border-[#eee]">
             {steps.map((s, i) => (
@@ -1313,6 +1528,27 @@ export default function RegisterPage({
             {step === 0 && (
               <div>
                 <h3 className="mb-6">Personal Details</h3>
+                <div className="form-group">
+                  <label>
+                    Title<span className="req">*</span>
+                  </label>
+                  <select
+                    value={form.title}
+                    onChange={(e) => set("title", e.target.value)}
+                  >
+                    <option value="">-- Select title --</option>
+                    {APPLICANT_TITLES.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.title && (
+                    <p className="text-[#c0392b] text-[12px] mt-1">
+                      {errors.title}
+                    </p>
+                  )}
+                </div>
                 <div className="form-row">
                   {field("First Name", "firstName")}
                   {field("Last Name", "lastName")}
@@ -1347,6 +1583,45 @@ export default function RegisterPage({
                   onChange={(v) => set("phone", v)}
                   error={errors.phone}
                 />
+                <div className="form-group">
+                  <label>
+                    Institution<span className="req">*</span>
+                  </label>
+                  <select
+                    value={form.institution}
+                    onChange={(e) => set("institution", e.target.value)}
+                  >
+                    {INSTITUTIONS.map((i) => (
+                      <option key={i} value={i}>
+                        {i}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.institution && (
+                    <p className="text-[#c0392b] text-[12px] mt-1">
+                      {errors.institution}
+                    </p>
+                  )}
+                </div>
+                {form.institution === "Other (Specify)" && (
+                  <div className="form-group">
+                    <label>
+                      Other Institution (Specify)
+                      <span className="req">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.otherInstitution}
+                      onChange={(e) => set("otherInstitution", e.target.value)}
+                      placeholder="Enter your institution"
+                    />
+                    {errors.otherInstitution && (
+                      <p className="text-[#c0392b] text-[12px] mt-1">
+                        {errors.otherInstitution}
+                      </p>
+                    )}
+                  </div>
+                )}
                 {field("Student ID (optional)", "studentId", "text", false)}
               </div>
             )}
@@ -1355,7 +1630,65 @@ export default function RegisterPage({
             {step === 1 && (
               <div>
                 <h3 className="mb-6">Academic Information</h3>
-                {field("Department", "department")}
+                <div className="form-group">
+                  <label>
+                    Are you a current Computer Science student?
+                    <span className="req">*</span>
+                  </label>
+                  <select
+                    value={form.isCsStudent}
+                    onChange={(e) => set("isCsStudent", e.target.value)}
+                  >
+                    <option value="">-- Select an option --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  {errors.isCsStudent && (
+                    <p className="text-[#c0392b] text-[12px] mt-1">
+                      {errors.isCsStudent}
+                    </p>
+                  )}
+                </div>
+                {form.isCsStudent === "Yes" && (
+                  <div className="form-group">
+                    <label>
+                      Department<span className="req">*</span>
+                    </label>
+                    <select
+                      value={form.department}
+                      onChange={(e) => set("department", e.target.value)}
+                    >
+                      {CS_DEPARTMENTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.department && (
+                      <p className="text-[#c0392b] text-[12px] mt-1">
+                        {errors.department}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {form.isCsStudent === "No" && (
+                  <div className="form-group">
+                    <label>
+                      Other Department (Specify)<span className="req">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.otherDepartment}
+                      onChange={(e) => set("otherDepartment", e.target.value)}
+                      placeholder="Enter your department"
+                    />
+                    {errors.otherDepartment && (
+                      <p className="text-[#c0392b] text-[12px] mt-1">
+                        {errors.otherDepartment}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="form-group">
                   <label>
                     Programme<span className="req">*</span>
@@ -1397,35 +1730,25 @@ export default function RegisterPage({
                 )}
                 <div className="form-group">
                   <label>
-                    Academic Level<span className="req">*</span>
+                    Cohort<span className="req">*</span>
                   </label>
                   <select
-                    value={form.level}
-                    onChange={(e) => set("level", e.target.value)}
+                    value={form.cohort}
+                    onChange={(e) => set("cohort", e.target.value)}
                   >
-                    <option value="Master's">Master's (MSc / MPhil)</option>
-                    <option value="PhD">PhD</option>
-                    <option value="Other (Specify)">Other (Specify)</option>
+                    <option value="">-- Select your cohort --</option>
+                    {COHORTS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
                   </select>
+                  {errors.cohort && (
+                    <p className="text-[#c0392b] text-[12px] mt-1">
+                      {errors.cohort}
+                    </p>
+                  )}
                 </div>
-                {form.level === "Other (Specify)" && (
-                  <div className="form-group">
-                    <label>
-                      Specify Level<span className="req">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.otherLevel}
-                      onChange={(e) => set("otherLevel", e.target.value)}
-                      placeholder="Enter your academic level"
-                    />
-                    {errors.otherLevel && (
-                      <p className="text-[#c0392b] text-[12px] mt-1">
-                        {errors.otherLevel}
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
             )}
 
@@ -1434,14 +1757,38 @@ export default function RegisterPage({
               <div>
                 <h3 className="mb-6">Participation Details</h3>
 
-                {CS_DS_PROGRAMMES.has(form.programme) ? (
-                  <div className="alert alert-info mb-5" style={{ fontSize: 14 }}>
-                    <strong>In-person attendance required.</strong>{" "}
-                    Students in {form.programme} must attend the workshop
-                    physically on campus.
+                <div className="form-group">
+                  <label>
+                    Are you submitting an abstract?
+                    <span className="req">*</span>
+                  </label>
+                  <select
+                    value={form.isSubmittingAbstract}
+                    onChange={(e) =>
+                      set("isSubmittingAbstract", e.target.value)
+                    }
+                  >
+                    <option value="">-- Select an option --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                  {errors.isSubmittingAbstract && (
+                    <p className="text-[#c0392b] text-[12px] mt-1">
+                      {errors.isSubmittingAbstract}
+                    </p>
+                  )}
+                </div>
+
+                {CS_DS_PROGRAMMES.has(form.programme) ?
+                  <div
+                    className="alert alert-info mb-5"
+                    style={{ fontSize: 14 }}
+                  >
+                    <strong>In-person attendance required.</strong> Students in{" "}
+                    {form.programme} must attend the workshop physically on
+                    campus.
                   </div>
-                ) : (
-                  <div className="form-group">
+                : <div className="form-group">
                     <label>
                       Attendance Mode<span className="req">*</span>
                     </label>
@@ -1453,77 +1800,85 @@ export default function RegisterPage({
                       <option value="Virtual">Virtual (Online)</option>
                     </select>
                   </div>
-                )}
+                }
 
                 {form.attendanceMode !== "Virtual" && (
                   <div className="form-group">
                     <label>
-                      Event Day &amp; Session<span className="req">*</span>
+                      Select the day and session you can attend in person
+                      <span className="req">*</span>
                     </label>
 
-                    {/* ── Day picker ─────────────────────────────────────── */}
-                    <div style={{ display: "flex", gap: 10, marginTop: 6, marginBottom: 12 }}>
-                      {EVENT_DAYS.map(({ key, label, full: dayName }) => {
-                        const daySelected = form.eventDay === key;
-                        return (
-                          <button
-                            key={key}
-                            type="button"
-                            onClick={() =>
-                              setForm((f) => ({ ...f, eventDay: key, sessionTime: "" }))
-                            }
-                            style={{
-                              flex: 1,
-                              padding: "12px 8px",
-                              borderRadius: 10,
-                              border: `2px solid ${daySelected ? "#1B3A6B" : "#d1d5db"}`,
-                              background: daySelected ? "#1B3A6B" : "#fff",
-                              color: daySelected ? "#fff" : "#222",
-                              cursor: "pointer",
-                              textAlign: "center",
-                              transition: "all 0.15s",
-                            }}
-                          >
-                            <div style={{ fontWeight: 700, fontSize: 14 }}>{label}</div>
-                            <div style={{ fontSize: 11, opacity: daySelected ? 0.75 : 0.5, marginTop: 2 }}>
-                              {dayName.split(",")[0]}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* ── Session picker (visible after a day is chosen) ─── */}
-                    {form.eventDay && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        {(["Morning", "Afternoon"] as const).map((time) => {
-                          const available = getAvailable(form.eventDay, time);
-                          const cap = time === "Morning" ? morningCapacity : afternoonCapacity;
-                          const timeLabel = time === "Morning" ? "9:00 AM – 1:00 PM" : "2:00 PM – 5:00 PM";
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 12,
+                        marginTop: 6,
+                      }}
+                    >
+                      {SESSION_OPTIONS.map(
+                        ({ dayKey, time, label, timeRange }) => {
+                          const available = getAvailable(dayKey, time);
+                          const cap =
+                            time === "Morning" ? morningCapacity : (
+                              afternoonCapacity
+                            );
                           const full = available <= 0;
-                          const selected = form.sessionTime === time;
+                          const selected =
+                            form.eventDay === dayKey &&
+                            form.sessionTime === time;
                           return (
                             <button
-                              key={time}
+                              key={`${dayKey}_${time}`}
                               type="button"
                               disabled={full}
-                              onClick={() => !full && set("sessionTime", time)}
+                              onClick={() =>
+                                !full &&
+                                setForm((f) => ({
+                                  ...f,
+                                  eventDay: dayKey,
+                                  sessionTime: time,
+                                }))
+                              }
                               style={{
                                 padding: "14px 12px",
                                 borderRadius: 10,
-                                border: `2px solid ${selected ? "#1B3A6B" : full ? "#e2e8f0" : "#d1d5db"}`,
-                                background: selected ? "#1B3A6B" : full ? "#f8fafc" : "#fff",
-                                color: selected ? "#fff" : full ? "#aaa" : "#222",
+                                border: `2px solid ${
+                                  selected ? "#1B3A6B"
+                                  : full ? "#e2e8f0"
+                                  : "#d1d5db"
+                                }`,
+                                background:
+                                  selected ? "#1B3A6B"
+                                  : full ? "#f8fafc"
+                                  : "#fff",
+                                color:
+                                  selected ? "#fff"
+                                  : full ? "#aaa"
+                                  : "#222",
                                 cursor: full ? "not-allowed" : "pointer",
                                 textAlign: "left",
                                 transition: "all 0.15s",
                               }}
                             >
-                              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>
-                                {time} Session
+                              <div
+                                style={{
+                                  fontWeight: 700,
+                                  fontSize: 14,
+                                  marginBottom: 3,
+                                }}
+                              >
+                                {label}
                               </div>
-                              <div style={{ fontSize: 12, opacity: selected ? 0.85 : 0.65, marginBottom: 6 }}>
-                                {timeLabel}
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  opacity: selected ? 0.85 : 0.65,
+                                  marginBottom: 6,
+                                }}
+                              >
+                                {timeRange}
                               </div>
                               <div
                                 style={{
@@ -1536,145 +1891,158 @@ export default function RegisterPage({
                                     : "#27ae60",
                                 }}
                               >
-                                {full ? "Session full" : `${available} / ${cap} spots left`}
+                                {full ?
+                                  "Session full"
+                                : `${available} / ${cap} seats remaining`}
                               </div>
                             </button>
                           );
-                        })}
-                      </div>
-                    )}
+                        },
+                      )}
+                    </div>
 
                     {errors.eventDay && (
-                      <p className="text-[#c0392b] text-[12px] mt-2">{errors.eventDay}</p>
+                      <p className="text-[#c0392b] text-[12px] mt-2">
+                        {errors.eventDay}
+                      </p>
                     )}
                   </div>
                 )}
 
-                <div className="form-group">
-                  <label>
-                    Participation Type<span className="req">*</span>
-                  </label>
-                  <select
-                    value={form.participationType}
-                    onChange={(e) => set("participationType", e.target.value)}
-                  >
-                    <option value="Presenter">Presenter</option>
-                    <option value="Observer">Observer</option>
-                    <option value="Both">Both (Present &amp; Observe)</option>
-                  </select>
-                </div>
-                {form.participationType !== "Observer" && (
-                  <>
-                    <div className="form-group">
-                      <label>
-                        Presentation Type<span className="req">*</span>
-                      </label>
-                      <select
-                        value={form.presentationType}
-                        onChange={(e) =>
-                          set("presentationType", e.target.value)
-                        }
-                      >
-                        {PRESENTATION_TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>
-                        Title of Presentation<span className="req">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={form.presentationTitle}
-                        onChange={(e) =>
-                          set("presentationTitle", e.target.value)
-                        }
-                        placeholder="Enter the title of your presentation or paper"
-                      />
-                      {errors.presentationTitle && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.presentationTitle}
-                        </p>
-                      )}
-                    </div>
-                    <div className="form-group">
-                      <label>
-                        Abstract & Paper Submission Guidelines:
-                        <span className="req">*</span>
-                      </label>
-                      <textarea
-                        value={form.abstract}
-                        onChange={(e) => set("abstract", e.target.value)}
-                        placeholder={
-                          "Submissions must be original, unpublished work:\n" +
-                          "- Written in English using the provided template in the registration link\n" +
-                          "- Abstract of 360 words counts is required to present (Oral/Poster) at the conference, you are required to submit an abstract not exceeding 360 words in English via the registration portal, and upload same in MS Word format, as directed below.\n" +
-                          "Failure to adhere to the 360-word limit may affect the selection of your abstract. Abstracts should therefore be structured as follows:\n" +
-                          "• Title\n" +
-                          "• Background    - (Maximum 100 words)\n" +
-                          "• Methods       - (Maximum 100 words)\n" +
-                          "• Results       - (Maximum 100 words)\n" +
-                          "• Significance    - (Maximum 60 words)\n" +
-                          "- All authors must be registered participants\n" +
-                          "- Submitted via the online registration portal\n" +
-                          "- Accepted papers receive certificates of presentation"
-                        }
-                        rows={7}
-                        style={{
-                          resize: "vertical",
-                          minHeight: 140,
-                          borderColor:
-                            countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
-                              "#c0392b"
-                            : undefined,
-                        }}
-                      />
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginTop: 4,
-                        }}
-                      >
-                        <span>
-                          {errors.abstract && (
-                            <span className="text-[#c0392b] text-[12px]">
-                              {errors.abstract}
-                            </span>
-                          )}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            fontWeight:
-                              countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
-                                600
-                              : 400,
-                            color:
-                              countWords(form.abstract) > ABSTRACT_MAX_WORDS ?
-                                "#c0392b"
-                              : "#999",
-                          }}
-                        >
-                          {countWords(form.abstract)} / {ABSTRACT_MAX_WORDS}{" "}
-                          words
-                          {countWords(form.abstract) > ABSTRACT_MAX_WORDS &&
-                            " — limit exceeded"}
-                        </span>
-                      </div>
-                    </div>
-                  </>
+                {form.isSubmittingAbstract === "Yes" && (
+                  <div className="form-group">
+                    <label>
+                      Participation Type<span className="req">*</span>
+                    </label>
+                    <select
+                      value={form.participationType}
+                      onChange={(e) => set("participationType", e.target.value)}
+                    >
+                      <option value="">-- Select an option --</option>
+                      <option value="Presenter">Presenter</option>
+                      <option value="Observer">Observer</option>
+                    </select>
+                    {errors.participationType && (
+                      <p className="text-[#c0392b] text-[12px] mt-1">
+                        {errors.participationType}
+                      </p>
+                    )}
+                  </div>
                 )}
-                <div className="alert alert-info">
-                  <strong>Note:</strong> CS and Data Science students must
-                  attend in-person. IT for Business students may attend
-                  virtually or in-person. Total capacity: 60 morning + 60
-                  afternoon = 120 seats per day.
-                </div>
+                {form.isSubmittingAbstract === "No" && (
+                  <div className="form-group">
+                    <label>Participation Type</label>
+                    <select value="Observer" disabled>
+                      <option value="Observer">Observer</option>
+                    </select>
+                    <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                      Set to Observer automatically since you're not submitting
+                      an abstract.
+                    </p>
+                  </div>
+                )}
+                {form.isSubmittingAbstract === "Yes" &&
+                  form.participationType === "Presenter" && (
+                    <>
+                      <div className="form-group">
+                        <label>
+                          Presentation Type<span className="req">*</span>
+                        </label>
+                        <select
+                          value={form.presentationType}
+                          onChange={(e) =>
+                            set("presentationType", e.target.value)
+                          }
+                        >
+                          <option value="">
+                            -- Select presentation type --
+                          </option>
+                          {PRESENTATION_TYPES.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.presentationType && (
+                          <p className="text-[#c0392b] text-[12px] mt-1">
+                            {errors.presentationType}
+                          </p>
+                        )}
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          Title of Presentation<span className="req">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={form.presentationTitle}
+                          onChange={(e) =>
+                            set("presentationTitle", e.target.value)
+                          }
+                          placeholder="Enter the title of your presentation or paper"
+                        />
+                        {errors.presentationTitle && (
+                          <p className="text-[#c0392b] text-[12px] mt-1">
+                            {errors.presentationTitle}
+                          </p>
+                        )}
+                      </div>
+                      {ABSTRACT_SECTIONS.map(({ key, label, placeholder }) => {
+                        const value = form[key];
+                        const words = countWords(value);
+                        const overLimit = words > ABSTRACT_SECTION_MAX_WORDS;
+                        return (
+                          <div className="form-group" key={key}>
+                            <label>
+                              {label}
+                              <span className="req">*</span>
+                            </label>
+                            <textarea
+                              value={value}
+                              onChange={(e) =>
+                                set(
+                                  key,
+                                  clampWords(
+                                    e.target.value,
+                                    ABSTRACT_SECTION_MAX_WORDS,
+                                  ),
+                                )
+                              }
+                              placeholder={placeholder}
+                              rows={3}
+                              style={{ resize: "vertical", minHeight: 70 }}
+                            />
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: 4,
+                              }}
+                            >
+                              <span>
+                                {errors[key] && (
+                                  <span className="text-[#c0392b] text-[12px]">
+                                    {errors[key]}
+                                  </span>
+                                )}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: overLimit ? 600 : 400,
+                                  color: overLimit ? "#c0392b" : "#999",
+                                }}
+                              >
+                                {words} / {ABSTRACT_SECTION_MAX_WORDS} words
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                {/* Attendance info pending — replacement text to be provided by Prof. Charlie */}
               </div>
             )}
 
@@ -1683,55 +2051,80 @@ export default function RegisterPage({
               <div>
                 <h3 className="mb-5">Registration Summary &amp; Payment</h3>
                 <div className="bg-ug-surface rounded-[10px] p-5 mb-6">
-                  {[
-                    ["First Name", form.firstName],
-                    ["Last Name", form.lastName],
-                    ["Other Names", form.otherNames],
-                    ["Gender", form.gender],
-                    ["Nationality", form.nationality],
-                    ["Email", form.email],
-                    ["Phone", form.phone],
-                    form.studentId && ["Student ID", form.studentId],
-                    ["Programme", form.programme],
-                    ["Level", form.level],
-                    ["Attendance Mode", form.attendanceMode],
-                    form.attendanceMode !== "Virtual" && form.eventDay && [
-                      "Day",
-                      EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay,
-                    ],
-                    form.attendanceMode !== "Virtual" && form.sessionTime && [
-                      "Session",
-                      form.sessionTime + " Session",
-                    ],
-                    ["Participation", form.participationType],
-                    form.participationType !== "Observer" && [
-                      "Presentation Type",
-                      form.presentationType,
-                    ],
-                    form.participationType !== "Observer" &&
-                      form.presentationTitle && [
-                        "Presentation Title",
-                        form.presentationTitle,
+                  {(() => {
+                    const isPresenting =
+                      form.isSubmittingAbstract === "Yes" &&
+                      form.participationType === "Presenter";
+                    return [
+                      ["Title", form.title],
+                      ["First Name", form.firstName],
+                      ["Last Name", form.lastName],
+                      ["Other Names", form.otherNames],
+                      ["Gender", form.gender],
+                      ["Nationality", form.nationality],
+                      ["Email", form.email],
+                      ["Phone", form.phone],
+                      [
+                        "Institution",
+                        form.institution === "Other (Specify)" ?
+                          form.otherInstitution
+                        : form.institution,
                       ],
-                    form.participationType !== "Observer" &&
-                      form.abstract && ["Abstract", form.abstract],
-                  ]
-                    .filter(Boolean)
-                    .map(([k, v]) => (
-                      <div
-                        key={k}
-                        className="flex justify-between py-2 border-b border-[#eee] text-[14px]"
-                      >
-                        <span className="text-[#666]">{k}</span>
-                        <span className="font-medium">{v}</span>
-                      </div>
-                    ))}
+                      form.studentId && ["Student ID", form.studentId],
+                      [
+                        "Department",
+                        form.isCsStudent === "Yes" ?
+                          form.department
+                        : form.otherDepartment,
+                      ],
+                      ["Programme", form.programme],
+                      ["Cohort", form.cohort],
+                      ["Attendance Mode", form.attendanceMode],
+                      form.attendanceMode !== "Virtual" &&
+                        form.eventDay && [
+                          "Day",
+                          EVENT_DAYS.find((d) => d.key === form.eventDay)
+                            ?.full ?? form.eventDay,
+                        ],
+                      form.attendanceMode !== "Virtual" &&
+                        form.sessionTime && [
+                          "Session",
+                          form.sessionTime + " Session",
+                        ],
+                      ["Submitting Abstract", form.isSubmittingAbstract],
+                      ["Participation", form.participationType],
+                      isPresenting && [
+                        "Presentation Type",
+                        form.presentationType,
+                      ],
+                      isPresenting &&
+                        form.presentationTitle && [
+                          "Presentation Title",
+                          form.presentationTitle,
+                        ],
+                      ...(isPresenting ?
+                        ABSTRACT_SECTIONS.filter(({ key }) => form[key]).map(
+                          ({ key, label }) => [label, form[key]],
+                        )
+                      : []),
+                    ]
+                      .filter(Boolean)
+                      .map(([k, v]) => (
+                        <div
+                          key={k}
+                          className="flex justify-between py-2 border-b border-[#eee] text-[14px]"
+                        >
+                          <span className="text-[#666]">{k}</span>
+                          <span className="font-medium">{v}</span>
+                        </div>
+                      ));
+                  })()}
                   <div className="flex justify-between pt-3 text-[16px] font-bold text-ug-blue">
                     <span>Registration Fee</span>
                     <span>GHS {fee}.00</span>
                   </div>
                   <p className="text-[12px] text-[#888] mt-1.5">
-                    Includes snacks, water, and workshop materials
+                    Registration fee for workshop planning and organization.
                   </p>
                 </div>
                 <div className="alert alert-info mb-5">

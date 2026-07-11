@@ -16,15 +16,22 @@ const emailPass = defineSecret('EMAIL_PASSWORD');
 interface RegistrationData {
   name?: string;
   fullName?: string;
+  title?: string;
   email?: string;
+  institution?: string;
+  otherInstitution?: string;
   programme?: string;
-  level?: string;
+  cohort?: string;
+  isCsStudent?: string;
+  department?: string;
+  otherDepartment?: string;
   nationality?: string;
   participationType?: string;
   type?: string;
   attendanceMode?: string;
   mode?: string;
   sessionPreference?: string;
+  isSubmittingAbstract?: string;
   presentationType?: string;
   presentationTitle?: string;
   payment?: string;
@@ -124,8 +131,10 @@ export const sendRegistrationConfirmation = onDocumentWritten(
 
     // ── Build content ──────────────────────────────────────────────────────
     const name = (data.fullName || data.name || 'Participant').trim();
+    const institution =
+      (data.institution === 'Other (Specify)' ? data.otherInstitution : data.institution) || '—';
     const programme = data.programme || '—';
-    const level = data.level || '—';
+    const cohort = data.cohort || '—';
     const nationality = data.nationality || '—';
     const participation = data.participationType || data.type || '—';
     const attendance = data.attendanceMode || data.mode || '—';
@@ -145,7 +154,8 @@ export const sendRegistrationConfirmation = onDocumentWritten(
         'Friday, 29 August — Afternoon Session (2:00 PM – 5:00 PM)',
     };
     const sessionLabel = SESSION_LABELS[sessionPref] ?? '—';
-    const presentationType = data.presentationType || '—';
+    const presentationType =
+      data.isSubmittingAbstract === 'Yes' ? data.presentationType || '—' : '—';
     const paymentStatus = data.payment || 'Pending';
     const registeredAt =
       data.registeredAt ?
@@ -163,8 +173,9 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       name,
       email: recipientEmail,
       registrationId,
+      institution,
       programme,
-      level,
+      cohort,
       nationality,
       participation,
       attendance,
@@ -226,8 +237,9 @@ interface EmailData {
   name: string;
   email: string;
   registrationId: string;
+  institution: string;
   programme: string;
-  level: string;
+  cohort: string;
   nationality: string;
   participation: string;
   attendance: string;
@@ -345,8 +357,9 @@ function buildEmailHtml(d: EmailData): string {
                   ${row('Registration ID', d.registrationId)}
                   ${row('Name', d.name)}
                   ${row('Email', d.email)}
+                  ${row('Institution', d.institution)}
                   ${row('Programme', d.programme)}
-                  ${row('Level', d.level)}
+                  ${row('Cohort', d.cohort)}
                   ${row('Nationality', d.nationality)}
                   ${row('Participation', d.participation)}
                   ${row('Attendance Mode', d.attendance)}

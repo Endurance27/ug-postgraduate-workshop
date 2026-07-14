@@ -1784,108 +1784,108 @@ export default function RegisterPage({
                 <h3 className="mb-6">Participation Details</h3>
 
                 <div className="form-group">
-                    <label>
-                      Select the day and session you can attend in person
-                      <span className="req">*</span>
-                    </label>
+                  <label>
+                    Select the JUST (1) day and (1) session you can attend this
+                    conference physically in-person
+                    <span className="req">*</span>
+                  </label>
 
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 12,
-                        marginTop: 6,
-                      }}
-                    >
-                      {SESSION_OPTIONS.map(
-                        ({ dayKey, time, label, timeRange }) => {
-                          const available = getAvailable(dayKey, time);
-                          const cap =
-                            time === "Morning" ? morningCapacity : (
-                              afternoonCapacity
-                            );
-                          const full = available <= 0;
-                          const selected =
-                            form.eventDay === dayKey &&
-                            form.sessionTime === time;
-                          return (
-                            <button
-                              key={`${dayKey}_${time}`}
-                              type="button"
-                              disabled={full}
-                              onClick={() =>
-                                !full &&
-                                setForm((f) => ({
-                                  ...f,
-                                  eventDay: dayKey,
-                                  sessionTime: time,
-                                }))
-                              }
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 12,
+                      marginTop: 6,
+                    }}
+                  >
+                    {SESSION_OPTIONS.map(
+                      ({ dayKey, time, label, timeRange }) => {
+                        const available = getAvailable(dayKey, time);
+                        const cap =
+                          time === "Morning" ? morningCapacity : (
+                            afternoonCapacity
+                          );
+                        const full = available <= 0;
+                        const selected =
+                          form.eventDay === dayKey && form.sessionTime === time;
+                        return (
+                          <button
+                            key={`${dayKey}_${time}`}
+                            type="button"
+                            disabled={full}
+                            onClick={() =>
+                              !full &&
+                              setForm((f) => ({
+                                ...f,
+                                eventDay: dayKey,
+                                sessionTime: time,
+                              }))
+                            }
+                            style={{
+                              padding: "14px 12px",
+                              borderRadius: 10,
+                              border: `2px solid ${
+                                selected ? "#1B3A6B"
+                                : full ? "#e2e8f0"
+                                : "#d1d5db"
+                              }`,
+                              background:
+                                selected ? "#1B3A6B"
+                                : full ? "#f8fafc"
+                                : "#fff",
+                              color:
+                                selected ? "#fff"
+                                : full ? "#aaa"
+                                : "#222",
+                              cursor: full ? "not-allowed" : "pointer",
+                              textAlign: "left",
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <div
                               style={{
-                                padding: "14px 12px",
-                                borderRadius: 10,
-                                border: `2px solid ${
-                                  selected ? "#1B3A6B"
-                                  : full ? "#e2e8f0"
-                                  : "#d1d5db"
-                                }`,
-                                background:
-                                  selected ? "#1B3A6B"
-                                  : full ? "#f8fafc"
-                                  : "#fff",
-                                color:
-                                  selected ? "#fff"
-                                  : full ? "#aaa"
-                                  : "#222",
-                                cursor: full ? "not-allowed" : "pointer",
-                                textAlign: "left",
-                                transition: "all 0.15s",
+                                fontWeight: 700,
+                                fontSize: 14,
+                                marginBottom: 3,
                               }}
                             >
-                              <div
-                                style={{
-                                  fontWeight: 700,
-                                  fontSize: 14,
-                                  marginBottom: 3,
-                                }}
-                              >
-                                {label}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  opacity: selected ? 0.85 : 0.65,
-                                  marginBottom: 6,
-                                }}
-                              >
-                                {timeRange}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color:
-                                    full ? "#c0392b"
-                                    : selected ? "#C9A84C"
-                                    : available <= 10 ? "#e67e22"
-                                    : "#27ae60",
-                                }}
-                              >
-                                {full ?
-                                  "Session full"
-                                : `${available} / ${cap} seats remaining`}
-                              </div>
-                            </button>
-                          );
-                        },
-                      )}
-                    </div>
-
-                    {errors.eventDay && (
-                      <p className="text-[#c0392b] text-[12px] mt-2">
-                        {errors.eventDay}
-                      </p>
+                              {label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                opacity: selected ? 0.85 : 0.65,
+                                marginBottom: 6,
+                              }}
+                            >
+                              {timeRange}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color:
+                                  full ? "#c0392b"
+                                  : selected ? "#C9A84C"
+                                  : available <= 10 ? "#e67e22"
+                                  : "#27ae60",
+                              }}
+                            >
+                              {full ?
+                                "Session full"
+                              : `${available} / ${cap} seats remaining`}
+                            </div>
+                          </button>
+                        );
+                      },
                     )}
+                  </div>
+
+                  {errors.eventDay && (
+                    <p className="text-[#c0392b] text-[12px] mt-2">
+                      {errors.eventDay}
+                    </p>
+                  )}
                 </div>
 
                 {form.isSubmittingAbstract === "Yes" && (
@@ -2013,7 +2013,9 @@ export default function RegisterPage({
                       className="alert alert-info mb-5"
                       style={{ fontSize: 13, lineHeight: 1.7 }}
                     >
-                      <strong>Abstract &amp; Paper Submission Guidelines:</strong>
+                      <strong>
+                        Abstract &amp; Paper Submission Guidelines:
+                      </strong>
                       <ol style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                         {SUBMISSION_GUIDELINES.map((g, i) => (
                           <li key={i} style={{ marginBottom: 4 }}>
@@ -2022,53 +2024,55 @@ export default function RegisterPage({
                         ))}
                       </ol>
                     </div>
-                    {ABSTRACT_SECTIONS.map(({ key, label, placeholder, maxWords }) => {
-                      const value = form[key];
-                      const words = countWords(value);
-                      const overLimit = words > maxWords;
-                      return (
-                        <div className="form-group" key={key}>
-                          <label>
-                            {label}
-                            <span className="req">*</span>
-                          </label>
-                          <textarea
-                            value={value}
-                            onChange={(e) =>
-                              set(key, clampWords(e.target.value, maxWords))
-                            }
-                            placeholder={placeholder}
-                            rows={3}
-                            style={{ resize: "vertical", minHeight: 70 }}
-                          />
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginTop: 4,
-                            }}
-                          >
-                            <span>
-                              {errors[key] && (
-                                <span className="text-[#c0392b] text-[12px]">
-                                  {errors[key]}
-                                </span>
-                              )}
-                            </span>
-                            <span
+                    {ABSTRACT_SECTIONS.map(
+                      ({ key, label, placeholder, maxWords }) => {
+                        const value = form[key];
+                        const words = countWords(value);
+                        const overLimit = words > maxWords;
+                        return (
+                          <div className="form-group" key={key}>
+                            <label>
+                              {label}
+                              <span className="req">*</span>
+                            </label>
+                            <textarea
+                              value={value}
+                              onChange={(e) =>
+                                set(key, clampWords(e.target.value, maxWords))
+                              }
+                              placeholder={placeholder}
+                              rows={3}
+                              style={{ resize: "vertical", minHeight: 70 }}
+                            />
+                            <div
                               style={{
-                                fontSize: 12,
-                                fontWeight: overLimit ? 600 : 400,
-                                color: overLimit ? "#c0392b" : "#999",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: 4,
                               }}
                             >
-                              {words} / {maxWords} words
-                            </span>
+                              <span>
+                                {errors[key] && (
+                                  <span className="text-[#c0392b] text-[12px]">
+                                    {errors[key]}
+                                  </span>
+                                )}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: overLimit ? 600 : 400,
+                                  color: overLimit ? "#c0392b" : "#999",
+                                }}
+                              >
+                                {words} / {maxWords} words
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                   </>
                 )}
               </div>
@@ -2109,8 +2113,8 @@ export default function RegisterPage({
                       ["Submitting Abstract", form.isSubmittingAbstract],
                       form.eventDay && [
                         "Day",
-                        EVENT_DAYS.find((d) => d.key === form.eventDay)
-                          ?.full ?? form.eventDay,
+                        EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ??
+                          form.eventDay,
                       ],
                       form.sessionTime && [
                         "Session",
@@ -2123,10 +2127,7 @@ export default function RegisterPage({
                           "Thematic Areas",
                           form.thematicAreas.join(", "),
                         ],
-                      isPresenting && [
-                        "Name of Author(s)",
-                        form.authorNames,
-                      ],
+                      isPresenting && ["Name of Author(s)", form.authorNames],
                       isPresenting && [
                         "Presentation Type",
                         form.presentationType,

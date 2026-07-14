@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { Download, FileText, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { useAdminContext } from "../../../context/AdminContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -49,6 +49,14 @@ interface Participant {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(val?: string) {
   return val && val.trim() ? val : "—";
+}
+
+function escapeHtml(val?: string) {
+  return (val ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br/>");
 }
 
 function fmtDate(iso?: string) {
@@ -198,6 +206,74 @@ export default function ParticipantsPanel() {
     URL.revokeObjectURL(a.href);
   };
 
+  // ── Abstract extraction (Word-openable document) ────────────────────────────
+  const exportAbstracts = () => {
+    const presenters = participants.filter(
+      (p) => p.isSubmittingAbstract === "Yes",
+    );
+    if (presenters.length === 0) {
+      alert("No participants have submitted an abstract yet.");
+      return;
+    }
+
+    const sections = presenters
+      .map((p, i) => {
+        const department = p.isCsStudent === "Yes" ? p.department : undefined;
+        return `
+        <div style="${i > 0 ? "page-break-before:always;margin-top:40px;" : ""}">
+          <h2 style="color:#1B3A6B;font-family:Georgia,serif;margin-bottom:4px;">
+            ${i + 1}. ${escapeHtml(p.presentationTitle) || "Untitled"}
+          </h2>
+          <p style="margin:0 0 10px;color:#555;font-size:13px;">
+            <strong>Author(s):</strong> ${escapeHtml(p.authorNames) || "—"}<br/>
+            <strong>Presenter:</strong> ${escapeHtml(p.fullName || p.name) || "—"} (${escapeHtml(p.email) || "—"})<br/>
+            <strong>Programme:</strong> ${escapeHtml(p.programme) || "—"}
+            &nbsp;·&nbsp; <strong>Cohort:</strong> ${escapeHtml(p.cohort) || "—"}
+            ${department ? ` &nbsp;·&nbsp; <strong>Department:</strong> ${escapeHtml(department)}` : ""}<br/>
+            <strong>Paper Type:</strong> ${escapeHtml(p.paperType) || "—"}
+            &nbsp;·&nbsp; <strong>Presentation Type:</strong> ${escapeHtml(p.presentationType) || "—"}<br/>
+            <strong>Thematic Area(s):</strong> ${escapeHtml((p.thematicAreas || []).join("; ")) || "—"}
+          </p>
+          <h3 style="margin:14px 0 2px;font-size:13px;">Background</h3>
+          <p style="margin:0;font-size:13px;">${escapeHtml(p.abstractBackground) || "—"}</p>
+          <h3 style="margin:14px 0 2px;font-size:13px;">Methods</h3>
+          <p style="margin:0;font-size:13px;">${escapeHtml(p.abstractMethods) || "—"}</p>
+          <h3 style="margin:14px 0 2px;font-size:13px;">Results</h3>
+          <p style="margin:0;font-size:13px;">${escapeHtml(p.abstractResults) || "—"}</p>
+          <h3 style="margin:14px 0 2px;font-size:13px;">Significance</h3>
+          <p style="margin:0;font-size:13px;">${escapeHtml(p.abstractSignificance) || "—"}</p>
+        </div>`;
+      })
+      .join("");
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Workshop Abstracts</title>
+</head>
+<body style="font-family:Arial,sans-serif;color:#1a1a1a;">
+  <h1 style="font-family:Georgia,serif;color:#1B3A6B;">
+    2nd Annual DCS Postgraduate Workshop — Submitted Abstracts
+  </h1>
+  <p style="color:#888;font-size:12px;">
+    Exported ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+    &nbsp;·&nbsp; ${presenters.length} abstract${presenters.length === 1 ? "" : "s"}
+  </p>
+  <hr/>
+  ${sections}
+</body>
+</html>`;
+
+    const blob = new Blob(["﻿", html], { type: "application/msword" });
+    const a = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: `abstracts_${new Date().toISOString().slice(0, 10)}.doc`,
+    });
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div>
@@ -216,12 +292,20 @@ export default function ParticipantsPanel() {
             </span>
           </p>
         </div>
-        <button
-          onClick={exportCSV}
-          className="flex items-center gap-1.5 bg-ug-blue text-white border-none rounded-lg px-[18px] py-[9px] text-[13px] font-semibold cursor-pointer"
-        >
-          <Download size={14} /> Export CSV
-        </button>
+        <div className="flex gap-2.5">
+          <button
+            onClick={exportAbstracts}
+            className="flex items-center gap-1.5 bg-ug-gold text-white border-none rounded-lg px-[18px] py-[9px] text-[13px] font-semibold cursor-pointer"
+          >
+            <FileText size={14} /> Export Abstracts
+          </button>
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-1.5 bg-ug-blue text-white border-none rounded-lg px-[18px] py-[9px] text-[13px] font-semibold cursor-pointer"
+          >
+            <Download size={14} /> Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

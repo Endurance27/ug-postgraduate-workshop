@@ -14,9 +14,9 @@ interface Participant {
   institution?: string;
   otherInstitution?: string;
   studentId?: string;
+  participantCategory?: string;
   isCsStudent?: string;
   department?: string;
-  otherDepartment?: string;
   programme?: string;
   cohort?: string;
   nationality?: string;
@@ -25,6 +25,9 @@ interface Participant {
   mode?: string;
   attendanceMode?: string;
   isSubmittingAbstract?: string;
+  paperType?: string;
+  thematicAreas?: string[];
+  authorNames?: string;
   presentationType?: string;
   presentationTitle?: string;
   abstractBackground?: string;
@@ -36,6 +39,7 @@ interface Participant {
   payRef?: string;
   registeredAt?: string;
   updatedAt?: string;
+  registrationCode?: string;
   emailSent?: boolean;
   emailSentAt?: string | null;
   emailDeliveryStatus?: "processing" | "delivered" | "failed" | null;
@@ -123,6 +127,7 @@ export default function ParticipantsPanel() {
       "Phone",
       "Institution",
       "Student ID",
+      "Category of Participant",
       "CS Student",
       "Department",
       "Programme",
@@ -131,6 +136,9 @@ export default function ParticipantsPanel() {
       "Participation Type",
       "Attendance Mode",
       "Submitting Abstract",
+      "Type of Paper",
+      "Thematic Areas",
+      "Name of Author(s)",
       "Presentation Type",
       "Presentation Title",
       "Abstract: Background",
@@ -151,14 +159,18 @@ export default function ParticipantsPanel() {
         p.phone,
         p.institution === "Other (Specify)" ? p.otherInstitution : p.institution,
         p.studentId,
+        p.participantCategory,
         p.isCsStudent,
-        p.isCsStudent === "No" ? p.otherDepartment : p.department,
+        p.department,
         p.programme,
         p.cohort,
         p.nationality,
         p.participationType || p.type,
         p.attendanceMode || p.mode,
         p.isSubmittingAbstract,
+        p.paperType,
+        (p.thematicAreas || []).join("; "),
+        p.authorNames,
         p.presentationType,
         p.presentationTitle,
         (p.abstractBackground || "").replace(/\n/g, " "),
@@ -463,6 +475,10 @@ export default function ParticipantsPanel() {
                             }}
                           >
                             {[
+                              p.registrationCode && [
+                                "Registration ID",
+                                p.registrationCode,
+                              ],
                               [
                                 "Full Name",
                                 fmt(
@@ -482,21 +498,36 @@ export default function ParticipantsPanel() {
                                 ),
                               ],
                               ["Student ID", fmt(p.studentId)],
-                              ["CS Student", fmt(p.isCsStudent)],
                               [
-                                "Department",
-                                fmt(
-                                  p.isCsStudent === "No" ?
-                                    p.otherDepartment
-                                  : p.department,
-                                ),
+                                "Category of Participant",
+                                fmt(p.participantCategory),
                               ],
-                              ["Cohort", fmt(p.cohort)],
+                              ["CS Student", fmt(p.isCsStudent)],
+                              p.isCsStudent === "Yes" && [
+                                "Department",
+                                fmt(p.department),
+                              ],
+                              p.isCsStudent === "Yes" && [
+                                "Cohort",
+                                fmt(p.cohort),
+                              ],
                               ["Nationality", fmt(p.nationality)],
                               ["Attendance", fmt(p.attendanceMode || p.mode)],
                               [
                                 "Submitting Abstract",
                                 fmt(p.isSubmittingAbstract),
+                              ],
+                              isPresenter && [
+                                "Type of Paper",
+                                fmt(p.paperType),
+                              ],
+                              isPresenter && [
+                                "Thematic Areas",
+                                fmt((p.thematicAreas || []).join(", ")),
+                              ],
+                              isPresenter && [
+                                "Name of Author(s)",
+                                fmt(p.authorNames),
                               ],
                               isPresenter && [
                                 "Presentation Type",

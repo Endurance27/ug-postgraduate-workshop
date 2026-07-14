@@ -41,9 +41,9 @@ interface Participant {
   institution?: string;
   otherInstitution?: string;
   studentId?: string;
+  participantCategory?: string;
   isCsStudent?: string;
   department?: string;
-  otherDepartment?: string;
   programme?: string;
   cohort?: string;
   type?: string;
@@ -52,6 +52,9 @@ interface Participant {
   mode?: string;
   attendanceMode?: string;
   isSubmittingAbstract?: string;
+  paperType?: string;
+  thematicAreas?: string[];
+  authorNames?: string;
   presentationType?: string;
   nationality?: string;
   presentationTitle?: string;
@@ -1134,9 +1137,9 @@ export default function App() {
       institution: registration.institution || "",
       otherInstitution: registration.otherInstitution || "",
       studentId,
+      participantCategory: registration.participantCategory || "",
       isCsStudent: registration.isCsStudent || "",
       department: registration.department || "",
-      otherDepartment: registration.otherDepartment || "",
       programme: registration.programme || "",
       cohort: registration.cohort || "",
       type: registration.participationType || registration.type || "Observer",
@@ -1147,6 +1150,9 @@ export default function App() {
       attendanceMode:
         registration.attendanceMode || registration.mode || "Physical",
       isSubmittingAbstract: registration.isSubmittingAbstract || "",
+      paperType: registration.paperType || "",
+      thematicAreas: registration.thematicAreas || [],
+      authorNames: registration.authorNames || "",
       presentationType: registration.presentationType || "",
       nationality:
         ((registration as Record<string, unknown>).nationality as string) || "",

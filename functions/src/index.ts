@@ -24,7 +24,6 @@ interface RegistrationData {
   cohort?: string;
   isCsStudent?: string;
   department?: string;
-  otherDepartment?: string;
   nationality?: string;
   participationType?: string;
   type?: string;
@@ -32,13 +31,35 @@ interface RegistrationData {
   mode?: string;
   sessionPreference?: string;
   isSubmittingAbstract?: string;
+  paperType?: string;
+  thematicAreas?: string[];
+  authorNames?: string;
   presentationType?: string;
   presentationTitle?: string;
   payment?: string;
   registeredAt?: string;
+  registrationCode?: string;
   emailSent?: boolean;
   emailDeliveryStatus?: string;
   [key: string]: unknown;
+}
+
+// ─── Sequential registration codes (DCS-PRC-2026-001, -002, …) ────────────────
+// Assigned once per registration via an atomic counter and persisted onto the
+// document so it never changes on subsequent writes.
+const REGISTRATION_CODE_PREFIX = 'DCS-PRC-2026';
+
+async function getOrAssignRegistrationCode(
+  existingCode: string | undefined,
+): Promise<string> {
+  if (existingCode) return existingCode;
+  const counterRef = admin.firestore().doc('counters/registrations');
+  return admin.firestore().runTransaction(async (tx) => {
+    const counterSnap = await tx.get(counterRef);
+    const nextNumber = ((counterSnap.data()?.count as number) || 0) + 1;
+    tx.set(counterRef, { count: nextNumber }, { merge: true });
+    return `${REGISTRATION_CODE_PREFIX}-${String(nextNumber).padStart(3, '0')}`;
+  });
 }
 
 // ─── Cloud Function ───────────────────────────────────────────────────────────
@@ -126,8 +147,16 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       return;
     }
 
+    // Assign a sequential registration code the first time this record is processed
+    const registrationCode = await getOrAssignRegistrationCode(
+      data.registrationCode,
+    );
+
     // Mark as processing immediately so retries skip this record
-    await docRef.update({ emailDeliveryStatus: 'processing' });
+    await docRef.update({
+      emailDeliveryStatus: 'processing',
+      registrationCode,
+    });
 
     // ── Build content ──────────────────────────────────────────────────────
     const name = (data.fullName || data.name || 'Participant').trim();
@@ -154,8 +183,10 @@ export const sendRegistrationConfirmation = onDocumentWritten(
         'Friday, 29 August — Afternoon Session (2:00 PM – 5:00 PM)',
     };
     const sessionLabel = SESSION_LABELS[sessionPref] ?? '—';
-    const presentationType =
-      data.isSubmittingAbstract === 'Yes' ? data.presentationType || '—' : '—';
+    const isPresenting = data.isSubmittingAbstract === 'Yes';
+    const paperType = isPresenting ? data.paperType || '—' : '—';
+    const authorNames = isPresenting ? data.authorNames || '—' : '—';
+    const presentationType = isPresenting ? data.presentationType || '—' : '—';
     const paymentStatus = data.payment || 'Pending';
     const registeredAt =
       data.registeredAt ?
@@ -172,7 +203,7 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const html = buildEmailHtml({
       name,
       email: recipientEmail,
-      registrationId,
+      registrationCode,
       institution,
       programme,
       cohort,
@@ -180,6 +211,8 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       participation,
       attendance,
       sessionLabel,
+      paperType,
+      authorNames,
       presentationType,
       paymentStatus,
       registeredAt,
@@ -236,7 +269,7 @@ export const sendRegistrationConfirmation = onDocumentWritten(
 interface EmailData {
   name: string;
   email: string;
-  registrationId: string;
+  registrationCode: string;
   institution: string;
   programme: string;
   cohort: string;
@@ -244,6 +277,8 @@ interface EmailData {
   participation: string;
   attendance: string;
   sessionLabel: string;
+  paperType: string;
+  authorNames: string;
   presentationType: string;
   paymentStatus: string;
   registeredAt: string;
@@ -273,9 +308,8 @@ function buildEmailHtml(d: EmailData): string {
     </span>`;
 
   const steps = [
-    'Your registration is fully confirmed. Keep your payment reference for your records.',
-    'Virtual participants: use the Google Meet link below to join sessions during the workshop (27–29 August 2026).',
-    'The full workshop programme, venue details, and daily schedule will be shared closer to the event.',
+    'Your registration is fully confirmed. Keep your confirmation email for your reference to join sessions during the workshop dates (27–29 August 2026).',
+    'The full workshop programme, venue details, and daily schedule will be shared closer to the event day.',
   ];
 
   const stepsHtml = steps
@@ -354,7 +388,7 @@ function buildEmailHtml(d: EmailData): string {
                   Your Registration Details
                 </p>
                 <table width="100%" cellpadding="0" cellspacing="0">
-                  ${row('Registration ID', d.registrationId)}
+                  ${row('Registration ID', d.registrationCode)}
                   ${row('Name', d.name)}
                   ${row('Email', d.email)}
                   ${row('Institution', d.institution)}
@@ -364,30 +398,12 @@ function buildEmailHtml(d: EmailData): string {
                   ${row('Participation', d.participation)}
                   ${row('Attendance Mode', d.attendance)}
                   ${d.sessionLabel !== '—' ? row('Session', d.sessionLabel) : ''}
+                  ${d.paperType !== '—' ? row('Type of Paper', d.paperType) : ''}
+                  ${d.authorNames !== '—' ? row('Author(s)', d.authorNames) : ''}
                   ${d.presentationType !== '—' ? row('Presentation Type', d.presentationType) : ''}
                   ${row('Submitted On', d.registeredAt)}
                   ${row('Payment Status', statusBadge)}
                 </table>
-              </div>
-
-              <!-- Virtual meeting link -->
-              <div style="background:#eef6ff;border:1px solid #bee3f8;
-                          border-radius:10px;padding:16px 20px;
-                          margin-bottom:26px;">
-                <p style="color:#1a365d;font-size:13px;line-height:1.7;margin:0 0 10px;">
-                  <strong>🎥 Virtual Meeting Link:</strong>&nbsp; Use the link below to join
-                  sessions online during the workshop (27–29 August 2026).
-                </p>
-                <a href="https://meet.google.com/mrx-zihd-tnj"
-                   style="display:inline-block;background:#1B3A6B;color:#ffffff;
-                          text-decoration:none;padding:10px 20px;
-                          border-radius:8px;font-size:13px;font-weight:600;
-                          letter-spacing:0.02em;">
-                  Join Google Meet →
-                </a>
-                <p style="color:#2c5282;font-size:12px;line-height:1.6;margin:10px 0 0;">
-                  meet.google.com/mrx-zihd-tnj
-                </p>
               </div>
 
               <!-- Next steps -->
@@ -405,9 +421,15 @@ function buildEmailHtml(d: EmailData): string {
                 If you have any questions, please reply to this email.
                 We look forward to welcoming you in August!
               </p>
+              <p style="color:#555;font-size:13px;line-height:1.7;margin:0 0 20px;">
+                For further information contact:<br/>
+                Esther +233 54 145 2262<br/>
+                Email us on
+                <a href="mailto:dcsworkshop@ug.edu.gh" style="color:#1B3A6B;">dcsworkshop@ug.edu.gh</a>
+              </p>
               <p style="color:#333;font-size:14px;margin:0;">
-                Warm regards,<br/>
-                <strong style="color:#1B3A6B;">Workshop Planning Committee</strong><br/>
+                Regards,<br/>
+                <strong style="color:#1B3A6B;">Workshop Planning &amp; Organisation Committee,</strong><br/>
                 <span style="color:#999;font-size:12px;">
                   Department of Computer Science &nbsp;·&nbsp; University of Ghana
                 </span>
@@ -426,7 +448,7 @@ function buildEmailHtml(d: EmailData): string {
                 <strong style="color:rgba(255,255,255,0.55);">${d.email}</strong>
                 because you registered for the workshop.<br/>
                 <span style="color:rgba(255,255,255,0.25);">
-                  Registration ID: ${d.registrationId}
+                  Registration ID: ${d.registrationCode}
                 </span>
               </p>
             </td>

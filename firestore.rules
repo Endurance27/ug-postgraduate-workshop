@@ -67,5 +67,16 @@ service cloud.firestore {
     match /payments/{document} {
       allow read, write: if request.auth != null;
     }
+
+    // Sessions — the single source of truth for seat availability.
+    // Anyone can read (the registration form needs live seat counts), but
+    // registeredCount/availableSeats can only ever change through the
+    // reserveSessionSeat Cloud Function (Admin SDK bypasses this rule), whose
+    // transaction is what actually prevents overbooking. Admins can also
+    // write directly (e.g. to adjust a session's capacity by hand).
+    match /sessions/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
   }
 }

@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { onCall } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 import * as nodemailer from 'nodemailer';
 
@@ -98,6 +98,166 @@ export const checkEmailRegistered = onCall<{ email?: string }>(
   },
 );
 
+// ─── Sessions ───────────────────────────────────────────────────────────────
+// Dedicated `sessions` collection — the single source of truth for seat
+// availability. Replaces the old approach of diffing registration documents
+// against a shared sessionCounts map on workshop/siteContent, which could
+// drift out of sync (e.g. a delete or a stale admin write racing the diff).
+// Each session document: { id, title, date, startTime, endTime, capacity,
+// registeredCount, availableSeats }, where availableSeats is always kept
+// equal to capacity - registeredCount by reserveSessionSeat's transaction.
+interface SessionDef {
+  id: string;
+  dayKey: string;
+  timeSlot: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+}
+
+const SESSION_DEFS: SessionDef[] = [
+  {
+    id: '27Aug_Morning',
+    dayKey: '27Aug',
+    timeSlot: 'Morning',
+    title: 'Wednesday, 27 August — Morning',
+    date: '2026-08-27',
+    startTime: '9:00 AM',
+    endTime: '1:00 PM',
+    capacity: 60,
+  },
+  {
+    id: '27Aug_Afternoon',
+    dayKey: '27Aug',
+    timeSlot: 'Afternoon',
+    title: 'Wednesday, 27 August — Afternoon',
+    date: '2026-08-27',
+    startTime: '2:00 PM',
+    endTime: '5:00 PM',
+    capacity: 60,
+  },
+  {
+    id: '28Aug_Morning',
+    dayKey: '28Aug',
+    timeSlot: 'Morning',
+    title: 'Thursday, 28 August — Morning',
+    date: '2026-08-28',
+    startTime: '9:00 AM',
+    endTime: '1:00 PM',
+    capacity: 60,
+  },
+  {
+    id: '28Aug_Afternoon',
+    dayKey: '28Aug',
+    timeSlot: 'Afternoon',
+    title: 'Thursday, 28 August — Afternoon',
+    date: '2026-08-28',
+    startTime: '2:00 PM',
+    endTime: '5:00 PM',
+    capacity: 60,
+  },
+  {
+    id: '29Aug_Morning',
+    dayKey: '29Aug',
+    timeSlot: 'Morning',
+    title: 'Friday, 29 August — Morning',
+    date: '2026-08-29',
+    startTime: '9:00 AM',
+    endTime: '1:00 PM',
+    capacity: 60,
+  },
+  {
+    id: '29Aug_Afternoon',
+    dayKey: '29Aug',
+    timeSlot: 'Afternoon',
+    title: 'Friday, 29 August — Afternoon',
+    date: '2026-08-29',
+    startTime: '2:00 PM',
+    endTime: '5:00 PM',
+    capacity: 60,
+  },
+];
+
+// Idempotent: only creates docs that don't exist yet, so it never clobbers a
+// live registeredCount if called again after seats have already been taken.
+async function ensureSessionsSeeded(): Promise<void> {
+  const sessionsRef = admin.firestore().collection('sessions');
+  const batch = admin.firestore().batch();
+  let didWrite = false;
+  for (const def of SESSION_DEFS) {
+    const ref = sessionsRef.doc(def.id);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      batch.set(ref, {
+        ...def,
+        registeredCount: 0,
+        availableSeats: def.capacity,
+      });
+      didWrite = true;
+    }
+  }
+  if (didWrite) await batch.commit();
+}
+
+// Callable so the registration form can seed-if-needed and fetch the full
+// session list in one round trip; the client also opens a live onSnapshot
+// listener on the collection afterwards for real-time seat updates.
+export const getSessions = onCall({ region: 'us-central1' }, async () => {
+  await ensureSessionsSeeded();
+  const snap = await admin.firestore().collection('sessions').get();
+  const sessions = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as SessionDef)
+    .sort((a, b) =>
+      a.date === b.date ?
+        a.startTime.localeCompare(b.startTime)
+      : a.date.localeCompare(b.date),
+    );
+  return { sessions };
+});
+
+// Callable from the registration form immediately after a successful Paystack
+// payment. This is the only path that can ever increment registeredCount —
+// public clients cannot write to `sessions` directly (see firestore.rules) —
+// and the increment + capacity check happen inside a single Firestore
+// transaction, so two participants racing for the last seat can never both
+// succeed regardless of what either client's UI showed them a moment earlier.
+export const reserveSessionSeat = onCall<{ sessionId?: string }>(
+  { region: 'us-central1' },
+  async (request) => {
+    const sessionId = (request.data?.sessionId || '').trim();
+    if (!sessionId) {
+      throw new HttpsError('invalid-argument', 'sessionId is required.');
+    }
+
+    await ensureSessionsSeeded();
+    const ref = admin.firestore().collection('sessions').doc(sessionId);
+
+    return admin.firestore().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) {
+        throw new HttpsError('not-found', 'That session does not exist.');
+      }
+      const data = snap.data() as { capacity: number; registeredCount: number };
+      const capacity = Number(data.capacity) || 0;
+      const registeredCount = Number(data.registeredCount) || 0;
+      if (registeredCount >= capacity) {
+        throw new HttpsError(
+          'resource-exhausted',
+          'This session is full. Please choose another day or session.',
+        );
+      }
+      const nextCount = registeredCount + 1;
+      tx.update(ref, {
+        registeredCount: nextCount,
+        availableSeats: capacity - nextCount,
+      });
+      return { success: true, availableSeats: capacity - nextCount };
+    });
+  },
+);
+
 // ─── Cloud Function ───────────────────────────────────────────────────────────
 export const sendRegistrationConfirmation = onDocumentWritten(
   {
@@ -114,42 +274,6 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const data = snap.data() as RegistrationData;
     const docRef = snap.ref;
     const registrationId = event.params.registrationId;
-
-    // ── Update session counts in workshop/siteContent ──────────────────────
-    // Runs on every create/update so counts stay accurate as registrations change.
-    {
-      const beforeData =
-        event.data?.before?.exists ?
-          (event.data.before.data() as RegistrationData)
-        : null;
-      // Session key format: "27Aug_Morning", "28Aug_Afternoon", etc.
-      const beforeKey =
-        beforeData && beforeData.attendanceMode !== 'Virtual' ?
-          (beforeData.sessionPreference ?? null)
-        : null;
-      const afterKey =
-        data.attendanceMode !== 'Virtual' ?
-          (data.sessionPreference ?? null)
-        : null;
-
-      if (beforeKey !== afterKey) {
-        const updates: Record<string, admin.firestore.FieldValue> = {};
-        if (beforeKey)
-          updates[`event.sessionCounts.${beforeKey}`] =
-            admin.firestore.FieldValue.increment(-1);
-        if (afterKey)
-          updates[`event.sessionCounts.${afterKey}`] =
-            admin.firestore.FieldValue.increment(1);
-        const siteRef = admin.firestore().doc('workshop/siteContent');
-        await siteRef.update(updates).catch(async () => {
-          await siteRef.set({ event: { sessionCounts: {} } }, { merge: true });
-          await siteRef.update(updates);
-        });
-        console.log(
-          `[${registrationId}] Session counts updated — ${beforeKey ?? 'none'} → ${afterKey ?? 'none'}`,
-        );
-      }
-    }
 
     // ── Sync a payment record for the admin Payments panel ─────────────────
     // The `payments` collection requires admin auth to write (see firestore.rules),
@@ -245,21 +369,11 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const participation = data.participationType || data.type || '—';
     const attendance = data.attendanceMode || data.mode || '—';
     const sessionPref = data.sessionPreference || '';
-    const SESSION_LABELS: Record<string, string> = {
-      '27Aug_Morning':
-        'Wednesday, 27 August — Morning Session (9:00 AM – 1:00 PM)',
-      '27Aug_Afternoon':
-        'Wednesday, 27 August — Afternoon Session (2:00 PM – 5:00 PM)',
-      '28Aug_Morning':
-        'Thursday, 28 August — Morning Session (9:00 AM – 1:00 PM)',
-      '28Aug_Afternoon':
-        'Thursday, 28 August — Afternoon Session (2:00 PM – 5:00 PM)',
-      '29Aug_Morning':
-        'Friday, 29 August — Morning Session (9:00 AM – 1:00 PM)',
-      '29Aug_Afternoon':
-        'Friday, 29 August — Afternoon Session (2:00 PM – 5:00 PM)',
-    };
-    const sessionLabel = SESSION_LABELS[sessionPref] ?? '—';
+    const matchedSession = SESSION_DEFS.find((s) => s.id === sessionPref);
+    const sessionLabel =
+      matchedSession ?
+        `${matchedSession.title} Session (${matchedSession.startTime} – ${matchedSession.endTime})`
+      : '—';
     const isPresenting = data.isSubmittingAbstract === 'Yes';
     const paperType = isPresenting ? data.paperType || '—' : '—';
     const authorNames = isPresenting ? data.authorNames || '—' : '—';

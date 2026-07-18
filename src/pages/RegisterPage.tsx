@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
 import { isMobilePhone } from "validator";
-import { functions, httpsCallable } from "../firebase.js";
+import { functions, httpsCallable, db, collection, onSnapshot } from "../firebase.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
@@ -64,9 +64,19 @@ interface EventData {
   dates?: string;
   title?: string;
   registrationOpen?: boolean;
-  morningCapacity?: number;
-  afternoonCapacity?: number;
-  sessionCounts?: Record<string, number>;
+}
+
+interface SessionDoc {
+  id: string;
+  dayKey: string;
+  timeSlot: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  registeredCount: number;
+  availableSeats: number;
 }
 
 interface RegisterPageProps {
@@ -89,12 +99,6 @@ const PROGRAMMES = [
   "PhD Computer Science",
   "Other (Specify)",
 ];
-
-const EVENT_DAYS = [
-  { key: "27Aug", label: "27 Aug", full: "Wednesday, 27 August" },
-  { key: "28Aug", label: "28 Aug", full: "Thursday, 28 August" },
-  { key: "29Aug", label: "29 Aug", full: "Friday, 29 August" },
-] as const;
 
 const PRESENTATION_TYPES = ["Oral Presentation", "Poster Presentation"];
 
@@ -206,15 +210,6 @@ const SUBMISSION_GUIDELINES = [
   "Failure to adhere to the 360-word limit may affect the selection of your abstract.",
 ];
 
-// Six selectable in-person day/session slots (3 workshop days × Morning/Afternoon)
-const SESSION_OPTIONS = EVENT_DAYS.flatMap((d) =>
-  (["Morning", "Afternoon"] as const).map((time) => ({
-    dayKey: d.key,
-    time,
-    label: `${d.full} — ${time}`,
-    timeRange: time === "Morning" ? "9:00 AM – 1:00 PM" : "2:00 PM – 5:00 PM",
-  })),
-);
 
 // ─── Nationalities (ISO 3166-1 / UN-recognised) ───────────────────────────────
 const NATIONALITIES: string[] = [
@@ -952,16 +947,45 @@ export default function RegisterPage({
   onRegister,
 }: RegisterPageProps) {
   const fee = event.fee || 100;
-  const morningCapacity = event.morningCapacity ?? 60;
-  const afternoonCapacity = event.afternoonCapacity ?? 60;
-  const sessionCounts = event.sessionCounts ?? {};
-  const getAvailable = (day: string, time: "Morning" | "Afternoon") => {
-    const taken = sessionCounts[`${day}_${time}`] ?? 0;
-    return Math.max(
-      0,
-      (time === "Morning" ? morningCapacity : afternoonCapacity) - taken,
+  // Seat availability lives in its own `sessions` collection (see
+  // functions/src/index.ts) rather than being derived from participant
+  // records — that's the single source of truth reserveSessionSeat's
+  // transaction keeps in sync, and this listener mirrors it here in real time.
+  const [sessions, setSessions] = useState<SessionDoc[]>([]);
+  const findSession = (dayKey: string, timeSlot: string) =>
+    sessions.find((s) => s.dayKey === dayKey && s.timeSlot === timeSlot);
+
+  useEffect(() => {
+    // Ensure the six canonical session docs exist (idempotent — only creates
+    // whatever's missing), then mirror the collection live so seat counts
+    // update immediately as other participants register.
+    if (functions) {
+      const getSessions = httpsCallable<
+        Record<string, never>,
+        { sessions: SessionDoc[] }
+      >(functions, "getSessions");
+      getSessions().catch((e) =>
+        console.warn("Could not seed/fetch sessions:", e),
+      );
+    }
+    if (!db || !collection || !onSnapshot) return;
+    const unsub = onSnapshot(
+      collection(db, "sessions"),
+      (snap) => {
+        const docs = snap.docs.map(
+          (d) => ({ id: d.id, ...d.data() }) as SessionDoc,
+        );
+        docs.sort((a, b) =>
+          a.date === b.date ?
+            a.startTime.localeCompare(b.startTime)
+          : a.date.localeCompare(b.date),
+        );
+        setSessions(docs);
+      },
+      (err) => console.warn("Sessions listener failed:", err.message),
     );
-  };
+    return () => unsub();
+  }, []);
 
   const [storedConfirmation] = useState(loadStoredConfirmation);
 
@@ -1151,15 +1175,9 @@ export default function RegisterPage({
         e.eventDay =
           "Please select the day and session you can attend in person.";
       else {
-        const avail = getAvailable(
-          form.eventDay,
-          form.sessionTime as "Morning" | "Afternoon",
-        );
-        if (avail <= 0) {
-          const dayLabel =
-            EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ??
-            form.eventDay;
-          e.eventDay = `The ${form.sessionTime} session on ${dayLabel} is full. Please choose another slot.`;
+        const matched = findSession(form.eventDay, form.sessionTime);
+        if (matched && matched.availableSeats <= 0) {
+          e.eventDay = `The ${form.sessionTime} session on ${matched.title} is full. Please choose another slot.`;
         }
       }
       if (form.isSubmittingAbstract === "Yes") {
@@ -1332,6 +1350,28 @@ export default function RegisterPage({
       },
       onSuccess: async (response) => {
         try {
+          if (functions && form.eventDay && form.sessionTime) {
+            const reserveSessionSeat = httpsCallable<
+              { sessionId: string },
+              { success: boolean; availableSeats: number }
+            >(functions, "reserveSessionSeat");
+            try {
+              await reserveSessionSeat({
+                sessionId: `${form.eventDay}_${form.sessionTime}`,
+              });
+            } catch (seatErr) {
+              const seatMsg =
+                seatErr instanceof Error ? seatErr.message : String(seatErr);
+              if (seatMsg.includes("resource-exhausted") || seatMsg.includes("full")) {
+                setPaying(false);
+                setRegistrationError(
+                  `The ${form.sessionTime} session you selected filled up while your payment was processing. Your payment was received (ref: ${response.reference}) — please contact support and quote this reference so we can help you switch to another available session.`,
+                );
+                return;
+              }
+              throw seatErr;
+            }
+          }
           await finishRegistration("Confirmed", response.reference, "paystack");
         } catch (err) {
           setPaying(false);
@@ -1882,29 +1922,26 @@ export default function RegisterPage({
                       marginTop: 6,
                     }}
                   >
-                    {SESSION_OPTIONS.map(
-                      ({ dayKey, time, label, timeRange }) => {
-                        const available = getAvailable(dayKey, time);
-                        const cap =
-                          time === "Morning" ? morningCapacity : (
-                            afternoonCapacity
-                          );
-                        const full = available <= 0;
-                        const selected =
-                          form.eventDay === dayKey && form.sessionTime === time;
-                        return (
-                          <button
-                            key={`${dayKey}_${time}`}
-                            type="button"
-                            disabled={full}
-                            onClick={() =>
-                              !full &&
-                              setForm((f) => ({
-                                ...f,
-                                eventDay: dayKey,
-                                sessionTime: time,
-                              }))
-                            }
+                    {sessions.map((s) => {
+                      const available = s.availableSeats;
+                      const cap = s.capacity;
+                      const full = available <= 0;
+                      const selected =
+                        form.eventDay === s.dayKey &&
+                        form.sessionTime === s.timeSlot;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          disabled={full}
+                          onClick={() =>
+                            !full &&
+                            setForm((f) => ({
+                              ...f,
+                              eventDay: s.dayKey,
+                              sessionTime: s.timeSlot,
+                            }))
+                          }
                             style={{
                               padding: "14px 12px",
                               borderRadius: 10,
@@ -1933,7 +1970,7 @@ export default function RegisterPage({
                                 marginBottom: 3,
                               }}
                             >
-                              {label}
+                              {s.title}
                             </div>
                             <div
                               style={{
@@ -1942,7 +1979,7 @@ export default function RegisterPage({
                                 marginBottom: 6,
                               }}
                             >
-                              {timeRange}
+                              {s.startTime} – {s.endTime}
                             </div>
                             <div
                               style={{
@@ -1961,8 +1998,7 @@ export default function RegisterPage({
                             </div>
                           </button>
                         );
-                      },
-                    )}
+                      })}
                   </div>
 
                   {errors.eventDay && (
@@ -2197,7 +2233,7 @@ export default function RegisterPage({
                       ["Submitting Abstract", form.isSubmittingAbstract],
                       form.eventDay && [
                         "Day",
-                        EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ??
+                        findSession(form.eventDay, form.sessionTime)?.title ??
                           form.eventDay,
                       ],
                       form.sessionTime && [
@@ -2334,7 +2370,7 @@ export default function RegisterPage({
                           form.eventDay &&
                             form.sessionTime && [
                               "Day & Session",
-                              `${EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay} — ${form.sessionTime}`,
+                              `${findSession(form.eventDay, form.sessionTime)?.title ?? form.eventDay} — ${form.sessionTime}`,
                             ],
                           ["Participation", form.participationType],
                         ] as [string, string][]

@@ -40,6 +40,9 @@ interface RegistrationData {
   payment?: string;
   registeredAt?: string;
   registrationCode?: string;
+  studentId?: string;
+  payRef?: string;
+  paymentMethod?: string;
   emailSent?: boolean;
   emailDeliveryStatus?: string;
   [key: string]: unknown;
@@ -72,6 +75,26 @@ export const reserveRegistrationCode = onCall(
   async () => {
     const code = await getOrAssignRegistrationCode(undefined);
     return { code };
+  },
+);
+
+// Callable from the registration form to block duplicate registrations —
+// public clients can't read the registrations collection (see firestore.rules),
+// so this runs the lookup server-side with the Admin SDK.
+export const checkEmailRegistered = onCall<{ email?: string }>(
+  { region: 'us-central1' },
+  async (request) => {
+    const email = (request.data?.email || '').trim().toLowerCase();
+    if (!email || !email.includes('@')) return { exists: false };
+
+    const snap = await admin
+      .firestore()
+      .collection('registrations')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    return { exists: !snap.empty };
   },
 );
 
@@ -126,6 +149,45 @@ export const sendRegistrationConfirmation = onDocumentWritten(
           `[${registrationId}] Session counts updated — ${beforeKey ?? 'none'} → ${afterKey ?? 'none'}`,
         );
       }
+    }
+
+    // ── Sync a payment record for the admin Payments panel ─────────────────
+    // The `payments` collection requires admin auth to write (see firestore.rules),
+    // so public registrants can never create one themselves — the frontend used to
+    // compute a payment record locally but had no way to persist it. The Admin SDK
+    // bypasses that rule, so this is the only place a real payment record actually
+    // gets written. Runs on every write (not just the first) so status changes made
+    // by an admin (Confirm/Revoke in ParticipantsPanel) stay in sync here too.
+    {
+      const transactionId = data.payRef || registrationId;
+      const paymentDocId = transactionId.replace(/[^\w.-]/g, '_') || registrationId;
+      let fee = 100;
+      try {
+        const siteSnap = await admin.firestore().doc('workshop/siteContent').get();
+        const siteFee = (siteSnap.data() as { event?: { fee?: number } } | undefined)
+          ?.event?.fee;
+        if (siteFee) fee = Number(siteFee);
+      } catch {
+        // keep default fee
+      }
+      await admin
+        .firestore()
+        .doc(`payments/${paymentDocId}`)
+        .set(
+          {
+            id: paymentDocId,
+            transactionId,
+            studentId: data.studentId || '',
+            name: (data.fullName || data.name || 'Participant').trim(),
+            email: data.email || '',
+            programme: data.programme || '',
+            amount: fee,
+            method: data.paymentMethod || 'paystack',
+            date: data.registeredAt || new Date().toISOString(),
+            status: data.payment === 'Confirmed' ? 'Confirmed' : 'Pending',
+          },
+          { merge: true },
+        );
     }
 
     // ── Only send confirmation when payment is confirmed ───────────────────

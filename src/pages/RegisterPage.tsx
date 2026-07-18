@@ -6,6 +6,7 @@ import {
   ArrowRight,
   ArrowLeft,
   ChevronDown,
+  X,
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
 import { isMobilePhone } from "validator";
@@ -1011,6 +1012,9 @@ export default function RegisterPage({
     storedConfirmation?.confirmationRef ?? "",
   );
   const [registrationError, setRegistrationError] = useState("");
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDuplicateEmailModal, setShowDuplicateEmailModal] = useState(false);
 
   const initializePayment = usePaystackPayment({
     publicKey: (event.paystackKey || PAYSTACK_PUBLIC_KEY).trim(),
@@ -1181,8 +1185,34 @@ export default function RegisterPage({
     return Object.keys(e).length === 0;
   };
 
-  const next = () => {
-    if (validate()) setStep((s) => Math.min(s + 1, 3));
+  const next = async () => {
+    if (!validate()) return;
+
+    if (step === 0 && functions) {
+      setCheckingEmail(true);
+      try {
+        const checkEmail = httpsCallable<
+          { email: string },
+          { exists: boolean }
+        >(functions, "checkEmailRegistered");
+        const result = await checkEmail({ email: form.email });
+        if (result.data.exists) {
+          setErrors((e) => ({
+            ...e,
+            email:
+              "This email is already registered for the workshop. Each participant may only register once.",
+          }));
+          setShowDuplicateEmailModal(true);
+          setCheckingEmail(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Could not verify email uniqueness, proceeding:", e);
+      }
+      setCheckingEmail(false);
+    }
+
+    setStep((s) => Math.min(s + 1, 3));
   };
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
@@ -1246,6 +1276,34 @@ export default function RegisterPage({
     setRegistrationError("");
     setPaying(true);
 
+    // Re-check email uniqueness right before payment — the same check ran when
+    // leaving Personal Details, but time has passed (the applicant may have filled
+    // in several more steps, or someone else may have registered with this email
+    // in the meantime), so we verify again to avoid charging for a registration
+    // that's about to be rejected. This is a UX safeguard only — the Firestore
+    // security rules are what actually make duplicate emails unbypassable.
+    if (functions) {
+      try {
+        const checkEmail = httpsCallable<{ email: string }, { exists: boolean }>(
+          functions,
+          "checkEmailRegistered",
+        );
+        const result = await checkEmail({ email: form.email });
+        if (result.data.exists) {
+          setPaying(false);
+          setErrors((e) => ({
+            ...e,
+            email:
+              "This email is already registered for the workshop. Each participant may only register once.",
+          }));
+          setShowDuplicateEmailModal(true);
+          return;
+        }
+      } catch (e) {
+        console.warn("Could not verify email uniqueness before payment, proceeding:", e);
+      }
+    }
+
     // Reserve the same sequential code up front so the Paystack reference and
     // the "Registration ID" shown in the confirmation email match exactly.
     let reference = `UG-DCS-PRC2026-${Date.now()}`;
@@ -1275,11 +1333,18 @@ export default function RegisterPage({
       onSuccess: async (response) => {
         try {
           await finishRegistration("Confirmed", response.reference, "paystack");
-        } catch {
+        } catch (err) {
           setPaying(false);
-          setRegistrationError(
-            `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
-          );
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.startsWith("DUPLICATE_EMAIL")) {
+            setRegistrationError(
+              `This email address (${form.email}) appears to already be registered for the workshop. Please use a different email, or contact the administrator if you believe this is an error. Your payment was received (ref: ${response.reference}) — please quote this reference when contacting support.`,
+            );
+          } else {
+            setRegistrationError(
+              `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
+            );
+          }
         }
       },
       onClose: () => {
@@ -2200,7 +2265,7 @@ export default function RegisterPage({
                 )}
                 <button
                   className="btn-gold"
-                  onClick={initPaystack}
+                  onClick={() => setShowConfirmModal(true)}
                   disabled={paying}
                   style={{
                     width: "100%",
@@ -2216,6 +2281,104 @@ export default function RegisterPage({
                     </span>
                   }
                 </button>
+
+                {/* Confirm-before-payment modal */}
+                {showConfirmModal && (
+                  <div
+                    className="fixed inset-0 bg-black/45 z-[999] flex items-center justify-center p-6"
+                    onClick={() => setShowConfirmModal(false)}
+                  >
+                    <div
+                      className="bg-white rounded-2xl p-8 max-w-[520px] w-full shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex justify-between items-center mb-5">
+                        <h3 className="font-serif m-0">
+                          Confirm Your Registration
+                        </h3>
+                        <button
+                          onClick={() => setShowConfirmModal(false)}
+                          className="bg-transparent border-none cursor-pointer text-[#888]"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                      <p className="text-[#555] text-[13px] leading-[1.6] mb-5">
+                        Please confirm the details below are correct before
+                        paying. You won't be able to change them afterwards.
+                      </p>
+                      {(
+                        [
+                          [
+                            "Name",
+                            [form.title, form.firstName, form.lastName]
+                              .filter(Boolean)
+                              .join(" "),
+                          ],
+                          ["Email", form.email],
+                          ["Phone", form.phone],
+                          [
+                            "Institution",
+                            form.institution === "Other (Specify)" ?
+                              form.otherInstitution
+                            : form.institution,
+                          ],
+                          form.isCsStudent === "Yes" && [
+                            "Programme",
+                            form.programme,
+                          ],
+                          form.isCsStudent === "Yes" && [
+                            "Cohort",
+                            form.cohort,
+                          ],
+                          form.eventDay &&
+                            form.sessionTime && [
+                              "Day & Session",
+                              `${EVENT_DAYS.find((d) => d.key === form.eventDay)?.full ?? form.eventDay} — ${form.sessionTime}`,
+                            ],
+                          ["Participation", form.participationType],
+                        ] as [string, string][]
+                      )
+                        .filter(Boolean)
+                        .map(([label, val]) => (
+                          <div
+                            key={label}
+                            className="flex justify-between py-[9px] border-b border-[#f0f0f0] text-sm"
+                          >
+                            <span className="text-[#666] shrink-0 mr-4">
+                              {label}
+                            </span>
+                            <span className="font-medium text-right">
+                              {val || "—"}
+                            </span>
+                          </div>
+                        ))}
+                      <div className="flex justify-between pt-4 mt-1 text-[15px] font-bold text-ug-blue">
+                        <span>Registration Fee</span>
+                        <span>GHS {fee}.00</span>
+                      </div>
+                      <div className="flex gap-3 mt-6">
+                        <button
+                          className="btn-outline"
+                          style={{ flex: 1, justifyContent: "center" }}
+                          onClick={() => setShowConfirmModal(false)}
+                        >
+                          Edit Details
+                        </button>
+                        <button
+                          className="btn-gold"
+                          style={{ flex: 1, justifyContent: "center" }}
+                          onClick={() => {
+                            setShowConfirmModal(false);
+                            initPaystack();
+                          }}
+                        >
+                          Confirm &amp; Pay
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -2228,14 +2391,59 @@ export default function RegisterPage({
                 </button>
               : <div />}
               {step < 3 ?
-                <button className="btn-primary" onClick={next}>
+                <button
+                  className="btn-primary"
+                  onClick={next}
+                  disabled={checkingEmail}
+                >
                   <span className="inline-flex items-center gap-1.5">
-                    Continue <ArrowRight size={14} />
+                    {checkingEmail ? "Checking…" : "Continue"}
+                    {!checkingEmail && <ArrowRight size={14} />}
                   </span>
                 </button>
               : <div />}
             </div>
           </div>
+
+          {/* Duplicate-email block modal — can trigger from any step */}
+          {showDuplicateEmailModal && (
+            <div
+              className="fixed inset-0 bg-black/45 z-[999] flex items-center justify-center p-6"
+              onClick={() => setShowDuplicateEmailModal(false)}
+            >
+              <div
+                className="bg-white rounded-2xl p-8 max-w-[440px] w-full shadow-[0_20px_60px_rgba(0,0,0,0.25)] text-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="mx-auto mb-4 flex items-center justify-center"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "#fdecea",
+                  }}
+                >
+                  <Lock size={22} color="#c0392b" />
+                </div>
+                <h3 className="font-serif mb-3">Email Already Registered</h3>
+                <p className="text-[#555] text-[14px] leading-[1.6] mb-6">
+                  A registration with this email address already exists in
+                  the system. Please use a different email address.
+                </p>
+                <button
+                  className="btn-primary"
+                  style={{ width: "100%", justifyContent: "center" }}
+                  onClick={() => {
+                    setShowDuplicateEmailModal(false);
+                    setStep(0);
+                  }}
+                >
+                  Use a Different Email
+                </button>
+              </div>
+            </div>
+          )}
 
           <p className="text-center mt-4 text-[13px] text-[#888]">
             Registration is open to all postgraduate students at the University

@@ -38,35 +38,28 @@ service cloud.firestore {
     }
 
     // Registrations:
-    //   CREATE — public users can submit the registration form (email must be valid).
-    //   UPDATE — public users can update their own record (email field cannot change,
-    //            and they cannot manipulate Cloud-Function-only fields like emailSent).
-    //   READ / DELETE — admin only.
-    //   Cloud Functions (Admin SDK) bypass all rules and can write email metadata.
+    //   CREATE — public users can submit the registration form once (email must be
+    //            valid). The frontend derives the document ID solely from the
+    //            normalized email (see makeDocId(email) in App.tsx), so a second
+    //            registration attempt with an already-used email targets the SAME
+    //            document. Firestore classifies that as an update, not a create —
+    //            and updates require admin auth below — so duplicate-email
+    //            registration is rejected server-side no matter what the client does.
+    //   READ / UPDATE / DELETE — admin only. There is no legitimate public "edit my
+    //            own registration" flow: the form only ever creates a document once,
+    //            immediately after a successful Paystack payment.
+    //   Cloud Functions (Admin SDK) bypass all rules and can always write regardless
+    //            (email delivery metadata, sequential registrationCode, etc.).
     //
     // Abstract sections (Background/Methods/Results/Significance) are capped at 100
     // words each in the UI. Security rules can't count words, so as a backend
     // defense-in-depth check we cap each field at 800 characters — generous enough
     // for 100 real-world words (~6 chars/word average) without false-rejecting.
-    //
-    // The update rule checks diff(resource.data).affectedKeys() rather than
-    // request.resource.data directly: on a merge write, request.resource.data is the
-    // full POST-merge document, so it always carries over emailSent/emailDeliveryStatus
-    // once the Cloud Function has stamped them — a plain 'in' check would then reject
-    // every future client update forever. affectedKeys() only reports fields this
-    // specific write actually adds/changes/removes, so untouched carried-over fields
-    // don't trip the guard.
     match /registrations/{document} {
       allow create: if request.resource.data.email is string
                     && request.resource.data.email.matches(".*@.*")
                     && abstractSectionsWithinLimit(request.resource.data);
-      allow update: if request.resource.data.email is string
-                    && request.resource.data.email.matches(".*@.*")
-                    && request.resource.data.email == resource.data.email
-                    && !request.resource.data.diff(resource.data).affectedKeys()
-                          .hasAny(['emailSent', 'emailDeliveryStatus'])
-                    && abstractSectionsWithinLimit(request.resource.data);
-      allow read, delete: if request.auth != null;
+      allow read, update, delete: if request.auth != null;
     }
 
     // Payments — written by Cloud Function (Admin SDK) or admin only.

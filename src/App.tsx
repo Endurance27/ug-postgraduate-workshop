@@ -1243,7 +1243,14 @@ export default function App() {
     });
 
     if (db && doc && setDoc) {
-      const registrationDocId = makeDocId(studentId, email);
+      // Deterministic, email-only ID: this is what makes the "one registration per
+      // email" rule in firestore.rules airtight. A second registration attempt with
+      // the same email always targets this SAME document, which Firestore treats as
+      // an update (not a create) once it exists — and public clients aren't allowed
+      // to update, so the write is rejected server-side regardless of what the
+      // frontend does. (Previously this mixed in studentId, so two attempts with
+      // the same email but different Student ID silently created separate documents.)
+      const registrationDocId = makeDocId(email);
       // Exclude Cloud-Function-only fields so the Firestore update rule doesn't reject them
       const {
         emailSent: _es,
@@ -1257,6 +1264,12 @@ export default function App() {
           merge: true,
         });
       } catch (e) {
+        const code = (e as { code?: string })?.code;
+        if (code === "permission-denied") {
+          throw new Error(
+            "DUPLICATE_EMAIL: This email address has already been used to register for the workshop.",
+          );
+        }
         const msg = e instanceof Error ? e.message : String(e);
         console.error("Registration save failed:", msg);
         throw new Error(msg);

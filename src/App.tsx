@@ -62,6 +62,7 @@ interface Participant {
   abstractMethods?: string;
   abstractResults?: string;
   abstractSignificance?: string;
+  registrationCode?: string;
   registeredAt?: string;
   updatedAt?: string;
   payRef?: string;
@@ -1171,6 +1172,9 @@ export default function App() {
       abstractSignificance:
         ((registration as Record<string, unknown>)
           .abstractSignificance as string) || "",
+      registrationCode:
+        ((registration as Record<string, unknown>)
+          .registrationCode as string) || "",
       sessionPreference:
         ((registration as Record<string, unknown>)
           .sessionPreference as string) || "",

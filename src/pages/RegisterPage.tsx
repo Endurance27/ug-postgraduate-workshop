@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
 import { isMobilePhone } from "validator";
+import { functions, httpsCallable } from "../firebase.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
@@ -43,6 +44,7 @@ interface RegistrationForm {
   abstractMethods: string;
   abstractResults: string;
   abstractSignificance: string;
+  registrationCode: string;
 }
 
 type FormErrors = Partial<Record<keyof RegistrationForm, string>>;
@@ -996,6 +998,7 @@ export default function RegisterPage({
       abstractMethods: "",
       abstractResults: "",
       abstractSignificance: "",
+      registrationCode: "",
     },
   );
   const [errors, setErrors] = useState<FormErrors>({});
@@ -1020,16 +1023,6 @@ export default function RegisterPage({
           display_name: "Name",
           variable_name: "name",
           value: `${form.firstName} ${form.lastName}`.trim(),
-        },
-        {
-          display_name: "Category of Participant",
-          variable_name: "participant_category",
-          value: form.participantCategory,
-        },
-        {
-          display_name: "Programme",
-          variable_name: "programme",
-          value: form.programme,
         },
       ],
     },
@@ -1209,6 +1202,11 @@ export default function RegisterPage({
       fullName,
       name: fullName,
       sessionPreference,
+      // `reference` (the Paystack response reference) is authoritative here —
+      // `form.registrationCode` can be stale because the `set()` call in
+      // initPaystack happens in the same render as initializePayment(), so the
+      // onSuccess closure below still sees the pre-update form.
+      registrationCode: reference || form.registrationCode,
     };
 
     const saved = (await onRegister?.(enrichedForm, {
@@ -1244,12 +1242,33 @@ export default function RegisterPage({
     });
   };
 
-  const initPaystack = () => {
+  const initPaystack = async () => {
     setRegistrationError("");
     setPaying(true);
+
+    // Reserve the same sequential code up front so the Paystack reference and
+    // the "Registration ID" shown in the confirmation email match exactly.
+    let reference = `UG-DCS-PRC2026-${Date.now()}`;
+    try {
+      if (functions) {
+        const reserveRegistrationCode = httpsCallable<
+          Record<string, never>,
+          { code: string }
+        >(functions, "reserveRegistrationCode");
+        const result = await reserveRegistrationCode();
+        reference = result.data.code;
+      }
+    } catch (e) {
+      console.warn(
+        "Could not reserve a sequential registration code, falling back to a generated reference:",
+        e,
+      );
+    }
+    set("registrationCode", reference);
+
     initializePayment({
       config: {
-        reference: `UGPGW2026-${Date.now()}`,
+        reference,
         email: form.email,
         amount: fee * 100,
       },

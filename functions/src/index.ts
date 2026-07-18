@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+import { onCall } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 import * as nodemailer from 'nodemailer';
 
@@ -61,6 +62,18 @@ async function getOrAssignRegistrationCode(
     return `${REGISTRATION_CODE_PREFIX}-${String(nextNumber).padStart(3, '0')}`;
   });
 }
+
+// Callable from the registration form BEFORE payment, so the Paystack reference
+// and the "Registration ID" shown in the confirmation email are the same value.
+// The registration document later reuses this code as-is (see getOrAssignRegistrationCode
+// above) instead of minting a new one.
+export const reserveRegistrationCode = onCall(
+  { region: 'us-central1' },
+  async () => {
+    const code = await getOrAssignRegistrationCode(undefined);
+    return { code };
+  },
+);
 
 // ─── Cloud Function ───────────────────────────────────────────────────────────
 export const sendRegistrationConfirmation = onDocumentWritten(
@@ -161,7 +174,9 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     // ── Build content ──────────────────────────────────────────────────────
     const name = (data.fullName || data.name || 'Participant').trim();
     const institution =
-      (data.institution === 'Other (Specify)' ? data.otherInstitution : data.institution) || '—';
+      (data.institution === 'Other (Specify)' ?
+        data.otherInstitution
+      : data.institution) || '—';
     const programme = data.programme || '—';
     const cohort = data.cohort || '—';
     const nationality = data.nationality || '—';
@@ -231,6 +246,8 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       await transporter.sendMail({
         from: `"DCS Postgraduate Workshop 2026" <${emailUser.value()}>`,
         to: recipientEmail,
+        cc: 'dcsworkshop@ug.edu.gh',
+        replyTo: 'dcsworkshop@ug.edu.gh',
         subject:
           'Registration Received – 2nd Annual DCS Postgraduate Workshop 2026',
         html,
@@ -431,7 +448,7 @@ function buildEmailHtml(d: EmailData): string {
                 Regards,<br/>
                 <strong style="color:#1B3A6B;">Workshop Planning &amp; Organisation Committee,</strong><br/>
                 <span style="color:#999;font-size:12px;">
-                  Department of Computer Science &nbsp;·&nbsp; University of Ghana
+                  Department of Computer Science &nbsp;·&nbsp; University of Ghana, Legon
                 </span>
               </p>
             </td>

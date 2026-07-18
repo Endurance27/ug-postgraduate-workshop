@@ -29,6 +29,11 @@ import {
   uploadBytesResumable as _upload,
   getDownloadURL as _dlUrl,
 } from 'firebase/storage';
+import {
+  getFunctions,
+  httpsCallable as _httpsCallable,
+  Functions,
+} from 'firebase/functions';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FirebaseConfig {
@@ -88,6 +93,15 @@ export {
   _upload as uploadBytesResumable,
   _dlUrl as getDownloadURL,
 };
+
+// Functions — protected so a missing/unconfigured project can't crash the app
+let _functions: Functions | null = null;
+try {
+  _functions = getFunctions(app, 'us-central1');
+} catch (e) {
+  console.warn('Functions init failed:', (e as Error).message);
+}
+export { _functions as functions, _httpsCallable as httpsCallable };
 
 export {
   onAuthStateChanged,

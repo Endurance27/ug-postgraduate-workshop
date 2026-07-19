@@ -7,6 +7,11 @@ import * as nodemailer from 'nodemailer';
 // ─── Initialise ───────────────────────────────────────────────────────────────
 admin.initializeApp();
 
+// Matches storageBucket in src/firebase.ts — named explicitly since the
+// legacy *.appspot.com bucket the Admin SDK infers by default doesn't exist
+// for this project.
+const STORAGE_BUCKET = 'ug-postgrad-workshop-d6919.firebasestorage.app';
+
 // Secrets — set via: firebase functions:secrets:set EMAIL_USER / EMAIL_PASSWORD
 // For Gmail, EMAIL_PASSWORD must be an App Password (not your Google account password).
 // Enable it at: myaccount.google.com/apppasswords
@@ -18,9 +23,15 @@ interface RegistrationData {
   name?: string;
   fullName?: string;
   title?: string;
+  firstName?: string;
+  lastName?: string;
+  otherNames?: string;
+  gender?: string;
   email?: string;
+  phone?: string;
   institution?: string;
   otherInstitution?: string;
+  participantCategory?: string;
   programme?: string;
   cohort?: string;
   isCsStudent?: string;
@@ -37,6 +48,14 @@ interface RegistrationData {
   authorNames?: string;
   presentationType?: string;
   presentationTitle?: string;
+  abstractBackground?: string;
+  abstractMethods?: string;
+  abstractResults?: string;
+  abstractSignificance?: string;
+  abstractSubmissionMethod?: string;
+  abstractFileUrl?: string;
+  abstractFileName?: string;
+  abstractFilePath?: string;
   payment?: string;
   registeredAt?: string;
   registrationCode?: string;
@@ -275,6 +294,22 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const docRef = snap.ref;
     const registrationId = event.params.registrationId;
 
+    // Fetched once and reused for both the payment record and the confirmation
+    // email, which both need to show the registration fee.
+    let fee = 100;
+    try {
+      const siteSnap = await admin
+        .firestore()
+        .doc('workshop/siteContent')
+        .get();
+      const siteFee = (
+        siteSnap.data() as { event?: { fee?: number } } | undefined
+      )?.event?.fee;
+      if (siteFee) fee = Number(siteFee);
+    } catch {
+      // keep default fee
+    }
+
     // ── Sync a payment record for the admin Payments panel ─────────────────
     // The `payments` collection requires admin auth to write (see firestore.rules),
     // so public registrants can never create one themselves — the frontend used to
@@ -284,16 +319,8 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     // by an admin (Confirm/Revoke in ParticipantsPanel) stay in sync here too.
     {
       const transactionId = data.payRef || registrationId;
-      const paymentDocId = transactionId.replace(/[^\w.-]/g, '_') || registrationId;
-      let fee = 100;
-      try {
-        const siteSnap = await admin.firestore().doc('workshop/siteContent').get();
-        const siteFee = (siteSnap.data() as { event?: { fee?: number } } | undefined)
-          ?.event?.fee;
-        if (siteFee) fee = Number(siteFee);
-      } catch {
-        // keep default fee
-      }
+      const paymentDocId =
+        transactionId.replace(/[^\w.-]/g, '_') || registrationId;
       await admin
         .firestore()
         .doc(`payments/${paymentDocId}`)
@@ -358,13 +385,17 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     });
 
     // ── Build content ──────────────────────────────────────────────────────
+    // Mirrors every field shown on the frontend's Registration Summary page
+    // (RegisterPage.tsx Step 3) so the email is a complete record of it.
     const name = (data.fullName || data.name || 'Participant').trim();
     const institution =
       (data.institution === 'Other (Specify)' ?
         data.otherInstitution
       : data.institution) || '—';
-    const programme = data.programme || '—';
-    const cohort = data.cohort || '—';
+    const isCsStudent = data.isCsStudent === 'Yes';
+    const programme = isCsStudent ? data.programme || '—' : '—';
+    const cohort = isCsStudent ? data.cohort || '—' : '—';
+    const studentId = isCsStudent ? data.studentId || '—' : '—';
     const nationality = data.nationality || '—';
     const participation = data.participationType || data.type || '—';
     const attendance = data.attendanceMode || data.mode || '—';
@@ -378,6 +409,12 @@ export const sendRegistrationConfirmation = onDocumentWritten(
     const paperType = isPresenting ? data.paperType || '—' : '—';
     const authorNames = isPresenting ? data.authorNames || '—' : '—';
     const presentationType = isPresenting ? data.presentationType || '—' : '—';
+    const presentationTitle =
+      isPresenting ? data.presentationTitle || '—' : '—';
+    const thematicAreas =
+      isPresenting && data.thematicAreas?.length ?
+        data.thematicAreas.join(', ')
+      : '—';
     const paymentStatus = data.payment || 'Pending';
     const registeredAt =
       data.registeredAt ?
@@ -391,20 +428,80 @@ export const sendRegistrationConfirmation = onDocumentWritten(
         }) + ' (GMT+0)'
       : new Date().toLocaleString('en-GB');
 
+    // ── Abstract: either labelled sections in the email body, or an attachment ──
+    const abstractMethod =
+      isPresenting ? data.abstractSubmissionMethod || '' : '';
+    const abstractSections =
+      isPresenting && abstractMethod !== 'Upload' ?
+        [
+          ['Background', data.abstractBackground],
+          ['Methods', data.abstractMethods],
+          ['Results', data.abstractResults],
+          ['Significance', data.abstractSignificance],
+        ]
+          .filter(([, text]) => text)
+          .map(([label, text]) => ({
+            label: label as string,
+            text: text as string,
+          }))
+      : [];
+
+    let abstractAttachment: {
+      filename: string;
+      content: Buffer;
+      contentType: string;
+    } | null = null;
+    if (isPresenting && abstractMethod === 'Upload' && data.abstractFilePath) {
+      try {
+        const file = admin
+          .storage()
+          .bucket(STORAGE_BUCKET)
+          .file(data.abstractFilePath);
+        const [buffer] = await file.download();
+        const [metadata] = await file.getMetadata();
+        abstractAttachment = {
+          filename: data.abstractFileName || 'abstract',
+          content: buffer,
+          contentType: metadata.contentType || 'application/octet-stream',
+        };
+      } catch (err) {
+        console.warn(
+          `[${registrationId}] Could not fetch abstract file for attachment:`,
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    }
+
     const html = buildEmailHtml({
       name,
       email: recipientEmail,
       registrationCode,
+      title: data.title || '—',
+      firstName: data.firstName || '—',
+      lastName: data.lastName || '—',
+      otherNames: data.otherNames || '—',
+      gender: data.gender || '—',
+      phone: data.phone || '—',
       institution,
+      participantCategory: data.participantCategory || '—',
+      isCsStudent: data.isCsStudent || '—',
+      studentId,
       programme,
       cohort,
       nationality,
       participation,
       attendance,
       sessionLabel,
+      isSubmittingAbstract: data.isSubmittingAbstract || '—',
       paperType,
+      thematicAreas,
       authorNames,
       presentationType,
+      presentationTitle,
+      abstractMethod,
+      abstractSections,
+      hasAbstractAttachment: abstractAttachment !== null,
+      fee,
       paymentStatus,
       registeredAt,
     });
@@ -427,6 +524,16 @@ export const sendRegistrationConfirmation = onDocumentWritten(
         subject:
           'Registration Received – 2nd Annual DCS Postgraduate Workshop 2026',
         html,
+        attachments:
+          abstractAttachment ?
+            [
+              {
+                filename: abstractAttachment.filename,
+                content: abstractAttachment.content,
+                contentType: abstractAttachment.contentType,
+              },
+            ]
+          : undefined,
       });
 
       // ── Success metadata ─────────────────────────────────────────────────
@@ -463,16 +570,32 @@ interface EmailData {
   name: string;
   email: string;
   registrationCode: string;
+  title: string;
+  firstName: string;
+  lastName: string;
+  otherNames: string;
+  gender: string;
+  phone: string;
   institution: string;
+  participantCategory: string;
+  isCsStudent: string;
+  studentId: string;
   programme: string;
   cohort: string;
   nationality: string;
   participation: string;
   attendance: string;
   sessionLabel: string;
+  isSubmittingAbstract: string;
   paperType: string;
+  thematicAreas: string;
   authorNames: string;
   presentationType: string;
+  presentationTitle: string;
+  abstractMethod: string;
+  abstractSections: { label: string; text: string }[];
+  hasAbstractAttachment: boolean;
+  fee: number;
   paymentStatus: string;
   registeredAt: string;
 }
@@ -486,6 +609,14 @@ function row(label: string, value: string): string {
                  color:#1a1a1a;font-size:13px;font-weight:500;
                  vertical-align:top;">${value}</td>
     </tr>`;
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br/>');
 }
 
 function buildEmailHtml(d: EmailData): string {
@@ -516,6 +647,50 @@ function buildEmailHtml(d: EmailData): string {
     </tr>`,
     )
     .join('');
+
+  // ── Abstract: labelled sections for manual entry, or a note when the
+  // abstract was uploaded as a file — the file itself is attached separately.
+  let abstractSectionHtml = '';
+  if (d.abstractSections.length > 0) {
+    const sectionsHtml = d.abstractSections
+      .map(
+        (s) => `
+      <div style="margin-bottom:14px;">
+        <p style="color:#1B3A6B;font-size:12px;font-weight:700;margin:0 0 4px;">
+          ${escapeHtml(s.label)}
+        </p>
+        <p style="color:#444;font-size:13px;line-height:1.7;margin:0;
+                  background:#ffffff;border:1px solid #e0e6f0;border-radius:8px;
+                  padding:10px 14px;white-space:pre-wrap;">
+          ${escapeHtml(s.text)}
+        </p>
+      </div>`,
+      )
+      .join('');
+    abstractSectionHtml = `
+      <div style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;
+                  padding:20px 24px;margin-bottom:22px;">
+        <p style="color:#1B3A6B;font-size:10px;font-weight:700;
+                   letter-spacing:0.12em;text-transform:uppercase;
+                   margin:0 0 14px;">
+          Submitted Abstract
+        </p>
+        ${sectionsHtml}
+      </div>`;
+  } else if (d.hasAbstractAttachment) {
+    abstractSectionHtml = `
+      <div style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;
+                  padding:16px 24px;margin-bottom:22px;">
+        <p style="color:#1B3A6B;font-size:10px;font-weight:700;
+                   letter-spacing:0.12em;text-transform:uppercase;
+                   margin:0 0 8px;">
+          Submitted Abstract
+        </p>
+        <p style="color:#444;font-size:13px;line-height:1.6;margin:0;">
+          📎 Your submitted abstract file is attached to this email.
+        </p>
+      </div>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -567,8 +742,8 @@ function buildEmailHtml(d: EmailData): string {
               </p>
               <p style="color:#555;font-size:14px;line-height:1.75;margin:0 0 28px;">
                 Thank you for registering for the
-                <strong>2nd Annual DCS Postgraduate Students Workshop</strong>.
-                Your registration has been received and your place is reserved.
+                <strong>2nd Edition of the Annual DCS Postgraduate Research Conference & Workshop (PRC 2026).</strong>.
+                Your registration has been received and your seat reserved.
               </p>
 
               <!-- Details table -->
@@ -582,22 +757,34 @@ function buildEmailHtml(d: EmailData): string {
                 </p>
                 <table width="100%" cellpadding="0" cellspacing="0">
                   ${row('Registration ID', d.registrationCode)}
-                  ${row('Name', d.name)}
+                  ${row('Title', d.title)}
+                  ${row('First Name', d.firstName)}
+                  ${row('Last Name', d.lastName)}
+                  ${d.otherNames !== '—' ? row('Other Names', d.otherNames) : ''}
+                  ${row('Gender', d.gender)}
                   ${row('Email', d.email)}
+                  ${row('Phone', d.phone)}
                   ${row('Institution', d.institution)}
-                  ${row('Programme', d.programme)}
-                  ${row('Cohort', d.cohort)}
+                  ${row('Category of Participant', d.participantCategory)}
                   ${row('Nationality', d.nationality)}
-                  ${row('Participation', d.participation)}
-                  ${row('Attendance Mode', d.attendance)}
+                  ${d.isCsStudent === 'Yes' ? row('Student ID', d.studentId) : ''}
+                  ${d.isCsStudent === 'Yes' ? row('Programme', d.programme) : ''}
+                  ${d.isCsStudent === 'Yes' ? row('Cohort', d.cohort) : ''}
+                  ${row('Submitting Abstract', d.isSubmittingAbstract)}
                   ${d.sessionLabel !== '—' ? row('Session', d.sessionLabel) : ''}
+                  ${row('Participation', d.participation)}
                   ${d.paperType !== '—' ? row('Type of Paper', d.paperType) : ''}
+                  ${d.thematicAreas !== '—' ? row('Thematic Areas', d.thematicAreas) : ''}
                   ${d.authorNames !== '—' ? row('Author(s)', d.authorNames) : ''}
                   ${d.presentationType !== '—' ? row('Presentation Type', d.presentationType) : ''}
+                  ${d.presentationTitle !== '—' ? row('Presentation Title', d.presentationTitle) : ''}
                   ${row('Submitted On', d.registeredAt)}
+                  ${row('Registration Fee', `GHS ${d.fee}.00`)}
                   ${row('Payment Status', statusBadge)}
                 </table>
               </div>
+
+              ${abstractSectionHtml}
 
               <!-- Next steps -->
               <p style="color:#1B3A6B;font-size:10px;font-weight:700;

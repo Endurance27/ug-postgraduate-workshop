@@ -36,6 +36,10 @@ interface Participant {
   name: string;
   fullName?: string;
   title?: string;
+  firstName?: string;
+  lastName?: string;
+  otherNames?: string;
+  gender?: string;
   email: string;
   phone?: string;
   institution?: string;
@@ -62,6 +66,10 @@ interface Participant {
   abstractMethods?: string;
   abstractResults?: string;
   abstractSignificance?: string;
+  abstractSubmissionMethod?: string;
+  abstractFileUrl?: string;
+  abstractFileName?: string;
+  abstractFilePath?: string;
   registrationCode?: string;
   registeredAt?: string;
   updatedAt?: string;
@@ -1123,6 +1131,10 @@ export default function App() {
       name: fullName || email,
       fullName: fullName || email,
       title: registration.title || "",
+      firstName: registration.firstName || "",
+      lastName: registration.lastName || "",
+      otherNames: registration.otherNames || "",
+      gender: registration.gender || "",
       email,
       phone: registration.phone || "",
       institution: registration.institution || "",
@@ -1162,6 +1174,18 @@ export default function App() {
       abstractSignificance:
         ((registration as Record<string, unknown>)
           .abstractSignificance as string) || "",
+      abstractSubmissionMethod:
+        ((registration as Record<string, unknown>)
+          .abstractSubmissionMethod as string) || "",
+      abstractFileUrl:
+        ((registration as Record<string, unknown>).abstractFileUrl as string) ||
+        "",
+      abstractFileName:
+        ((registration as Record<string, unknown>)
+          .abstractFileName as string) || "",
+      abstractFilePath:
+        ((registration as Record<string, unknown>)
+          .abstractFilePath as string) || "",
       registrationCode:
         ((registration as Record<string, unknown>)
           .registrationCode as string) || "",

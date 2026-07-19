@@ -21,5 +21,20 @@ service firebase.storage {
                    && request.resource.contentType.matches('image/.*');
       allow delete: if request.auth != null;
     }
+
+    // Abstract files uploaded from the public registration form. There's no
+    // signed-in user at this point (unlike the admin-only image uploads
+    // above), so content type and size are what the rule enforces instead of
+    // an auth check — the same tradeoff already made for the registrations
+    // Firestore collection. Read must also be public: the participant's own
+    // browser calls getDownloadURL() immediately after its own unauthenticated
+    // upload, which requires read access under the current rules. Paths embed
+    // a timestamp + random token so they aren't guessable/enumerable.
+    match /abstract-submissions/{filename} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('application/pdf|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      allow delete: if request.auth != null;
+    }
   }
 }

@@ -10,7 +10,17 @@ import {
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
 import { isMobilePhone } from "validator";
-import { functions, httpsCallable, db, collection, onSnapshot } from "../firebase.js";
+import {
+  functions,
+  httpsCallable,
+  db,
+  collection,
+  onSnapshot,
+  storage,
+  storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "../firebase.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface RegistrationForm {
@@ -45,6 +55,10 @@ interface RegistrationForm {
   abstractMethods: string;
   abstractResults: string;
   abstractSignificance: string;
+  abstractSubmissionMethod: string;
+  abstractFileUrl: string;
+  abstractFileName: string;
+  abstractFilePath: string;
   registrationCode: string;
 }
 
@@ -103,6 +117,7 @@ const PROGRAMMES = [
 const PRESENTATION_TYPES = ["Oral Presentation", "Poster Presentation"];
 
 const PAPER_TYPES = [
+  "Abstract",
   "Poster Presentation",
   "Regular Paper",
   "Short Paper",
@@ -203,13 +218,19 @@ const ABSTRACT_SECTIONS: {
   },
 ];
 
+const ABSTRACT_FILE_MAX_BYTES = 5 * 1024 * 1024;
+const ABSTRACT_FILE_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
 const SUBMISSION_GUIDELINES = [
   "Submissions must be original, unpublished work",
   "Written in English using the provided template in the registration link",
   "Abstract of 360 words counts is required to present (Oral/Poster) at the conference, you are required to submit an abstract not exceeding 360 words in English via the registration portal, and upload same in MS Word format, as directed",
   "Failure to adhere to the 360-word limit may affect the selection of your abstract.",
 ];
-
 
 // ─── Nationalities (ISO 3166-1 / UN-recognised) ───────────────────────────────
 const NATIONALITIES: string[] = [
@@ -1023,9 +1044,16 @@ export default function RegisterPage({
       abstractMethods: "",
       abstractResults: "",
       abstractSignificance: "",
+      abstractSubmissionMethod: "Manual",
+      abstractFileUrl: "",
+      abstractFileName: "",
+      abstractFilePath: "",
       registrationCode: "",
     },
   );
+  const [uploadingAbstract, setUploadingAbstract] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(storedConfirmation !== null);
@@ -1068,6 +1096,70 @@ export default function RegisterPage({
         : [...f.thematicAreas, area],
     }));
 
+  const handleAbstractFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadError("");
+    if (!ABSTRACT_FILE_TYPES.includes(file.type)) {
+      setUploadError("Please upload a PDF or Word (.doc/.docx) document.");
+      return;
+    }
+    if (file.size > ABSTRACT_FILE_MAX_BYTES) {
+      setUploadError("Please upload a file smaller than 5 MB.");
+      return;
+    }
+    if (!storage || !storageRef || !uploadBytesResumable || !getDownloadURL) {
+      setUploadError(
+        "File upload is not available right now. Please try again shortly or enter your abstract manually.",
+      );
+      return;
+    }
+    setUploadingAbstract(true);
+    setUploadProgress(0);
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `abstract-submissions/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+      const ref = storageRef(storage, path);
+      const task = uploadBytesResumable(ref, file);
+      await new Promise<void>((resolve, reject) =>
+        task.on(
+          "state_changed",
+          (snap) =>
+            setUploadProgress(
+              Math.round((snap.bytesTransferred / snap.totalBytes) * 100),
+            ),
+          reject,
+          () => resolve(),
+        ),
+      );
+      const url = await getDownloadURL(task.snapshot.ref);
+      setForm((f) => ({
+        ...f,
+        abstractFileUrl: url,
+        abstractFileName: file.name,
+        abstractFilePath: path,
+      }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setUploadError(`Could not upload your file: ${msg}`);
+    } finally {
+      setUploadingAbstract(false);
+    }
+  };
+
+  const removeAbstractFile = () => {
+    setForm((f) => ({
+      ...f,
+      abstractFileUrl: "",
+      abstractFileName: "",
+      abstractFilePath: "",
+    }));
+    setUploadError("");
+  };
+
   // No → clear department/studentId/programme/cohort so stale data isn't submitted for a non-DCS applicant
   useEffect(() => {
     if (form.isCsStudent === "Yes") {
@@ -1105,9 +1197,37 @@ export default function RegisterPage({
         abstractMethods: "",
         abstractResults: "",
         abstractSignificance: "",
+        abstractSubmissionMethod: "Manual",
+        abstractFileUrl: "",
+        abstractFileName: "",
+        abstractFilePath: "",
       }));
+      setUploadError("");
     }
   }, [form.isSubmittingAbstract]);
+
+  // Only one abstract submission method is allowed at a time — switching
+  // clears whichever fields belong to the method that's no longer active,
+  // so stale data from the other path is never submitted alongside it.
+  useEffect(() => {
+    if (form.abstractSubmissionMethod === "Upload") {
+      setForm((f) => ({
+        ...f,
+        abstractBackground: "",
+        abstractMethods: "",
+        abstractResults: "",
+        abstractSignificance: "",
+      }));
+    } else if (form.abstractSubmissionMethod === "Manual") {
+      setForm((f) => ({
+        ...f,
+        abstractFileUrl: "",
+        abstractFileName: "",
+        abstractFilePath: "",
+      }));
+      setUploadError("");
+    }
+  }, [form.abstractSubmissionMethod]);
 
   const validate = (): boolean => {
     const e: FormErrors = {};
@@ -1190,13 +1310,21 @@ export default function RegisterPage({
           e.presentationType = "Presentation type is required.";
         if (!form.presentationTitle.trim())
           e.presentationTitle = "Presentation title is required.";
-        ABSTRACT_SECTIONS.forEach(({ key, label, maxWords }) => {
-          const value = form[key];
-          if (!value.trim()) e[key] = `${label} is required.`;
-          else if (countWords(value) > maxWords)
-            e[key] =
-              `${label} must not exceed ${maxWords} words (currently ${countWords(value)}).`;
-        });
+        if (!form.abstractSubmissionMethod)
+          e.abstractSubmissionMethod =
+            "Please choose how you want to submit your abstract.";
+        else if (form.abstractSubmissionMethod === "Upload") {
+          if (!form.abstractFileUrl)
+            e.abstractFileUrl = "Please upload your abstract file.";
+        } else {
+          ABSTRACT_SECTIONS.forEach(({ key, label, maxWords }) => {
+            const value = form[key];
+            if (!value.trim()) e[key] = `${label} is required.`;
+            else if (countWords(value) > maxWords)
+              e[key] =
+                `${label} must not exceed ${maxWords} words (currently ${countWords(value)}).`;
+          });
+        }
       }
     }
     setErrors(e);
@@ -1302,10 +1430,10 @@ export default function RegisterPage({
     // security rules are what actually make duplicate emails unbypassable.
     if (functions) {
       try {
-        const checkEmail = httpsCallable<{ email: string }, { exists: boolean }>(
-          functions,
-          "checkEmailRegistered",
-        );
+        const checkEmail = httpsCallable<
+          { email: string },
+          { exists: boolean }
+        >(functions, "checkEmailRegistered");
         const result = await checkEmail({ email: form.email });
         if (result.data.exists) {
           setPaying(false);
@@ -1318,7 +1446,10 @@ export default function RegisterPage({
           return;
         }
       } catch (e) {
-        console.warn("Could not verify email uniqueness before payment, proceeding:", e);
+        console.warn(
+          "Could not verify email uniqueness before payment, proceeding:",
+          e,
+        );
       }
     }
 
@@ -1362,7 +1493,10 @@ export default function RegisterPage({
             } catch (seatErr) {
               const seatMsg =
                 seatErr instanceof Error ? seatErr.message : String(seatErr);
-              if (seatMsg.includes("resource-exhausted") || seatMsg.includes("full")) {
+              if (
+                seatMsg.includes("resource-exhausted") ||
+                seatMsg.includes("full")
+              ) {
                 setPaying(false);
                 setRegistrationError(
                   `The ${form.sessionTime} session you selected filled up while your payment was processing. Your payment was received (ref: ${response.reference}) — please contact support and quote this reference so we can help you switch to another available session.`,
@@ -1909,7 +2043,7 @@ export default function RegisterPage({
 
                 <div className="form-group">
                   <label>
-                    Select the JUST (1) day and (1) session you can attend this
+                    Select JUST (1) day and (1) session you can attend this
                     conference physically in-person
                     <span className="req">*</span>
                   </label>
@@ -1942,63 +2076,63 @@ export default function RegisterPage({
                               sessionTime: s.timeSlot,
                             }))
                           }
+                          style={{
+                            padding: "14px 12px",
+                            borderRadius: 10,
+                            border: `2px solid ${
+                              selected ? "#1B3A6B"
+                              : full ? "#e2e8f0"
+                              : "#d1d5db"
+                            }`,
+                            background:
+                              selected ? "#1B3A6B"
+                              : full ? "#f8fafc"
+                              : "#fff",
+                            color:
+                              selected ? "#fff"
+                              : full ? "#aaa"
+                              : "#222",
+                            cursor: full ? "not-allowed" : "pointer",
+                            textAlign: "left",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          <div
                             style={{
-                              padding: "14px 12px",
-                              borderRadius: 10,
-                              border: `2px solid ${
-                                selected ? "#1B3A6B"
-                                : full ? "#e2e8f0"
-                                : "#d1d5db"
-                              }`,
-                              background:
-                                selected ? "#1B3A6B"
-                                : full ? "#f8fafc"
-                                : "#fff",
-                              color:
-                                selected ? "#fff"
-                                : full ? "#aaa"
-                                : "#222",
-                              cursor: full ? "not-allowed" : "pointer",
-                              textAlign: "left",
-                              transition: "all 0.15s",
+                              fontWeight: 700,
+                              fontSize: 14,
+                              marginBottom: 3,
                             }}
                           >
-                            <div
-                              style={{
-                                fontWeight: 700,
-                                fontSize: 14,
-                                marginBottom: 3,
-                              }}
-                            >
-                              {s.title}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                opacity: selected ? 0.85 : 0.65,
-                                marginBottom: 6,
-                              }}
-                            >
-                              {s.startTime} – {s.endTime}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color:
-                                  full ? "#c0392b"
-                                  : selected ? "#C9A84C"
-                                  : available <= 10 ? "#e67e22"
-                                  : "#27ae60",
-                              }}
-                            >
-                              {full ?
-                                "Session full"
-                              : `${available} / ${cap} seats remaining`}
-                            </div>
-                          </button>
-                        );
-                      })}
+                            {s.title}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              opacity: selected ? 0.85 : 0.65,
+                              marginBottom: 6,
+                            }}
+                          >
+                            {s.startTime} – {s.endTime}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color:
+                                full ? "#c0392b"
+                                : selected ? "#C9A84C"
+                                : available <= 10 ? "#e67e22"
+                                : "#27ae60",
+                            }}
+                          >
+                            {full ?
+                              "Session full"
+                            : `${available} / ${cap} seats remaining`}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {errors.eventDay && (
@@ -2028,6 +2162,29 @@ export default function RegisterPage({
                       {errors.paperType && (
                         <p className="text-[#c0392b] text-[12px] mt-1">
                           {errors.paperType}
+                        </p>
+                      )}
+                    </div>
+                    <div className="form-group">
+                      <label>
+                        Presentation Type<span className="req">*</span>
+                      </label>
+                      <select
+                        value={form.presentationType}
+                        onChange={(e) =>
+                          set("presentationType", e.target.value)
+                        }
+                      >
+                        <option value="">-- Select presentation type --</option>
+                        {PRESENTATION_TYPES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.presentationType && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.presentationType}
                         </p>
                       )}
                     </div>
@@ -2090,29 +2247,6 @@ export default function RegisterPage({
                     </div>
                     <div className="form-group">
                       <label>
-                        Presentation Type<span className="req">*</span>
-                      </label>
-                      <select
-                        value={form.presentationType}
-                        onChange={(e) =>
-                          set("presentationType", e.target.value)
-                        }
-                      >
-                        <option value="">-- Select presentation type --</option>
-                        {PRESENTATION_TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.presentationType && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.presentationType}
-                        </p>
-                      )}
-                    </div>
-                    <div className="form-group">
-                      <label>
                         Title of Presentation<span className="req">*</span>
                       </label>
                       <input
@@ -2129,6 +2263,32 @@ export default function RegisterPage({
                         </p>
                       )}
                     </div>
+
+                    <div className="form-group">
+                      <label>
+                        Abstract Submission Method
+                        <span className="req">*</span>
+                      </label>
+                      <select
+                        value={form.abstractSubmissionMethod}
+                        onChange={(e) =>
+                          set("abstractSubmissionMethod", e.target.value)
+                        }
+                      >
+                        <option value="Manual">Enter Abstract Manually</option>
+                        <option value="Upload">Upload Abstract File</option>
+                      </select>
+                      <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                        Choose one: type your abstract into the sections below,
+                        or upload a single abstract file. You can't do both.
+                      </p>
+                      {errors.abstractSubmissionMethod && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.abstractSubmissionMethod}
+                        </p>
+                      )}
+                    </div>
+
                     <div
                       className="alert alert-info mb-5"
                       style={{ fontSize: 13, lineHeight: 1.7 }}
@@ -2144,55 +2304,116 @@ export default function RegisterPage({
                         ))}
                       </ol>
                     </div>
-                    {ABSTRACT_SECTIONS.map(
-                      ({ key, label, placeholder, maxWords }) => {
-                        const value = form[key];
-                        const words = countWords(value);
-                        const overLimit = words > maxWords;
-                        return (
-                          <div className="form-group" key={key}>
-                            <label>
-                              {label}
-                              <span className="req">*</span>
-                            </label>
-                            <textarea
-                              value={value}
-                              onChange={(e) =>
-                                set(key, clampWords(e.target.value, maxWords))
-                              }
-                              placeholder={placeholder}
-                              rows={3}
-                              style={{ resize: "vertical", minHeight: 70 }}
-                            />
-                            <div
+
+                    {form.abstractSubmissionMethod === "Upload" ?
+                      <div className="form-group">
+                        <label>
+                          Abstract File (PDF or Word document)
+                          <span className="req">*</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleAbstractFileChange}
+                          disabled={uploadingAbstract}
+                        />
+                        <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                          PDF or Word (.doc/.docx), maximum 5 MB.
+                        </p>
+                        {uploadingAbstract && (
+                          <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                            Uploading… {uploadProgress}%
+                          </p>
+                        )}
+                        {!uploadingAbstract && form.abstractFileName && (
+                          <div
+                            className="flex items-center justify-between mt-2"
+                            style={{
+                              background: "#f4f7fd",
+                              border: "1px solid #dde4f0",
+                              borderRadius: 8,
+                              padding: "8px 12px",
+                              fontSize: 13,
+                            }}
+                          >
+                            <span>✓ {form.abstractFileName}</span>
+                            <button
+                              type="button"
+                              onClick={removeAbstractFile}
                               style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                marginTop: 4,
+                                background: "none",
+                                border: "none",
+                                color: "#c0392b",
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontWeight: 600,
                               }}
                             >
-                              <span>
-                                {errors[key] && (
-                                  <span className="text-[#c0392b] text-[12px]">
-                                    {errors[key]}
-                                  </span>
-                                )}
-                              </span>
-                              <span
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                        {uploadError && (
+                          <p className="text-[#c0392b] text-[12px] mt-1">
+                            {uploadError}
+                          </p>
+                        )}
+                        {errors.abstractFileUrl && (
+                          <p className="text-[#c0392b] text-[12px] mt-1">
+                            {errors.abstractFileUrl}
+                          </p>
+                        )}
+                      </div>
+                    : ABSTRACT_SECTIONS.map(
+                        ({ key, label, placeholder, maxWords }) => {
+                          const value = form[key];
+                          const words = countWords(value);
+                          const overLimit = words > maxWords;
+                          return (
+                            <div className="form-group" key={key}>
+                              <label>
+                                {label}
+                                <span className="req">*</span>
+                              </label>
+                              <textarea
+                                value={value}
+                                onChange={(e) =>
+                                  set(key, clampWords(e.target.value, maxWords))
+                                }
+                                placeholder={placeholder}
+                                rows={3}
+                                style={{ resize: "vertical", minHeight: 70 }}
+                              />
+                              <div
                                 style={{
-                                  fontSize: 12,
-                                  fontWeight: overLimit ? 600 : 400,
-                                  color: overLimit ? "#c0392b" : "#999",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  marginTop: 4,
                                 }}
                               >
-                                {words} / {maxWords} words
-                              </span>
+                                <span>
+                                  {errors[key] && (
+                                    <span className="text-[#c0392b] text-[12px]">
+                                      {errors[key]}
+                                    </span>
+                                  )}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: overLimit ? 600 : 400,
+                                    color: overLimit ? "#c0392b" : "#999",
+                                  }}
+                                >
+                                  {words} / {maxWords} words
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      },
-                    )}
+                          );
+                        },
+                      )
+                    }
                   </>
                 )}
               </div>
@@ -2257,7 +2478,20 @@ export default function RegisterPage({
                           "Presentation Title",
                           form.presentationTitle,
                         ],
-                      ...(isPresenting ?
+                      isPresenting && [
+                        "Abstract Submission",
+                        form.abstractSubmissionMethod === "Upload" ?
+                          "Uploaded File"
+                        : "Entered Manually",
+                      ],
+                      isPresenting &&
+                        form.abstractSubmissionMethod === "Upload" &&
+                        form.abstractFileName && [
+                          "Abstract File",
+                          form.abstractFileName,
+                        ],
+                      ...(isPresenting &&
+                        form.abstractSubmissionMethod !== "Upload" ?
                         ABSTRACT_SECTIONS.filter(({ key }) => form[key]).map(
                           ({ key, label }) => [label, form[key]],
                         )
@@ -2363,10 +2597,7 @@ export default function RegisterPage({
                             "Programme",
                             form.programme,
                           ],
-                          form.isCsStudent === "Yes" && [
-                            "Cohort",
-                            form.cohort,
-                          ],
+                          form.isCsStudent === "Yes" && ["Cohort", form.cohort],
                           form.eventDay &&
                             form.sessionTime && [
                               "Day & Session",
@@ -2464,8 +2695,8 @@ export default function RegisterPage({
                 </div>
                 <h3 className="font-serif mb-3">Email Already Registered</h3>
                 <p className="text-[#555] text-[14px] leading-[1.6] mb-6">
-                  A registration with this email address already exists in
-                  the system. Please use a different email address.
+                  A registration with this email address already exists in the
+                  system. Please use a different email address.
                 </p>
                 <button
                   className="btn-primary"

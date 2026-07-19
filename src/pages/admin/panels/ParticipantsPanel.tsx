@@ -34,6 +34,9 @@ interface Participant {
   abstractMethods?: string;
   abstractResults?: string;
   abstractSignificance?: string;
+  abstractSubmissionMethod?: string;
+  abstractFileUrl?: string;
+  abstractFileName?: string;
   payment?: string;
   paymentMethod?: string;
   payRef?: string;
@@ -266,6 +269,12 @@ export default function ParticipantsPanel() {
 
   // ── Single-participant abstract export ──────────────────────────────────────
   const exportSingleAbstract = (p: Participant) => {
+    // Uploaded abstracts have no manual sections to render into a document —
+    // just open the participant's own file directly.
+    if (p.abstractSubmissionMethod === "Upload" && p.abstractFileUrl) {
+      window.open(p.abstractFileUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
     const name = fmt(p.fullName || p.name);
     const section = buildAbstractSectionHtml(p, 0, false);
     const html = wrapAbstractDoc(
@@ -537,7 +546,10 @@ export default function ParticipantsPanel() {
                                 fontWeight: 600,
                               }}
                             >
-                              <FileText size={11} /> Export Abstract
+                              <FileText size={11} />{" "}
+                              {p.abstractSubmissionMethod === "Upload" ?
+                                "Download Abstract"
+                              : "Export Abstract"}
                             </button>
                           )}
                           {isOpen ?
@@ -693,14 +705,54 @@ export default function ParticipantsPanel() {
                               >
                                 {p.presentationTitle}
                               </div>
-                              {(
-                                [
-                                  ["Background", p.abstractBackground],
-                                  ["Methods", p.abstractMethods],
-                                  ["Results", p.abstractResults],
-                                  ["Significance", p.abstractSignificance],
-                                ] as const
-                              ).map(
+                              {p.abstractSubmissionMethod === "Upload" ?
+                                <div style={{ marginBottom: 10 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 600,
+                                      color: "#999",
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.06em",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    Abstract File
+                                  </div>
+                                  {p.abstractFileUrl ?
+                                    <a
+                                      href={p.abstractFileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1.5"
+                                      style={{
+                                        fontSize: 13,
+                                        color: "#1B3A6B",
+                                        fontWeight: 600,
+                                        background: "#fff",
+                                        borderRadius: 8,
+                                        padding: "10px 14px",
+                                        border: "1px solid #e0e6f0",
+                                        width: "fit-content",
+                                        textDecoration: "none",
+                                      }}
+                                    >
+                                      <FileText size={14} />
+                                      {p.abstractFileName || "View / download file"}
+                                    </a>
+                                  : <div style={{ fontSize: 13, color: "#999" }}>
+                                      No file on record.
+                                    </div>
+                                  }
+                                </div>
+                              : (
+                                  [
+                                    ["Background", p.abstractBackground],
+                                    ["Methods", p.abstractMethods],
+                                    ["Results", p.abstractResults],
+                                    ["Significance", p.abstractSignificance],
+                                  ] as const
+                                ).map(
                                 ([label, text]) =>
                                   text && (
                                     <div key={label} style={{ marginBottom: 10 }}>

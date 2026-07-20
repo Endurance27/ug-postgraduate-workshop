@@ -55,7 +55,6 @@ interface RegistrationForm {
   abstractMethods: string;
   abstractResults: string;
   abstractSignificance: string;
-  abstractSubmissionMethod: string;
   abstractFileUrl: string;
   abstractFileName: string;
   abstractFilePath: string;
@@ -1044,7 +1043,6 @@ export default function RegisterPage({
       abstractMethods: "",
       abstractResults: "",
       abstractSignificance: "",
-      abstractSubmissionMethod: "Manual",
       abstractFileUrl: "",
       abstractFileName: "",
       abstractFilePath: "",
@@ -1197,7 +1195,6 @@ export default function RegisterPage({
         abstractMethods: "",
         abstractResults: "",
         abstractSignificance: "",
-        abstractSubmissionMethod: "Manual",
         abstractFileUrl: "",
         abstractFileName: "",
         abstractFilePath: "",
@@ -1205,29 +1202,6 @@ export default function RegisterPage({
       setUploadError("");
     }
   }, [form.isSubmittingAbstract]);
-
-  // Only one abstract submission method is allowed at a time — switching
-  // clears whichever fields belong to the method that's no longer active,
-  // so stale data from the other path is never submitted alongside it.
-  useEffect(() => {
-    if (form.abstractSubmissionMethod === "Upload") {
-      setForm((f) => ({
-        ...f,
-        abstractBackground: "",
-        abstractMethods: "",
-        abstractResults: "",
-        abstractSignificance: "",
-      }));
-    } else if (form.abstractSubmissionMethod === "Manual") {
-      setForm((f) => ({
-        ...f,
-        abstractFileUrl: "",
-        abstractFileName: "",
-        abstractFilePath: "",
-      }));
-      setUploadError("");
-    }
-  }, [form.abstractSubmissionMethod]);
 
   const validate = (): boolean => {
     const e: FormErrors = {};
@@ -1310,21 +1284,15 @@ export default function RegisterPage({
           e.presentationType = "Presentation type is required.";
         if (!form.presentationTitle.trim())
           e.presentationTitle = "Presentation title is required.";
-        if (!form.abstractSubmissionMethod)
-          e.abstractSubmissionMethod =
-            "Please choose how you want to submit your abstract.";
-        else if (form.abstractSubmissionMethod === "Upload") {
-          if (!form.abstractFileUrl)
-            e.abstractFileUrl = "Please upload your abstract file.";
-        } else {
-          ABSTRACT_SECTIONS.forEach(({ key, label, maxWords }) => {
-            const value = form[key];
-            if (!value.trim()) e[key] = `${label} is required.`;
-            else if (countWords(value) > maxWords)
-              e[key] =
-                `${label} must not exceed ${maxWords} words (currently ${countWords(value)}).`;
-          });
-        }
+        if (!form.abstractFileUrl)
+          e.abstractFileUrl = "Please upload your abstract file.";
+        ABSTRACT_SECTIONS.forEach(({ key, label, maxWords }) => {
+          const value = form[key];
+          if (!value.trim()) e[key] = `${label} is required.`;
+          else if (countWords(value) > maxWords)
+            e[key] =
+              `${label} must not exceed ${maxWords} words (currently ${countWords(value)}).`;
+        });
       }
     }
     setErrors(e);
@@ -1334,7 +1302,21 @@ export default function RegisterPage({
   const next = async () => {
     if (!validate()) return;
 
-    if (step === 0 && functions) {
+    if (step === 0) {
+      // This is the ONLY point in the whole flow that verifies email
+      // uniqueness — the payment step intentionally trusts it and never
+      // re-checks. That means it must fail CLOSED: if we can't reach the
+      // check (no `functions`, network error, cold start, etc.) we must
+      // not let the participant through unverified, or a transient error
+      // here would let a real duplicate sail all the way to payment.
+      if (!functions) {
+        setErrors((e) => ({
+          ...e,
+          email:
+            "We couldn't verify your email right now. Please refresh the page and try again.",
+        }));
+        return;
+      }
       setCheckingEmail(true);
       try {
         const checkEmail = httpsCallable<
@@ -1353,7 +1335,14 @@ export default function RegisterPage({
           return;
         }
       } catch (e) {
-        console.warn("Could not verify email uniqueness, proceeding:", e);
+        console.warn("Could not verify email uniqueness:", e);
+        setCheckingEmail(false);
+        setErrors((err) => ({
+          ...err,
+          email:
+            "We couldn't verify your email right now. Please check your connection and try again.",
+        }));
+        return;
       }
       setCheckingEmail(false);
     }
@@ -1422,36 +1411,10 @@ export default function RegisterPage({
     setRegistrationError("");
     setPaying(true);
 
-    // Re-check email uniqueness right before payment — the same check ran when
-    // leaving Personal Details, but time has passed (the applicant may have filled
-    // in several more steps, or someone else may have registered with this email
-    // in the meantime), so we verify again to avoid charging for a registration
-    // that's about to be rejected. This is a UX safeguard only — the Firestore
-    // security rules are what actually make duplicate emails unbypassable.
-    if (functions) {
-      try {
-        const checkEmail = httpsCallable<
-          { email: string },
-          { exists: boolean }
-        >(functions, "checkEmailRegistered");
-        const result = await checkEmail({ email: form.email });
-        if (result.data.exists) {
-          setPaying(false);
-          setErrors((e) => ({
-            ...e,
-            email:
-              "This email is already registered for the workshop. Each participant may only register once.",
-          }));
-          setShowDuplicateEmailModal(true);
-          return;
-        }
-      } catch (e) {
-        console.warn(
-          "Could not verify email uniqueness before payment, proceeding:",
-          e,
-        );
-      }
-    }
+    // Email uniqueness is verified exactly once, in Step 1 (see `next()` above)
+    // before the participant is ever allowed past Personal Details. By the time
+    // they reach payment that check has already passed, so it is intentionally
+    // not repeated here — the payment flow assumes the email is already valid.
 
     // Reserve the same sequential code up front so the Paystack reference and
     // the "Registration ID" shown in the confirmation email match exactly.
@@ -1508,17 +1471,14 @@ export default function RegisterPage({
           }
           await finishRegistration("Confirmed", response.reference, "paystack");
         } catch (err) {
+          // Email uniqueness was already verified in Step 1, so a failure here
+          // is an unexpected/unrelated save error, not a duplicate email —
+          // there is no duplicate-email case to special-case at this point.
           setPaying(false);
-          const msg = err instanceof Error ? err.message : String(err);
-          if (msg.startsWith("DUPLICATE_EMAIL")) {
-            setRegistrationError(
-              `This email address (${form.email}) appears to already be registered for the workshop. Please use a different email, or contact the administrator if you believe this is an error. Your payment was received (ref: ${response.reference}) — please quote this reference when contacting support.`,
-            );
-          } else {
-            setRegistrationError(
-              `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
-            );
-          }
+          console.error("Registration save failed after payment:", err);
+          setRegistrationError(
+            `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
+          );
         }
       },
       onClose: () => {
@@ -2264,31 +2224,6 @@ export default function RegisterPage({
                       )}
                     </div>
 
-                    <div className="form-group">
-                      <label>
-                        Abstract Submission Method
-                        <span className="req">*</span>
-                      </label>
-                      <select
-                        value={form.abstractSubmissionMethod}
-                        onChange={(e) =>
-                          set("abstractSubmissionMethod", e.target.value)
-                        }
-                      >
-                        <option value="Manual">Enter Abstract Manually</option>
-                        <option value="Upload">Upload Abstract File</option>
-                      </select>
-                      <p className="text-[12px] mt-1" style={{ color: "#888" }}>
-                        Choose one: type your abstract into the sections below,
-                        or upload a single abstract file. You can't do both.
-                      </p>
-                      {errors.abstractSubmissionMethod && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.abstractSubmissionMethod}
-                        </p>
-                      )}
-                    </div>
-
                     <div
                       className="alert alert-info mb-5"
                       style={{ fontSize: 13, lineHeight: 1.7 }}
@@ -2305,115 +2240,116 @@ export default function RegisterPage({
                       </ol>
                     </div>
 
-                    {form.abstractSubmissionMethod === "Upload" ?
-                      <div className="form-group">
-                        <label>
-                          Abstract File (PDF or Word document)
-                          <span className="req">*</span>
-                        </label>
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                          onChange={handleAbstractFileChange}
-                          disabled={uploadingAbstract}
-                        />
+                    <div className="form-group">
+                      <label>
+                        Abstract File (PDF or Word document)
+                        <span className="req">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        onChange={handleAbstractFileChange}
+                        disabled={uploadingAbstract}
+                      />
+                      <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                        PDF or Word (.doc/.docx), maximum 5 MB. Upload your
+                        abstract file, and also complete every section below —
+                        both are required.
+                      </p>
+                      {uploadingAbstract && (
                         <p className="text-[12px] mt-1" style={{ color: "#888" }}>
-                          PDF or Word (.doc/.docx), maximum 5 MB.
+                          Uploading… {uploadProgress}%
                         </p>
-                        {uploadingAbstract && (
-                          <p className="text-[12px] mt-1" style={{ color: "#888" }}>
-                            Uploading… {uploadProgress}%
-                          </p>
-                        )}
-                        {!uploadingAbstract && form.abstractFileName && (
-                          <div
-                            className="flex items-center justify-between mt-2"
+                      )}
+                      {!uploadingAbstract && form.abstractFileName && (
+                        <div
+                          className="flex items-center justify-between mt-2"
+                          style={{
+                            background: "#f4f7fd",
+                            border: "1px solid #dde4f0",
+                            borderRadius: 8,
+                            padding: "8px 12px",
+                            fontSize: 13,
+                          }}
+                        >
+                          <span>✓ {form.abstractFileName}</span>
+                          <button
+                            type="button"
+                            onClick={removeAbstractFile}
                             style={{
-                              background: "#f4f7fd",
-                              border: "1px solid #dde4f0",
-                              borderRadius: 8,
-                              padding: "8px 12px",
-                              fontSize: 13,
+                              background: "none",
+                              border: "none",
+                              color: "#c0392b",
+                              cursor: "pointer",
+                              fontSize: 12,
+                              fontWeight: 600,
                             }}
                           >
-                            <span>✓ {form.abstractFileName}</span>
-                            <button
-                              type="button"
-                              onClick={removeAbstractFile}
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                      {uploadError && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {uploadError}
+                        </p>
+                      )}
+                      {errors.abstractFileUrl && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.abstractFileUrl}
+                        </p>
+                      )}
+                    </div>
+
+                    {ABSTRACT_SECTIONS.map(
+                      ({ key, label, placeholder, maxWords }) => {
+                        const value = form[key];
+                        const words = countWords(value);
+                        const overLimit = words > maxWords;
+                        return (
+                          <div className="form-group" key={key}>
+                            <label>
+                              {label}
+                              <span className="req">*</span>
+                            </label>
+                            <textarea
+                              value={value}
+                              onChange={(e) =>
+                                set(key, clampWords(e.target.value, maxWords))
+                              }
+                              placeholder={placeholder}
+                              rows={3}
+                              style={{ resize: "vertical", minHeight: 70 }}
+                            />
+                            <div
                               style={{
-                                background: "none",
-                                border: "none",
-                                color: "#c0392b",
-                                cursor: "pointer",
-                                fontSize: 12,
-                                fontWeight: 600,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: 4,
                               }}
                             >
-                              Remove
-                            </button>
-                          </div>
-                        )}
-                        {uploadError && (
-                          <p className="text-[#c0392b] text-[12px] mt-1">
-                            {uploadError}
-                          </p>
-                        )}
-                        {errors.abstractFileUrl && (
-                          <p className="text-[#c0392b] text-[12px] mt-1">
-                            {errors.abstractFileUrl}
-                          </p>
-                        )}
-                      </div>
-                    : ABSTRACT_SECTIONS.map(
-                        ({ key, label, placeholder, maxWords }) => {
-                          const value = form[key];
-                          const words = countWords(value);
-                          const overLimit = words > maxWords;
-                          return (
-                            <div className="form-group" key={key}>
-                              <label>
-                                {label}
-                                <span className="req">*</span>
-                              </label>
-                              <textarea
-                                value={value}
-                                onChange={(e) =>
-                                  set(key, clampWords(e.target.value, maxWords))
-                                }
-                                placeholder={placeholder}
-                                rows={3}
-                                style={{ resize: "vertical", minHeight: 70 }}
-                              />
-                              <div
+                              <span>
+                                {errors[key] && (
+                                  <span className="text-[#c0392b] text-[12px]">
+                                    {errors[key]}
+                                  </span>
+                                )}
+                              </span>
+                              <span
                                 style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                  marginTop: 4,
+                                  fontSize: 12,
+                                  fontWeight: overLimit ? 600 : 400,
+                                  color: overLimit ? "#c0392b" : "#999",
                                 }}
                               >
-                                <span>
-                                  {errors[key] && (
-                                    <span className="text-[#c0392b] text-[12px]">
-                                      {errors[key]}
-                                    </span>
-                                  )}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: overLimit ? 600 : 400,
-                                    color: overLimit ? "#c0392b" : "#999",
-                                  }}
-                                >
-                                  {words} / {maxWords} words
-                                </span>
-                              </div>
+                                {words} / {maxWords} words
+                              </span>
                             </div>
-                          );
-                        },
-                      )
-                    }
+                          </div>
+                        );
+                      },
+                    )}
                   </>
                 )}
               </div>
@@ -2478,20 +2414,12 @@ export default function RegisterPage({
                           "Presentation Title",
                           form.presentationTitle,
                         ],
-                      isPresenting && [
-                        "Abstract Submission",
-                        form.abstractSubmissionMethod === "Upload" ?
-                          "Uploaded File"
-                        : "Entered Manually",
-                      ],
                       isPresenting &&
-                        form.abstractSubmissionMethod === "Upload" &&
                         form.abstractFileName && [
                           "Abstract File",
                           form.abstractFileName,
                         ],
-                      ...(isPresenting &&
-                        form.abstractSubmissionMethod !== "Upload" ?
+                      ...(isPresenting ?
                         ABSTRACT_SECTIONS.filter(({ key }) => form[key]).map(
                           ({ key, label }) => [label, form[key]],
                         )
@@ -2672,7 +2600,7 @@ export default function RegisterPage({
             </div>
           </div>
 
-          {/* Duplicate-email block modal — can trigger from any step */}
+          {/* Duplicate-email block modal — only triggers from the Step 1 (Personal Details) email check */}
           {showDuplicateEmailModal && (
             <div
               className="fixed inset-0 bg-black/45 z-[999] flex items-center justify-center p-6"

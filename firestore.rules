@@ -11,23 +11,20 @@ service cloud.firestore {
         && withinAbstractCharLimit(data, 'abstractSignificance');
   }
 
-  // Presenters must submit an abstract exactly one way: either every manual
-  // section filled in, or an uploaded-file URL — never neither, never both
-  // silently accepted as "fine" just because one of them is present. This
-  // mirrors (and is the true, unbypassable backend counterpart of) the
-  // frontend's mutually-exclusive Abstract Submission Method toggle.
+  // Presenters must submit an abstract both ways: an uploaded file AND every
+  // manual section filled in — neither one alone is accepted. This mirrors
+  // (and is the true, unbypassable backend counterpart of) the frontend's
+  // registration form, where both the file input and the four text sections
+  // are required before a presenter can proceed.
   function abstractSubmissionValid(data) {
     return !('isSubmittingAbstract' in data)
         || data.isSubmittingAbstract != 'Yes'
         || (
-          data.abstractSubmissionMethod == 'Upload'
-            ? (data.abstractFileUrl is string && data.abstractFileUrl.size() > 0)
-          : data.abstractSubmissionMethod == 'Manual'
-            ? (data.abstractBackground is string && data.abstractBackground.size() > 0
-               && data.abstractMethods is string && data.abstractMethods.size() > 0
-               && data.abstractResults is string && data.abstractResults.size() > 0
-               && data.abstractSignificance is string && data.abstractSignificance.size() > 0)
-          : false
+          data.abstractFileUrl is string && data.abstractFileUrl.size() > 0
+          && data.abstractBackground is string && data.abstractBackground.size() > 0
+          && data.abstractMethods is string && data.abstractMethods.size() > 0
+          && data.abstractResults is string && data.abstractResults.size() > 0
+          && data.abstractSignificance is string && data.abstractSignificance.size() > 0
         );
   }
 

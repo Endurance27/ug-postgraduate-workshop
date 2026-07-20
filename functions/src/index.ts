@@ -52,7 +52,6 @@ interface RegistrationData {
   abstractMethods?: string;
   abstractResults?: string;
   abstractSignificance?: string;
-  abstractSubmissionMethod?: string;
   abstractFileUrl?: string;
   abstractFileName?: string;
   abstractFilePath?: string;
@@ -428,11 +427,11 @@ export const sendRegistrationConfirmation = onDocumentWritten(
         }) + ' (GMT+0)'
       : new Date().toLocaleString('en-GB');
 
-    // ── Abstract: either labelled sections in the email body, or an attachment ──
-    const abstractMethod =
-      isPresenting ? data.abstractSubmissionMethod || '' : '';
+    // ── Abstract: presenters submit both a file and the structured sections,
+    // so the email always includes the labelled sections in the body AND
+    // (when the file could be fetched) attaches the uploaded file. ─────────
     const abstractSections =
-      isPresenting && abstractMethod !== 'Upload' ?
+      isPresenting ?
         [
           ['Background', data.abstractBackground],
           ['Methods', data.abstractMethods],
@@ -451,7 +450,7 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       content: Buffer;
       contentType: string;
     } | null = null;
-    if (isPresenting && abstractMethod === 'Upload' && data.abstractFilePath) {
+    if (isPresenting && data.abstractFilePath) {
       try {
         const file = admin
           .storage()
@@ -498,7 +497,6 @@ export const sendRegistrationConfirmation = onDocumentWritten(
       authorNames,
       presentationType,
       presentationTitle,
-      abstractMethod,
       abstractSections,
       hasAbstractAttachment: abstractAttachment !== null,
       fee,
@@ -592,7 +590,6 @@ interface EmailData {
   authorNames: string;
   presentationType: string;
   presentationTitle: string;
-  abstractMethod: string;
   abstractSections: { label: string; text: string }[];
   hasAbstractAttachment: boolean;
   fee: number;
@@ -648,10 +645,11 @@ function buildEmailHtml(d: EmailData): string {
     )
     .join('');
 
-  // ── Abstract: labelled sections for manual entry, or a note when the
-  // abstract was uploaded as a file — the file itself is attached separately.
+  // ── Abstract: presenters submit both a file and the structured sections,
+  // so this block shows the labelled sections and (when the file was
+  // successfully attached) a note pointing to the attachment.
   let abstractSectionHtml = '';
-  if (d.abstractSections.length > 0) {
+  if (d.abstractSections.length > 0 || d.hasAbstractAttachment) {
     const sectionsHtml = d.abstractSections
       .map(
         (s) => `
@@ -667,6 +665,13 @@ function buildEmailHtml(d: EmailData): string {
       </div>`,
       )
       .join('');
+    const attachmentNoteHtml =
+      d.hasAbstractAttachment ?
+        `
+      <p style="color:#444;font-size:13px;line-height:1.6;margin:${d.abstractSections.length > 0 ? '14px 0 0' : '0'};">
+        📎 Your submitted abstract file is also attached to this email.
+      </p>`
+      : '';
     abstractSectionHtml = `
       <div style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;
                   padding:20px 24px;margin-bottom:22px;">
@@ -676,19 +681,7 @@ function buildEmailHtml(d: EmailData): string {
           Submitted Abstract
         </p>
         ${sectionsHtml}
-      </div>`;
-  } else if (d.hasAbstractAttachment) {
-    abstractSectionHtml = `
-      <div style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;
-                  padding:16px 24px;margin-bottom:22px;">
-        <p style="color:#1B3A6B;font-size:10px;font-weight:700;
-                   letter-spacing:0.12em;text-transform:uppercase;
-                   margin:0 0 8px;">
-          Submitted Abstract
-        </p>
-        <p style="color:#444;font-size:13px;line-height:1.6;margin:0;">
-          📎 Your submitted abstract file is attached to this email.
-        </p>
+        ${attachmentNoteHtml}
       </div>`;
   }
 
@@ -742,7 +735,7 @@ function buildEmailHtml(d: EmailData): string {
               </p>
               <p style="color:#555;font-size:14px;line-height:1.75;margin:0 0 28px;">
                 Thank you for registering for the
-                <strong>2nd Edition of the Annual DCS Postgraduate Research Conference & Workshop (PRC 2026).</strong>.
+                <strong>2nd Edition of the Annual DCS Postgraduate Research Conference & Workshop (PRC 2026).</strong>
                 Your registration has been received and your seat reserved.
               </p>
 

@@ -66,7 +66,6 @@ interface Participant {
   abstractMethods?: string;
   abstractResults?: string;
   abstractSignificance?: string;
-  abstractSubmissionMethod?: string;
   abstractFileUrl?: string;
   abstractFileName?: string;
   abstractFilePath?: string;
@@ -1174,9 +1173,6 @@ export default function App() {
       abstractSignificance:
         ((registration as Record<string, unknown>)
           .abstractSignificance as string) || "",
-      abstractSubmissionMethod:
-        ((registration as Record<string, unknown>)
-          .abstractSubmissionMethod as string) || "",
       abstractFileUrl:
         ((registration as Record<string, unknown>).abstractFileUrl as string) ||
         "",

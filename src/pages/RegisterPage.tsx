@@ -117,10 +117,10 @@ const PRESENTATION_TYPES = ["Oral Presentation", "Poster Presentation"];
 
 const PAPER_TYPES = [
   "Abstract",
-  "Poster Presentation",
-  "Regular Paper",
   "Short Paper",
+  "Regular Paper",
   "Technical Paper",
+  "Poster Presentation",
 ];
 
 const THEMATIC_AREAS = [
@@ -2127,29 +2127,6 @@ export default function RegisterPage({
                     </div>
                     <div className="form-group">
                       <label>
-                        Presentation Type<span className="req">*</span>
-                      </label>
-                      <select
-                        value={form.presentationType}
-                        onChange={(e) =>
-                          set("presentationType", e.target.value)
-                        }
-                      >
-                        <option value="">-- Select presentation type --</option>
-                        {PRESENTATION_TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.presentationType && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.presentationType}
-                        </p>
-                      )}
-                    </div>
-                    <div className="form-group">
-                      <label>
                         Select thematic areas of your paper
                         <span className="req">*</span>
                       </label>
@@ -2191,17 +2168,24 @@ export default function RegisterPage({
                     </div>
                     <div className="form-group">
                       <label>
-                        Name of Author(s)<span className="req">*</span>
+                        Presentation Type<span className="req">*</span>
                       </label>
-                      <input
-                        type="text"
-                        value={form.authorNames}
-                        onChange={(e) => set("authorNames", e.target.value)}
-                        placeholder="Enter the name(s) of all author(s)"
-                      />
-                      {errors.authorNames && (
+                      <select
+                        value={form.presentationType}
+                        onChange={(e) =>
+                          set("presentationType", e.target.value)
+                        }
+                      >
+                        <option value="">-- Select presentation type --</option>
+                        {PRESENTATION_TYPES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.presentationType && (
                         <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.authorNames}
+                          {errors.presentationType}
                         </p>
                       )}
                     </div>
@@ -2223,6 +2207,22 @@ export default function RegisterPage({
                         </p>
                       )}
                     </div>
+                    <div className="form-group">
+                      <label>
+                        Name of Author(s)<span className="req">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={form.authorNames}
+                        onChange={(e) => set("authorNames", e.target.value)}
+                        placeholder="Enter the name(s) of all author(s)"
+                      />
+                      {errors.authorNames && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.authorNames}
+                        </p>
+                      )}
+                    </div>
 
                     <div
                       className="alert alert-info mb-5"
@@ -2238,67 +2238,47 @@ export default function RegisterPage({
                           </li>
                         ))}
                       </ol>
-                    </div>
 
-                    <div className="form-group">
-                      <label>
-                        Abstract File (PDF or Word document)
-                        <span className="req">*</span>
-                      </label>
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleAbstractFileChange}
-                        disabled={uploadingAbstract}
-                      />
-                      <p className="text-[12px] mt-1" style={{ color: "#888" }}>
-                        PDF or Word (.doc/.docx), maximum 5 MB. Upload your
-                        abstract file, and also complete every section below —
-                        both are required.
-                      </p>
-                      {uploadingAbstract && (
-                        <p className="text-[12px] mt-1" style={{ color: "#888" }}>
-                          Uploading… {uploadProgress}%
+                      <div
+                        style={{
+                          marginTop: 14,
+                          paddingTop: 12,
+                          borderTop: "1px solid #d6e0f0",
+                        }}
+                      >
+                        <strong>
+                          ✅ Attach Abstract File (Word Document Only)
+                        </strong>
+                        <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
+                          INSTRUCTIONS:
                         </p>
-                      )}
-                      {!uploadingAbstract && form.abstractFileName && (
-                        <div
-                          className="flex items-center justify-between mt-2"
-                          style={{
-                            background: "#f4f7fd",
-                            border: "1px solid #dde4f0",
-                            borderRadius: 8,
-                            padding: "8px 12px",
-                            fontSize: 13,
-                          }}
-                        >
-                          <span>✓ {form.abstractFileName}</span>
-                          <button
-                            type="button"
-                            onClick={removeAbstractFile}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "#c0392b",
-                              cursor: "pointer",
-                              fontSize: 12,
-                              fontWeight: 600,
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      )}
-                      {uploadError && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {uploadError}
-                        </p>
-                      )}
-                      {errors.abstractFileUrl && (
-                        <p className="text-[#c0392b] text-[12px] mt-1">
-                          {errors.abstractFileUrl}
-                        </p>
-                      )}
+                        <ol style={{ margin: 0, paddingLeft: 18 }}>
+                          <li style={{ marginBottom: 4 }}>
+                            Save the file name with your full name or Student ID
+                          </li>
+                          <li>
+                            A one (1) page Word file containing
+                            <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                              <li style={{ marginBottom: 4 }}>
+                                √ Abstract / Paper Title
+                              </li>
+                              <li style={{ marginBottom: 4 }}>
+                                √ Name(s) of all Author(s)
+                              </li>
+                              <li style={{ marginBottom: 4 }}>
+                                √ Background (100 word count paragraph)
+                              </li>
+                              <li style={{ marginBottom: 4 }}>
+                                √ Method (100 word count paragraph)
+                              </li>
+                              <li style={{ marginBottom: 4 }}>
+                                √ Results (100 word count paragraph)
+                              </li>
+                              <li>√ Significance (100 word count paragraph)</li>
+                            </ul>
+                          </li>
+                        </ol>
+                      </div>
                     </div>
 
                     {ABSTRACT_SECTIONS.map(
@@ -2350,6 +2330,69 @@ export default function RegisterPage({
                         );
                       },
                     )}
+                    <div className="form-group">
+                      <label>
+                        Abstract File (Word document)
+                        <span className="req">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        onChange={handleAbstractFileChange}
+                        disabled={uploadingAbstract}
+                      />
+                      <p className="text-[12px] mt-1" style={{ color: "#888" }}>
+                        Word (.doc/.docx), maximum 5 MB. Upload your abstract
+                        file, and also complete every section below — both are
+                        required.
+                      </p>
+                      {uploadingAbstract && (
+                        <p
+                          className="text-[12px] mt-1"
+                          style={{ color: "#888" }}
+                        >
+                          Uploading… {uploadProgress}%
+                        </p>
+                      )}
+                      {!uploadingAbstract && form.abstractFileName && (
+                        <div
+                          className="flex items-center justify-between mt-2"
+                          style={{
+                            background: "#f4f7fd",
+                            border: "1px solid #dde4f0",
+                            borderRadius: 8,
+                            padding: "8px 12px",
+                            fontSize: 13,
+                          }}
+                        >
+                          <span>✓ {form.abstractFileName}</span>
+                          <button
+                            type="button"
+                            onClick={removeAbstractFile}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "#c0392b",
+                              cursor: "pointer",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                      {uploadError && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {uploadError}
+                        </p>
+                      )}
+                      {errors.abstractFileUrl && (
+                        <p className="text-[#c0392b] text-[12px] mt-1">
+                          {errors.abstractFileUrl}
+                        </p>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -2473,7 +2516,7 @@ export default function RegisterPage({
                   }}
                 >
                   {paying ?
-                    "Processing payment…"
+                    "Processing payment. Please wait while we process your payment. You will be redirected shortly after payment is completed..."
                   : <span className="inline-flex items-center gap-1.5">
                       Pay GHS {fee} via Paystack <ArrowRight size={14} />
                     </span>

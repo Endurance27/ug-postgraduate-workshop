@@ -994,9 +994,13 @@ export default function RegisterPage({
         const docs = snap.docs.map(
           (d) => ({ id: d.id, ...d.data() }) as SessionDoc,
         );
+        // Sort by timeSlot rather than the raw startTime string — "9:00 AM"
+        // vs "2:00 PM" compares '9' > '2' lexicographically, which put
+        // Afternoon before Morning on the same day.
+        const timeSlotRank = (t: string) => (t === "Morning" ? 0 : 1);
         docs.sort((a, b) =>
           a.date === b.date ?
-            a.startTime.localeCompare(b.startTime)
+            timeSlotRank(a.timeSlot) - timeSlotRank(b.timeSlot)
           : a.date.localeCompare(b.date),
         );
         setSessions(docs);

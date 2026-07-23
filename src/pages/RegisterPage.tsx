@@ -168,7 +168,7 @@ const PARTICIPANT_CATEGORIES = [
 
 // ── Paystack public key — replace with pk_live_… for production ──────────────
 // Public keys are safe to commit. Never put sk_test_/sk_live_ keys here.
-const PAYSTACK_PUBLIC_KEY = "pk_test_7286d5fe706c0c323ea13d3817918f0e5a09a3c2";
+const PAYSTACK_PUBLIC_KEY = "pk_live_897c689e3516401b9393530e072d04c77cddf6a0";
 
 const countWords = (text: string) =>
   text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
@@ -219,7 +219,6 @@ const ABSTRACT_SECTIONS: {
 
 const ABSTRACT_FILE_MAX_BYTES = 5 * 1024 * 1024;
 const ABSTRACT_FILE_TYPES = [
-  "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
@@ -1102,7 +1101,7 @@ export default function RegisterPage({
     if (!file) return;
     setUploadError("");
     if (!ABSTRACT_FILE_TYPES.includes(file.type)) {
-      setUploadError("Please upload a PDF or Word (.doc/.docx) document.");
+      setUploadError("Please upload a Word (.doc/.docx) document.");
       return;
     }
     if (file.size > ABSTRACT_FILE_MAX_BYTES) {
@@ -2238,47 +2237,6 @@ export default function RegisterPage({
                           </li>
                         ))}
                       </ol>
-
-                      <div
-                        style={{
-                          marginTop: 14,
-                          paddingTop: 12,
-                          borderTop: "1px solid #d6e0f0",
-                        }}
-                      >
-                        <strong>
-                          ✅ Attach Abstract File (Word Document Only)
-                        </strong>
-                        <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
-                          INSTRUCTIONS:
-                        </p>
-                        <ol style={{ margin: 0, paddingLeft: 18 }}>
-                          <li style={{ marginBottom: 4 }}>
-                            Save the file name with your full name or Student ID
-                          </li>
-                          <li>
-                            A one (1) page Word file containing
-                            <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
-                              <li style={{ marginBottom: 4 }}>
-                                √ Abstract / Paper Title
-                              </li>
-                              <li style={{ marginBottom: 4 }}>
-                                √ Name(s) of all Author(s)
-                              </li>
-                              <li style={{ marginBottom: 4 }}>
-                                √ Background (100 word count paragraph)
-                              </li>
-                              <li style={{ marginBottom: 4 }}>
-                                √ Method (100 word count paragraph)
-                              </li>
-                              <li style={{ marginBottom: 4 }}>
-                                √ Results (100 word count paragraph)
-                              </li>
-                              <li>√ Significance (100 word count paragraph)</li>
-                            </ul>
-                          </li>
-                        </ol>
-                      </div>
                     </div>
 
                     {ABSTRACT_SECTIONS.map(
@@ -2330,6 +2288,55 @@ export default function RegisterPage({
                         );
                       },
                     )}
+
+                    <div
+                      className="alert alert-info mb-5"
+                      style={{ fontSize: 13, lineHeight: 1.7 }}
+                    >
+                      <strong>
+                        Attach Abstract File (Word Document Only)
+                      </strong>
+                      <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
+                        INSTRUCTIONS:
+                      </p>
+                      <ol style={{ margin: "0 0 8px", paddingLeft: 18 }}>
+                        <li style={{ marginBottom: 4 }}>
+                          Save your MS Word file name with your full name or
+                          Student ID. Eg. (John Doe_ or 336699_)
+                        </li>
+                        <li style={{ marginBottom: 8 }}>
+                          Attach your one (1) page Word file document
+                          containing the exact same abstract information
+                          submitted above, in the order below:
+                          <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                            <li style={{ marginBottom: 4 }}>
+                              √ Abstract / Paper Title
+                            </li>
+                            <li style={{ marginBottom: 4 }}>
+                              √ Name(s) of all Author(s)
+                            </li>
+                            <li style={{ marginBottom: 4 }}>
+                              √ Background (100 word count paragraph)
+                            </li>
+                            <li style={{ marginBottom: 4 }}>
+                              √ Method (100 word count paragraph)
+                            </li>
+                            <li style={{ marginBottom: 4 }}>
+                              √ Results (100 word count paragraph)
+                            </li>
+                            <li>
+                              √ Significance (100 word count paragraph)
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          Ensure the MS Word submission file contains the
+                          same exact information as provided in the text
+                          fields above.
+                        </li>
+                      </ol>
+                    </div>
+
                     <div className="form-group">
                       <label>
                         Abstract File (Word document)

@@ -33,7 +33,7 @@ service firebase.storage {
     match /abstract-submissions/{filename} {
       allow read: if true;
       allow write: if request.resource.size < 5 * 1024 * 1024
-                   && request.resource.contentType.matches('application/pdf|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+                   && request.resource.contentType.matches('application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       allow delete: if request.auth != null;
     }
   }

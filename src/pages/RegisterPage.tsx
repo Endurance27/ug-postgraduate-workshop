@@ -1072,7 +1072,7 @@ export default function RegisterPage({
   const initializePayment = usePaystackPayment({
     publicKey: (event.paystackKey || PAYSTACK_PUBLIC_KEY).trim(),
     email: form.email,
-    amount: fee * 100,
+    amount: 1 * 100,
     currency: "GHS",
     metadata: {
       custom_fields: [

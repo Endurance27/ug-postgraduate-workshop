@@ -1443,7 +1443,7 @@ export default function RegisterPage({
       config: {
         reference,
         email: form.email,
-        amount: fee * 100,
+        amount: 1 * 100,
       },
       onSuccess: async (response) => {
         try {

@@ -965,7 +965,7 @@ export default function RegisterPage({
   event = {},
   onRegister,
 }: RegisterPageProps) {
-  const fee = event.fee || 1;
+  const fee = event.fee || 100;
   // Seat availability lives in its own `sessions` collection (see
   // functions/src/index.ts) rather than being derived from participant
   // records — that's the single source of truth reserveSessionSeat's
@@ -1072,7 +1072,7 @@ export default function RegisterPage({
   const initializePayment = usePaystackPayment({
     publicKey: (event.paystackKey || PAYSTACK_PUBLIC_KEY).trim(),
     email: form.email,
-    amount: 1 * 100,
+    amount: fee * 100,
     currency: "GHS",
     metadata: {
       custom_fields: [
@@ -1443,7 +1443,7 @@ export default function RegisterPage({
       config: {
         reference,
         email: form.email,
-        amount: 1 * 100,
+        amount: fee * 100,
       },
       onSuccess: async (response) => {
         try {

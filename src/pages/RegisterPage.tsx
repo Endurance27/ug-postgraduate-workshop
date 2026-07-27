@@ -965,7 +965,7 @@ export default function RegisterPage({
   event = {},
   onRegister,
 }: RegisterPageProps) {
-  const fee = event.fee || 100;
+  const fee = event.fee || 1;
   // Seat availability lives in its own `sessions` collection (see
   // functions/src/index.ts) rather than being derived from participant
   // records — that's the single source of truth reserveSessionSeat's
@@ -2297,9 +2297,7 @@ export default function RegisterPage({
                       className="alert alert-info mb-5"
                       style={{ fontSize: 13, lineHeight: 1.7 }}
                     >
-                      <strong>
-                        Attach Abstract File (Word Document Only)
-                      </strong>
+                      <strong>Attach Abstract File (Word Document Only)</strong>
                       <p style={{ margin: "8px 0 4px", fontWeight: 600 }}>
                         INSTRUCTIONS:
                       </p>
@@ -2309,9 +2307,9 @@ export default function RegisterPage({
                           Student ID. Eg. (John Doe_ or 336699_)
                         </li>
                         <li style={{ marginBottom: 8 }}>
-                          Attach your one (1) page Word file document
-                          containing the exact same abstract information
-                          submitted above, in the order below:
+                          Attach your one (1) page Word file document containing
+                          the exact same abstract information submitted above,
+                          in the order below:
                           <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                             <li style={{ marginBottom: 4 }}>
                               √ Abstract / Paper Title
@@ -2328,15 +2326,13 @@ export default function RegisterPage({
                             <li style={{ marginBottom: 4 }}>
                               √ Results (100 word count paragraph)
                             </li>
-                            <li>
-                              √ Significance (100 word count paragraph)
-                            </li>
+                            <li>√ Significance (100 word count paragraph)</li>
                           </ul>
                         </li>
                         <li>
-                          Ensure the MS Word submission file contains the
-                          same exact information as provided in the text
-                          fields above.
+                          Ensure the MS Word submission file contains the same
+                          exact information as provided in the text fields
+                          above.
                         </li>
                       </ol>
                     </div>

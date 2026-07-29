@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate as useAdminNavigate, useLocation } from "react-router-dom";
+import {
+  Outlet,
+  useNavigate as useAdminNavigate,
+  useLocation,
+} from "react-router-dom";
 import { AdminContext } from "../context/AdminContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AdminPageProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   siteContent: { [key: string]: any };
-  updateContent: (section: string | Record<string, unknown>, value?: unknown) => void;
+  updateContent: (
+    section: string | Record<string, unknown>,
+    value?: unknown,
+  ) => void;
   navigate?: (page: string) => void;
 }
 import {
@@ -46,7 +53,6 @@ import {
   signOut,
 } from "../firebase";
 
-
 const ALLOWLIST_KEY = "dcs-admin-allowlist";
 
 function getAllowlist() {
@@ -76,13 +82,21 @@ function firebaseErrorMsg(code) {
   return map[code] || "Something went wrong. Please try again.";
 }
 
-
 const BASE = import.meta.env.BASE_URL;
 const SLIDE_IMAGES = [
-  { src: `${BASE}images/dcs-research.jpg`,              caption: "Research in Action" },
-  { src: `${BASE}images/collaboration-networking.jpeg`, caption: "Collaboration & Networking" },
-  { src: `${BASE}images/research-presentations.jpg`,    caption: "Academic Presentations" },
-  { src: `${BASE}images/workshop-sessions.jpg`,         caption: "Workshop Excellence" },
+  { src: `${BASE}images/dcs-research.jpg`, caption: "Research in Action" },
+  {
+    src: `${BASE}images/collaboration-networking.jpeg`,
+    caption: "Collaboration & Networking",
+  },
+  {
+    src: `${BASE}images/research-presentations.jpg`,
+    caption: "Academic Presentations",
+  },
+  {
+    src: `${BASE}images/workshop-sessions.jpg`,
+    caption: "Workshop Excellence",
+  },
 ];
 
 const SIDEBAR_PAGES = [
@@ -112,8 +126,11 @@ const SIDEBAR_TOOLS = [
   { key: "security", icon: Shield, label: "Security" },
 ];
 
-
-export default function AdminPage({ siteContent, updateContent, navigate }: AdminPageProps) {
+export default function AdminPage({
+  siteContent,
+  updateContent,
+  navigate,
+}: AdminPageProps) {
   const [fireUser, setFireUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authView, setAuthView] = useState("signin"); // "signin" | "signup" | "forgot"
@@ -126,7 +143,8 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
   const adminNav = useAdminNavigate();
   const location = useLocation();
-  const activeSection = location.pathname.replace(/^\/admin\/?/, "") || "overview";
+  const activeSection =
+    location.pathname.replace(/^\/admin\/?/, "") || "overview";
 
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
@@ -257,15 +275,17 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
     return (
       <main className="min-h-screen flex">
         {/* ── Left: image slideshow ── */}
-        <div
-          className="flex-1 relative overflow-hidden min-h-[500px] flex admin-slide-panel"
-        >
+        <div className="flex-1 relative overflow-hidden min-h-[500px] flex admin-slide-panel">
           {SLIDE_IMAGES.map((img, i) => (
             <div
               key={i}
               style={{
                 backgroundImage: `url('${img.src}')`,
-                opacity: i === slide ? (fading ? 0 : 1) : 0,
+                opacity:
+                  i === slide ?
+                    fading ? 0
+                    : 1
+                  : 0,
               }}
               className="absolute inset-0 bg-cover bg-center transition-opacity duration-[600ms]"
             >
@@ -304,7 +324,8 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     }}
                     style={{
                       width: i === slide ? 24 : 8,
-                      background: i === slide ? "#C9A84C" : "rgba(255,255,255,0.35)",
+                      background:
+                        i === slide ? "#C9A84C" : "rgba(255,255,255,0.35)",
                     }}
                     className="h-2 rounded-[4px] border-none cursor-pointer p-0 transition-all duration-300"
                   />
@@ -315,9 +336,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
         </div>
 
         {/* ── Right: auth form ── */}
-        <div
-          className="flex-1 flex items-center justify-center px-10 py-12 bg-white admin-form-panel"
-        >
+        <div className="flex-1 flex items-center justify-center px-10 py-12 bg-white admin-form-panel">
           <div className="w-full max-w-[400px]">
             {/* ── SIGN IN ── */}
             {authView === "signin" && (
@@ -393,7 +412,9 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       onClick={() => setShowPass((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                     >
-                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPass ?
+                        <EyeOff size={16} />
+                      : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
@@ -402,14 +423,14 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                   onClick={handleSignIn}
                   disabled={authLoading}
                 >
-                  {authLoading ? (
+                  {authLoading ?
                     "Signing in…"
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5">
+                  : <span className="inline-flex items-center gap-1.5">
                       Sign In <ArrowRight size={14} />
                     </span>
-                  )}
+                  }
                 </button>
+                {/*
                 <div className="text-center mt-5">
                   <span className="text-[#888] text-[13px]">
                     Don't have an account?{" "}
@@ -425,6 +446,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                     Create account
                   </button>
                 </div>
+*/}
               </>
             )}
 
@@ -492,7 +514,9 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                           onClick={() => setShowPass((v) => !v)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                         >
-                          {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                          {showPass ?
+                            <EyeOff size={16} />
+                          : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
@@ -519,11 +543,9 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                           onClick={() => setShowConfirm((v) => !v)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#888] text-base p-0"
                         >
-                          {showConfirm ? (
+                          {showConfirm ?
                             <EyeOff size={16} />
-                          ) : (
-                            <Eye size={16} />
-                          )}
+                          : <Eye size={16} />}
                         </button>
                       </div>
                     </div>
@@ -541,7 +563,10 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                             key={label}
                             className={`text-[11px] px-2 py-0.5 rounded-xl font-semibold${ok ? " bg-[#e8f5ee] text-[#27ae60]" : " bg-[#f5f5f5] text-[#aaa]"}`}
                           >
-                            {ok ? <Check size={11} /> : "○"} {label}
+                            {ok ?
+                              <Check size={11} />
+                            : "○"}{" "}
+                            {label}
                           </span>
                         ))}
                       </div>
@@ -551,13 +576,12 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       onClick={handleSignUp}
                       disabled={authLoading}
                     >
-                      {authLoading ? (
+                      {authLoading ?
                         "Creating account…"
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5">
+                      : <span className="inline-flex items-center gap-1.5">
                           Create Account <ArrowRight size={14} />
                         </span>
-                      )}
+                      }
                     </button>
                   </>
                 )}
@@ -630,13 +654,12 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
                       onClick={handleForgotPassword}
                       disabled={authLoading}
                     >
-                      {authLoading ? (
+                      {authLoading ?
                         "Sending…"
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5">
+                      : <span className="inline-flex items-center gap-1.5">
                           Send Reset Link <ArrowRight size={14} />
                         </span>
-                      )}
+                      }
                     </button>
                   </>
                 )}
@@ -672,7 +695,7 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
   // Derive current section label + icon for breadcrumb
   const allNavItems = [...SIDEBAR_TOOLS, ...SIDEBAR_PAGES];
-  const currentNavItem = allNavItems.find(s => s.key === activeSection);
+  const currentNavItem = allNavItems.find((s) => s.key === activeSection);
   const SectionIcon = currentNavItem?.icon ?? LayoutDashboard;
   const sectionLabel = currentNavItem?.label ?? "Dashboard";
 
@@ -683,168 +706,177 @@ export default function AdminPage({ siteContent, updateContent, navigate }: Admi
 
   return (
     <AdminContext.Provider value={{ siteContent, updateContent, navigate }}>
-    <div className="flex flex-col min-h-screen bg-ug-admin-bg">
-
-      {/* ── TOP BAR ─────────────────────────────────────────────── */}
-      <div className="bg-[#07152A] border-b border-[rgba(201,168,76,0.2)] px-5 h-[50px] flex justify-between items-center shrink-0 z-10">
-        {/* Left: brand */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-[5px] bg-ug-gold flex items-center justify-center">
-              <Shield size={13} color="#0A1A35" />
+      <div className="flex flex-col min-h-screen bg-ug-admin-bg">
+        {/* ── TOP BAR ─────────────────────────────────────────────── */}
+        <div className="bg-[#07152A] border-b border-[rgba(201,168,76,0.2)] px-5 h-[50px] flex justify-between items-center shrink-0 z-10">
+          {/* Left: brand */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-[5px] bg-ug-gold flex items-center justify-center">
+                <Shield size={13} color="#0A1A35" />
+              </div>
+              <span className="text-white font-bold text-[13px] tracking-[0.03em]">
+                DCS Admin Console
+              </span>
             </div>
-            <span className="text-white font-bold text-[13px] tracking-[0.03em]">
-              DCS Admin Console
+            <span className="text-white/20 text-[10px]">|</span>
+            <span className="text-white/40 text-[12px] hidden sm:block">
+              {event.edition}
             </span>
           </div>
-          <span className="text-white/20 text-[10px]">|</span>
-          <span className="text-white/40 text-[12px] hidden sm:block">
-            {event.edition}
-          </span>
-        </div>
 
-        {/* Right: user + website link */}
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 bg-white/[0.06] rounded-lg px-3 py-1.5">
-            <div className="w-5 h-5 rounded-full bg-ug-gold/80 flex items-center justify-center text-[10px] font-bold text-ug-navy shrink-0">
-              {userInitial}
-            </div>
-            <span className="text-white/60 text-[12px] max-w-[120px] truncate">{userHandle}</span>
-          </div>
-          <button
-            onClick={() => navigate && navigate("home")}
-            className="bg-ug-gold text-ug-navy border-none rounded-lg px-4 py-[6px] text-[12px] font-bold cursor-pointer hover:bg-ug-gold-dark transition-colors duration-150"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <ArrowLeft size={13} /> Website
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── SIDEBAR + CONTENT ────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
-
-        {/* ── SIDEBAR ──────────────────────────────────────────────── */}
-        <aside
-          className="w-[232px] bg-ug-navy flex flex-col shrink-0 overflow-y-auto"
-          style={{ boxShadow: "2px 0 12px rgba(0,0,0,0.18)" }}
-        >
-          {/* Workspace header */}
-          <div className="px-4 pt-5 pb-3 border-b border-white/[0.07]">
-            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase mb-0.5">Workspace</div>
-            <div className="text-[13px] font-semibold text-white/90 truncate">DCS Workshop 2026</div>
-          </div>
-
-          {/* Nav */}
-          <nav className="flex-1 px-2.5 py-3">
-
-            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5 pt-0.5">
-              Site Pages
-            </div>
-            {SIDEBAR_PAGES.map((s) => {
-              const active = activeSection === s.key;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => adminNav('/admin/' + s.key)}
-                  style={{
-                    borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
-                    paddingLeft: active ? 10 : 12,
-                  }}
-                  className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
-                    active
-                      ? " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
-                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
-                  }`}
-                >
-                  <s.icon size={14} className="shrink-0" />
-                  {s.label}
-                </button>
-              );
-            })}
-
-            <div className="h-px bg-white/[0.08] my-2.5 mx-1" />
-
-            <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5">
-              Admin Tools
-            </div>
-            {SIDEBAR_TOOLS.map((s) => {
-              const active = activeSection === s.key;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => adminNav('/admin/' + s.key)}
-                  style={{
-                    borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
-                    paddingLeft: active ? 10 : 12,
-                  }}
-                  className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
-                    active
-                      ? " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
-                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
-                  }`}
-                >
-                  <s.icon size={14} className="shrink-0" />
-                  {s.label}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Bottom: status + user + sign out */}
-          <div className="px-2.5 py-3 border-t border-white/[0.07] space-y-2">
-            {/* Registration status pill */}
-            <div
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]${
-                event.registrationOpen
-                  ? " bg-[rgba(50,180,100,0.12)] text-[#5dbb7a]"
-                  : " bg-[rgba(220,50,50,0.12)] text-[#f07070]"
-              }`}
-            >
-              <span className="text-[8px] leading-none">●</span>
-              <span className="font-medium">Registration {event.registrationOpen ? "Open" : "Closed"}</span>
-            </div>
-
-            {/* User row */}
-            <div className="flex items-center gap-2.5 px-2 py-1.5">
-              <div className="w-7 h-7 rounded-full bg-ug-gold/20 border border-ug-gold/30 flex items-center justify-center text-[11px] font-bold text-ug-gold shrink-0">
+          {/* Right: user + website link */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 bg-white/[0.06] rounded-lg px-3 py-1.5">
+              <div className="w-5 h-5 rounded-full bg-ug-gold/80 flex items-center justify-center text-[10px] font-bold text-ug-navy shrink-0">
                 {userInitial}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-medium text-white/80 truncate">{userHandle}</div>
-                <div className="text-[10px] text-white/35">Administrator</div>
-              </div>
+              <span className="text-white/60 text-[12px] max-w-[120px] truncate">
+                {userHandle}
+              </span>
             </div>
-
-            {/* Sign out */}
             <button
-              onClick={() => { signOut(auth); navigate && navigate("home"); }}
-              className="w-full bg-white/[0.06] hover:bg-white/[0.1] text-white/50 hover:text-white/75 border border-white/[0.1] rounded-lg py-2 text-[12px] cursor-pointer transition-all duration-150"
+              onClick={() => navigate && navigate("home")}
+              className="bg-ug-gold text-ug-navy border-none rounded-lg px-4 py-[6px] text-[12px] font-bold cursor-pointer hover:bg-ug-gold-dark transition-colors duration-150"
             >
-              Sign Out
+              <span className="inline-flex items-center gap-1.5">
+                <ArrowLeft size={13} /> Website
+              </span>
             </button>
-          </div>
-        </aside>
-
-        {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* Breadcrumb bar */}
-          <div className="bg-white border-b border-[#ebebef] px-8 py-2.5 flex items-center gap-1.5 text-[12px] shrink-0">
-            <SectionIcon size={13} style={{ color: "#aaa", flexShrink: 0 }} />
-            <span className="text-[#bbb]">Admin</span>
-            <span className="text-[#ddd] mx-0.5">/</span>
-            <span className="text-[#555] font-semibold">{sectionLabel}</span>
-          </div>
-
-          {/* Panel content */}
-          <div className="flex-1 px-8 py-7">
-            <Outlet />
           </div>
         </div>
 
+        {/* ── SIDEBAR + CONTENT ────────────────────────────────────── */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* ── SIDEBAR ──────────────────────────────────────────────── */}
+          <aside
+            className="w-[232px] bg-ug-navy flex flex-col shrink-0 overflow-y-auto"
+            style={{ boxShadow: "2px 0 12px rgba(0,0,0,0.18)" }}
+          >
+            {/* Workspace header */}
+            <div className="px-4 pt-5 pb-3 border-b border-white/[0.07]">
+              <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase mb-0.5">
+                Workspace
+              </div>
+              <div className="text-[13px] font-semibold text-white/90 truncate">
+                DCS Workshop 2026
+              </div>
+            </div>
+
+            {/* Nav */}
+            <nav className="flex-1 px-2.5 py-3">
+              <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5 pt-0.5">
+                Site Pages
+              </div>
+              {SIDEBAR_PAGES.map((s) => {
+                const active = activeSection === s.key;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => adminNav("/admin/" + s.key)}
+                    style={{
+                      borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
+                      paddingLeft: active ? 10 : 12,
+                    }}
+                    className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
+                      active ?
+                        " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
+                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
+                    }`}
+                  >
+                    <s.icon size={14} className="shrink-0" />
+                    {s.label}
+                  </button>
+                );
+              })}
+
+              <div className="h-px bg-white/[0.08] my-2.5 mx-1" />
+
+              <div className="text-[10px] text-white/35 tracking-[0.12em] uppercase px-2 pb-1.5">
+                Admin Tools
+              </div>
+              {SIDEBAR_TOOLS.map((s) => {
+                const active = activeSection === s.key;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => adminNav("/admin/" + s.key)}
+                    style={{
+                      borderLeft: `2px solid ${active ? "#C9A84C" : "transparent"}`,
+                      paddingLeft: active ? 10 : 12,
+                    }}
+                    className={`w-full flex items-center gap-2.5 rounded-[7px] pr-3 py-[8px] mb-[1px] text-[13px] cursor-pointer text-left transition-all duration-150${
+                      active ?
+                        " bg-[rgba(201,168,76,0.13)] text-ug-gold font-semibold"
+                      : " bg-transparent text-white/55 font-normal hover:bg-white/[0.07] hover:text-white/85"
+                    }`}
+                  >
+                    <s.icon size={14} className="shrink-0" />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Bottom: status + user + sign out */}
+            <div className="px-2.5 py-3 border-t border-white/[0.07] space-y-2">
+              {/* Registration status pill */}
+              <div
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]${
+                  event.registrationOpen ?
+                    " bg-[rgba(50,180,100,0.12)] text-[#5dbb7a]"
+                  : " bg-[rgba(220,50,50,0.12)] text-[#f07070]"
+                }`}
+              >
+                <span className="text-[8px] leading-none">●</span>
+                <span className="font-medium">
+                  Registration {event.registrationOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+
+              {/* User row */}
+              <div className="flex items-center gap-2.5 px-2 py-1.5">
+                <div className="w-7 h-7 rounded-full bg-ug-gold/20 border border-ug-gold/30 flex items-center justify-center text-[11px] font-bold text-ug-gold shrink-0">
+                  {userInitial}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12px] font-medium text-white/80 truncate">
+                    {userHandle}
+                  </div>
+                  <div className="text-[10px] text-white/35">Administrator</div>
+                </div>
+              </div>
+
+              {/* Sign out */}
+              <button
+                onClick={() => {
+                  signOut(auth);
+                  navigate && navigate("home");
+                }}
+                className="w-full bg-white/[0.06] hover:bg-white/[0.1] text-white/50 hover:text-white/75 border border-white/[0.1] rounded-lg py-2 text-[12px] cursor-pointer transition-all duration-150"
+              >
+                Sign Out
+              </button>
+            </div>
+          </aside>
+
+          {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
+          <div className="flex-1 flex flex-col overflow-y-auto">
+            {/* Breadcrumb bar */}
+            <div className="bg-white border-b border-[#ebebef] px-8 py-2.5 flex items-center gap-1.5 text-[12px] shrink-0">
+              <SectionIcon size={13} style={{ color: "#aaa", flexShrink: 0 }} />
+              <span className="text-[#bbb]">Admin</span>
+              <span className="text-[#ddd] mx-0.5">/</span>
+              <span className="text-[#555] font-semibold">{sectionLabel}</span>
+            </div>
+
+            {/* Panel content */}
+            <div className="flex-1 px-8 py-7">
+              <Outlet />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
     </AdminContext.Provider>
   );
 }

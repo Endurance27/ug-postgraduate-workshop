@@ -17,6 +17,7 @@ import {
 } from "./firebase.js";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
+import { reBaseAssets } from "./utils/rebase";
 import {
   adminRoutes,
   adminChildRoutes,
@@ -135,24 +136,6 @@ interface SiteContent {
 const B = import.meta.env.BASE_URL; // e.g. "/workshop/" or "/"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-// Re-base local asset paths to the current base ("/workshop/"). Site content may hold paths like
-// "/images/x.jpg" or "/logo.png" that were saved when the site lived at the root; under /workshop
-// those must become "/workshop/images/x.jpg". Absolute URLs (http/https/data/blob) and non-asset
-// strings (e.g. route paths) are left untouched.
-const LOCAL_ASSET = /^\/(images\/|logo\.|logo$|ug-logo)/i;
-function reBaseAssets(obj: unknown): unknown {
-  if (typeof obj === "string") {
-    return LOCAL_ASSET.test(obj) ? B.replace(/\/$/, "") + obj : obj;
-  }
-  if (Array.isArray(obj)) return obj.map(reBaseAssets);
-  if (obj && typeof obj === "object")
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [k, reBaseAssets(v)]),
-    );
-  return obj;
-}
-
 function stripBase64(obj: unknown): unknown {
   if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
   if (Array.isArray(obj)) return obj.map(stripBase64);

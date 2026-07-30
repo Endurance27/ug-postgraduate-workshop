@@ -1,8 +1,9 @@
 // Fix: shared hook — subscribes to workshop/siteContent via onSnapshot so all
 // public pages reflect admin changes in real-time without polling or reload.
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { db } from "../firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { reBaseAssets } from "../utils/rebase";
 
 export interface SiteContentSnapshot {
   event: Record<string, unknown>;
@@ -76,5 +77,9 @@ export function useSiteContent(seed?: Partial<SiteContentSnapshot>): {
     return () => unsub();
   }, []);
 
-  return { data, loading, error };
+  // Re-base local asset paths (e.g. "/images/x.jpg" -> "/workshop/images/x.jpg") so images saved
+  // when the site lived at the root still resolve. Read-only; stored data is untouched.
+  const view = useMemo(() => reBaseAssets(data), [data]);
+
+  return { data: view, loading, error };
 }

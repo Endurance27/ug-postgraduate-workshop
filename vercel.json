@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/workshop/:file(.*\\..*)", "destination": "/:file" },
+    { "source": "/workshop", "destination": "/index.html" },
+    { "source": "/workshop/:path*", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -86,6 +86,16 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
+    // Failed registrations — error log written by the client when a payment
+    // succeeds but saving the registration record then fails (see
+    // RegisterPage.tsx). Public create-only so the log can never be blocked
+    // by the very failure it's trying to record; admin-only afterwards so
+    // these logs (which may contain form data) aren't publicly readable.
+    match /failedRegistrations/{document} {
+      allow create: if request.resource.data.paymentReference is string;
+      allow read, update, delete: if request.auth != null;
+    }
+
     // Sessions — the single source of truth for seat availability.
     // Anyone can read (the registration form needs live seat counts), but
     // registeredCount/availableSeats can only ever change through the

@@ -116,6 +116,61 @@ export const checkEmailRegistered = onCall<{ email?: string }>(
   },
 );
 
+// Mirrors makeDocId(email) in src/App.tsx — must stay in sync so this
+// function looks up the same document the client created.
+function makeDocId(...parts: unknown[]): string {
+  const id = parts
+    .filter(Boolean)
+    .map((part) => String(part).trim())
+    .filter(Boolean)
+    .join('_')
+    .replace(/[^\w.-]/g, '_');
+  return id || String(Date.now());
+}
+
+// Callable from the registration form right after a successful Paystack
+// payment. The registration document was already created (with payment:
+// "Pending") before payment even started — see saveRegistrationRecord in
+// RegisterPage.tsx — so this only ever flips that field to "Confirmed".
+// It has to go through the Admin SDK because firestore.rules deliberately
+// only allows public clients to CREATE a registration document, never
+// update one (that's what makes duplicate-email registration unspoofable).
+export const confirmRegistrationPayment = onCall<{
+  email?: string;
+  paymentReference?: string;
+  paymentMethod?: string;
+}>({ region: 'us-central1' }, async (request) => {
+  const email = (request.data?.email || '').trim().toLowerCase();
+  const paymentReference = (request.data?.paymentReference || '').trim();
+  if (!email || !paymentReference) {
+    throw new HttpsError(
+      'invalid-argument',
+      'email and paymentReference are required.',
+    );
+  }
+
+  const ref = admin
+    .firestore()
+    .collection('registrations')
+    .doc(makeDocId(email));
+  const snap = await ref.get();
+  if (!snap.exists) {
+    throw new HttpsError(
+      'not-found',
+      'No pending registration found for this email — the registration record must be saved before payment can be confirmed.',
+    );
+  }
+
+  await ref.update({
+    payment: 'Confirmed',
+    payRef: paymentReference,
+    paymentMethod: request.data?.paymentMethod || 'paystack',
+    updatedAt: new Date().toISOString(),
+  });
+
+  return { success: true };
+});
+
 // ─── Sessions ───────────────────────────────────────────────────────────────
 // Dedicated `sessions` collection — the single source of truth for seat
 // availability. Replaces the old approach of diffing registration documents
@@ -140,7 +195,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '27Aug_Morning',
     dayKey: '27Aug',
     timeSlot: 'Morning',
-    title: 'Wednesday, 27 August — Morning',
+    title: '27 August — Morning',
     date: '2026-08-27',
     startTime: '9:00 AM',
     endTime: '1:00 PM',
@@ -150,7 +205,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '27Aug_Afternoon',
     dayKey: '27Aug',
     timeSlot: 'Afternoon',
-    title: 'Wednesday, 27 August — Afternoon',
+    title: '27 August — Afternoon',
     date: '2026-08-27',
     startTime: '2:00 PM',
     endTime: '5:00 PM',
@@ -160,7 +215,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '28Aug_Morning',
     dayKey: '28Aug',
     timeSlot: 'Morning',
-    title: 'Thursday, 28 August — Morning',
+    title: '28 August — Morning',
     date: '2026-08-28',
     startTime: '9:00 AM',
     endTime: '1:00 PM',
@@ -170,7 +225,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '28Aug_Afternoon',
     dayKey: '28Aug',
     timeSlot: 'Afternoon',
-    title: 'Thursday, 28 August — Afternoon',
+    title: '28 August — Afternoon',
     date: '2026-08-28',
     startTime: '2:00 PM',
     endTime: '5:00 PM',
@@ -180,7 +235,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '29Aug_Morning',
     dayKey: '29Aug',
     timeSlot: 'Morning',
-    title: 'Friday, 29 August — Morning',
+    title: '29 August — Morning',
     date: '2026-08-29',
     startTime: '9:00 AM',
     endTime: '1:00 PM',
@@ -190,7 +245,7 @@ const SESSION_DEFS: SessionDef[] = [
     id: '29Aug_Afternoon',
     dayKey: '29Aug',
     timeSlot: 'Afternoon',
-    title: 'Friday, 29 August — Afternoon',
+    title: '29 August — Afternoon',
     date: '2026-08-29',
     startTime: '2:00 PM',
     endTime: '5:00 PM',

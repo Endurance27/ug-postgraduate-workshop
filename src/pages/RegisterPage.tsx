@@ -14,6 +14,8 @@ import {
   functions,
   httpsCallable,
   db,
+  doc,
+  setDoc,
   collection,
   onSnapshot,
   storage,
@@ -1393,12 +1395,44 @@ export default function RegisterPage({
     return saved;
   };
 
+  // Called once Paystack reports success — upgrades the Pending record's
+  // payment field to Confirmed. This has to go through a Cloud Function
+  // (Admin SDK) rather than a client-side setDoc: firestore.rules only lets a
+  // public client CREATE a registration document, never update one, so an
+  // update from here would be silently rejected.
+  const confirmRegistrationPayment = async (
+    reference: string,
+    method = "paystack",
+  ) => {
+    if (!functions) {
+      throw new Error("Payment confirmation service is unavailable.");
+    }
+    const confirmPayment = httpsCallable<
+      { email: string; paymentReference: string; paymentMethod: string },
+      { success: boolean }
+    >(functions, "confirmRegistrationPayment");
+    await confirmPayment({
+      email: form.email,
+      paymentReference: reference,
+      paymentMethod: method,
+    });
+    setRegistrant?.({
+      email: form.email,
+      payment: "Confirmed",
+      payRef: reference,
+    });
+  };
+
   const finishRegistration = async (
     paymentStatus: string,
     reference = "",
     method = "paystack",
   ) => {
-    await saveRegistrationRecord(paymentStatus, reference, method);
+    if (paymentStatus === "Confirmed") {
+      await confirmRegistrationPayment(reference, method);
+    } else {
+      await saveRegistrationRecord(paymentStatus, reference, method);
+    }
     const confirmed = paymentStatus === "Confirmed";
     setPaymentConfirmed(confirmed);
     setConfirmationRef(reference);
@@ -1439,6 +1473,23 @@ export default function RegisterPage({
     }
     set("registrationCode", reference);
 
+    // Save the registration now, up front, with payment left as "Pending" —
+    // it only gets flipped to "Confirmed" below once Paystack reports
+    // success. This way the participant's details are never lost even if the
+    // payment popup is closed or the network drops mid-payment.
+    try {
+      await saveRegistrationRecord("Pending", reference, "paystack");
+    } catch (err) {
+      setPaying(false);
+      const message = err instanceof Error ? err.message : String(err);
+      setRegistrationError(
+        message.startsWith("DUPLICATE_EMAIL") ?
+          "This email is already registered for the workshop."
+        : "We could not start your registration. Please check your connection and try again.",
+      );
+      return;
+    }
+
     initializePayment({
       config: {
         reference,
@@ -1474,13 +1525,27 @@ export default function RegisterPage({
           }
           await finishRegistration("Confirmed", response.reference, "paystack");
         } catch (err) {
-          // Email uniqueness was already verified in Step 1, so a failure here
-          // is an unexpected/unrelated save error, not a duplicate email —
-          // there is no duplicate-email case to special-case at this point.
+          // The registration record itself was already saved as "Pending"
+          // above, before payment — so this is only a confirmation failure,
+          // not a data-loss risk. Still logged to failedRegistrations so
+          // support has the error details to hand when confirming manually.
           setPaying(false);
-          console.error("Registration save failed after payment:", err);
+          console.error("Registration confirmation failed after payment:", err);
+          if (db) {
+            try {
+              await setDoc(doc(db, "failedRegistrations", response.reference), {
+                paymentReference: response.reference,
+                error: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? (err.stack ?? null) : null,
+                form,
+                createdAt: new Date().toISOString(),
+              });
+            } catch (logErr) {
+              console.error("Could not log failed registration:", logErr);
+            }
+          }
           setRegistrationError(
-            `Your payment was received (ref: ${response.reference}) but we could not save your registration. Please contact support and quote this reference.`,
+            `Your payment was received (ref: ${response.reference}) but we could not confirm it automatically. Your registration details are already saved — please contact support and quote this reference so we can confirm it manually.`,
           );
         }
       },

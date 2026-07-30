@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Navigate,
   Route,
@@ -135,6 +135,24 @@ interface SiteContent {
 const B = import.meta.env.BASE_URL; // e.g. "/workshop/" or "/"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Re-base local asset paths to the current base ("/workshop/"). Site content may hold paths like
+// "/images/x.jpg" or "/logo.png" that were saved when the site lived at the root; under /workshop
+// those must become "/workshop/images/x.jpg". Absolute URLs (http/https/data/blob) and non-asset
+// strings (e.g. route paths) are left untouched.
+const LOCAL_ASSET = /^\/(images\/|logo\.|logo$|ug-logo)/i;
+function reBaseAssets(obj: unknown): unknown {
+  if (typeof obj === "string") {
+    return LOCAL_ASSET.test(obj) ? B.replace(/\/$/, "") + obj : obj;
+  }
+  if (Array.isArray(obj)) return obj.map(reBaseAssets);
+  if (obj && typeof obj === "object")
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, reBaseAssets(v)]),
+    );
+  return obj;
+}
+
 function stripBase64(obj: unknown): unknown {
   if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj;
   if (Array.isArray(obj)) return obj.map(stripBase64);
@@ -1291,12 +1309,19 @@ export default function App() {
     return participantRecord;
   };
 
+  // Content with local asset paths re-based to the current base, so images saved when the site
+  // lived at the root still resolve under /workshop.
+  const displayContent = useMemo(
+    () => reBaseAssets(siteContent) as typeof siteContent,
+    [siteContent],
+  );
+
   const renderPage = (route: AppRoute) => {
     const Page = route.component;
     return (
       <Page
         {...getRouteProps(route.key, {
-          siteContent: siteContent as unknown as Record<string, unknown>,
+          siteContent: displayContent as unknown as Record<string, unknown>,
           navigate,
           setRegistrant,
           saveRegistration,
@@ -1311,7 +1336,7 @@ export default function App() {
       <Route
         element={
           <MainLayout
-            footer={siteContent.footer}
+            footer={displayContent.footer}
             contentStatus={contentStatus}
           />
         }

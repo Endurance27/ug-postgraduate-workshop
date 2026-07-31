@@ -66,24 +66,44 @@ interface RegistrationData {
   [key: string]: unknown;
 }
 
-// Mirrors the abstractSectionsWithinLimit / abstractSubmissionValid checks in
-// firestore.rules — replicated here because saveRegistrationDraft below
-// writes via the Admin SDK, which bypasses those rules entirely.
-function withinAbstractCharLimit(
+// Mirrors the abstractSubmissionValid check in firestore.rules, plus the
+// actual per-section word caps from ABSTRACT_SECTIONS in RegisterPage.tsx —
+// replicated here because saveRegistrationDraft below writes via the Admin
+// SDK, which bypasses firestore.rules entirely.
+//
+// This counts words, not characters: the UI hard-caps each section at these
+// word counts via clampWords (typing past the limit is physically blocked),
+// but academic writing regularly averages well over 8 characters per word,
+// so a char-length proxy (as firestore.rules uses, since CEL can't easily
+// count words) would falsely reject a legitimate 100-word section. Counting
+// words here instead means anything the UI could produce always passes.
+const ABSTRACT_SECTION_MAX_WORDS = {
+  abstractBackground: 100,
+  abstractMethods: 100,
+  abstractResults: 100,
+  abstractSignificance: 60,
+} as const;
+
+function countWords(text: string): number {
+  const trimmed = text.trim();
+  return trimmed === '' ? 0 : trimmed.split(/\s+/).length;
+}
+
+function withinAbstractWordLimit(
   data: RegistrationData,
-  field: 'abstractBackground' | 'abstractMethods' | 'abstractResults' | 'abstractSignificance',
+  field: keyof typeof ABSTRACT_SECTION_MAX_WORDS,
 ): boolean {
   const value = data[field];
-  return typeof value !== 'string' || value.length <= 800;
+  return (
+    typeof value !== 'string' ||
+    countWords(value) <= ABSTRACT_SECTION_MAX_WORDS[field]
+  );
 }
 
 function abstractSectionsWithinLimit(data: RegistrationData): boolean {
   return (
-    withinAbstractCharLimit(data, 'abstractBackground') &&
-    withinAbstractCharLimit(data, 'abstractMethods') &&
-    withinAbstractCharLimit(data, 'abstractResults') &&
-    withinAbstractCharLimit(data, 'abstractSignificance')
-  );
+    Object.keys(ABSTRACT_SECTION_MAX_WORDS) as (keyof typeof ABSTRACT_SECTION_MAX_WORDS)[]
+  ).every((field) => withinAbstractWordLimit(data, field));
 }
 
 function abstractSubmissionValid(data: RegistrationData): boolean {

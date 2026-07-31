@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Navigate,
   Route,
@@ -19,6 +19,7 @@ import {
 } from "./firebase.js";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
+import { reBaseAssets } from "./utils/rebase";
 import {
   adminRoutes,
   adminChildRoutes,
@@ -1288,12 +1289,19 @@ export default function App() {
     return participantRecord;
   };
 
+  // Content with local asset paths re-based to the current base, so images saved when the site
+  // lived at the root still resolve under /workshop.
+  const displayContent = useMemo(
+    () => reBaseAssets(siteContent) as typeof siteContent,
+    [siteContent],
+  );
+
   const renderPage = (route: AppRoute) => {
     const Page = route.component;
     return (
       <Page
         {...getRouteProps(route.key, {
-          siteContent: siteContent as unknown as Record<string, unknown>,
+          siteContent: displayContent as unknown as Record<string, unknown>,
           navigate,
           setRegistrant,
           saveRegistration,
@@ -1308,7 +1316,7 @@ export default function App() {
       <Route
         element={
           <MainLayout
-            footer={siteContent.footer}
+            footer={displayContent.footer}
             contentStatus={contentStatus}
           />
         }

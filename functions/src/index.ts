@@ -66,6 +66,37 @@ interface RegistrationData {
   [key: string]: unknown;
 }
 
+// Mirrors the abstractSectionsWithinLimit / abstractSubmissionValid checks in
+// firestore.rules — replicated here because saveRegistrationDraft below
+// writes via the Admin SDK, which bypasses those rules entirely.
+function withinAbstractCharLimit(
+  data: RegistrationData,
+  field: 'abstractBackground' | 'abstractMethods' | 'abstractResults' | 'abstractSignificance',
+): boolean {
+  const value = data[field];
+  return typeof value !== 'string' || value.length <= 800;
+}
+
+function abstractSectionsWithinLimit(data: RegistrationData): boolean {
+  return (
+    withinAbstractCharLimit(data, 'abstractBackground') &&
+    withinAbstractCharLimit(data, 'abstractMethods') &&
+    withinAbstractCharLimit(data, 'abstractResults') &&
+    withinAbstractCharLimit(data, 'abstractSignificance')
+  );
+}
+
+function abstractSubmissionValid(data: RegistrationData): boolean {
+  if (data.isSubmittingAbstract !== 'Yes') return true;
+  return Boolean(
+    data.abstractFileUrl &&
+      data.abstractBackground &&
+      data.abstractMethods &&
+      data.abstractResults &&
+      data.abstractSignificance,
+  );
+}
+
 // ─── Sequential registration codes (DCS-PRC-2026-001, -002, …) ────────────────
 // Assigned once per registration via an atomic counter and persisted onto the
 // document so it never changes on subsequent writes.
@@ -99,6 +130,15 @@ export const reserveRegistrationCode = onCall(
 // Callable from the registration form to block duplicate registrations —
 // public clients can't read the registrations collection (see firestore.rules),
 // so this runs the lookup server-side with the Admin SDK.
+//
+// A registration only counts as a blocking duplicate once its payment is
+// "Confirmed". An email with a Pending (or any other non-confirmed) record
+// is NOT a duplicate — that participant abandoned payment partway through
+// (closed the Paystack popup, lost connection, etc.) and must be allowed to
+// resume the same registration rather than being locked out of their own
+// email address. In that case we hand back the saved form fields so the
+// frontend can pre-fill them and let the participant pick up where they
+// left off, instead of retyping everything.
 export const checkEmailRegistered = onCall<{ email?: string }>(
   { region: 'us-central1' },
   async (request) => {
@@ -112,7 +152,56 @@ export const checkEmailRegistered = onCall<{ email?: string }>(
       .limit(1)
       .get();
 
-    return { exists: !snap.empty };
+    if (snap.empty) return { exists: false };
+
+    const data = snap.docs[0].data() as RegistrationData;
+    if (data.payment === 'Confirmed') {
+      return { exists: true };
+    }
+
+    // Split the stored "27Aug_Morning"-style sessionPreference back into the
+    // separate eventDay / sessionTime fields the form uses.
+    const [eventDay, sessionTime] = (data.sessionPreference || '').split('_');
+
+    return {
+      exists: false,
+      pending: true,
+      registration: {
+        title: data.title || '',
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        otherNames: data.otherNames || '',
+        gender: data.gender || '',
+        phone: data.phone || '',
+        institution: data.institution || '',
+        otherInstitution: data.otherInstitution || '',
+        participantCategory: data.participantCategory || '',
+        isCsStudent: data.isCsStudent || '',
+        department: data.department || '',
+        studentId: data.studentId || '',
+        programme: data.programme || '',
+        cohort: data.cohort || '',
+        attendanceMode: data.attendanceMode || '',
+        eventDay: eventDay || '',
+        sessionTime: sessionTime || '',
+        isSubmittingAbstract: data.isSubmittingAbstract || '',
+        participationType: data.participationType || '',
+        paperType: data.paperType || '',
+        thematicAreas: data.thematicAreas || [],
+        authorNames: data.authorNames || '',
+        presentationType: data.presentationType || '',
+        nationality: data.nationality || '',
+        presentationTitle: data.presentationTitle || '',
+        abstractBackground: data.abstractBackground || '',
+        abstractMethods: data.abstractMethods || '',
+        abstractResults: data.abstractResults || '',
+        abstractSignificance: data.abstractSignificance || '',
+        abstractFileUrl: data.abstractFileUrl || '',
+        abstractFileName: data.abstractFileName || '',
+        abstractFilePath: data.abstractFilePath || '',
+        registrationCode: data.registrationCode || '',
+      },
+    };
   },
 );
 
@@ -127,6 +216,61 @@ function makeDocId(...parts: unknown[]): string {
     .replace(/[^\w.-]/g, '_');
   return id || String(Date.now());
 }
+
+// Callable from saveRegistration in src/App.tsx — used for EVERY pre-payment
+// save, both the very first one and any retry/resume of an existing Pending
+// registration. This has to go through the Admin SDK rather than a client
+// setDoc: firestore.rules only allows a public client to CREATE a
+// registration document, never update one, so a second save attempt with the
+// same email (e.g. retrying payment after the Paystack popup was closed)
+// would otherwise always be rejected — even though that participant hasn't
+// completed a real duplicate registration.
+//
+// The one invariant enforced here, server-side: once a record's payment is
+// "Confirmed" it can never be overwritten through this path, and the
+// "payment" field itself is always forced to "Pending" regardless of what
+// the client sends — the ONLY way a registration ever becomes "Confirmed" is
+// through confirmRegistrationPayment below.
+export const saveRegistrationDraft = onCall<RegistrationData>(
+  { region: 'us-central1' },
+  async (request) => {
+    const data = request.data || {};
+    const email = (data.email || '').trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      throw new HttpsError('invalid-argument', 'A valid email is required.');
+    }
+    if (!abstractSectionsWithinLimit(data) || !abstractSubmissionValid(data)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Abstract details are incomplete or exceed the allowed length.',
+      );
+    }
+
+    const ref = admin
+      .firestore()
+      .collection('registrations')
+      .doc(makeDocId(email));
+    const existing = (await ref.get()).data() as RegistrationData | undefined;
+    if (existing?.payment === 'Confirmed') {
+      throw new HttpsError(
+        'already-exists',
+        'DUPLICATE_EMAIL: This email address has already been used to register for the workshop.',
+      );
+    }
+
+    await ref.set(
+      {
+        ...data,
+        email,
+        payment: 'Pending',
+        registeredAt: existing?.registeredAt || new Date().toISOString(),
+      },
+      { merge: true },
+    );
+
+    return { success: true, id: ref.id };
+  },
+);
 
 // Callable from the registration form right after a successful Paystack
 // payment. The registration document was already created (with payment:

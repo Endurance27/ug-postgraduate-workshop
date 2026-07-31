@@ -14,6 +14,8 @@ import {
   collection,
   onSnapshot,
   onAuthStateChanged,
+  functions,
+  httpsCallable,
 } from "./firebase.js";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
@@ -1252,16 +1254,19 @@ export default function App() {
       } as SiteContent;
     });
 
-    if (db && doc && setDoc) {
-      // Deterministic, email-only ID: this is what makes the "one registration per
-      // email" rule in firestore.rules airtight. A second registration attempt with
-      // the same email always targets this SAME document, which Firestore treats as
-      // an update (not a create) once it exists — and public clients aren't allowed
-      // to update, so the write is rejected server-side regardless of what the
-      // frontend does. (Previously this mixed in studentId, so two attempts with
-      // the same email but different Student ID silently created separate documents.)
-      const registrationDocId = makeDocId(email);
-      // Exclude Cloud-Function-only fields so the Firestore update rule doesn't reject them
+    if (functions) {
+      // Routed through a Cloud Function (Admin SDK) rather than a client-side
+      // setDoc: firestore.rules only lets a public client CREATE a
+      // registration document, never update one, which would block a
+      // participant from retrying/resuming an existing Pending registration
+      // with the same email. saveRegistrationDraft enforces the "one
+      // Confirmed registration per email" rule server-side instead — see its
+      // definition in functions/src/index.ts.
+      const saveRegistrationDraft = httpsCallable<
+        Record<string, unknown>,
+        { success: boolean; id: string }
+      >(functions, "saveRegistrationDraft");
+      // Exclude Cloud-Function-only fields the client shouldn't be writing
       const {
         emailSent: _es,
         emailDeliveryStatus: _eds,
@@ -1270,16 +1275,8 @@ export default function App() {
         ...safeRecord
       } = participantRecord as Record<string, unknown>;
       try {
-        await setDoc(doc(db, "registrations", registrationDocId), safeRecord, {
-          merge: true,
-        });
+        await saveRegistrationDraft(safeRecord);
       } catch (e) {
-        const code = (e as { code?: string })?.code;
-        if (code === "permission-denied") {
-          throw new Error(
-            "DUPLICATE_EMAIL: This email address has already been used to register for the workshop.",
-          );
-        }
         const msg = e instanceof Error ? e.message : String(e);
         console.error("Registration save failed:", msg);
         throw new Error(msg);

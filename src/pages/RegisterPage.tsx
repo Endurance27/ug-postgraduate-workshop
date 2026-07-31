@@ -1070,6 +1070,7 @@ export default function RegisterPage({
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDuplicateEmailModal, setShowDuplicateEmailModal] = useState(false);
+  const [resumeNotice, setResumeNotice] = useState("");
 
   const initializePayment = usePaystackPayment({
     publicKey: (event.paystackKey || PAYSTACK_PUBLIC_KEY).trim(),
@@ -1087,8 +1088,10 @@ export default function RegisterPage({
     },
   });
 
-  const set = (k: keyof RegistrationForm, v: string) =>
+  const set = (k: keyof RegistrationForm, v: string) => {
+    if (k === "email") setResumeNotice("");
     setForm((f) => ({ ...f, [k]: v }));
+  };
 
   const toggleThematicArea = (area: string) =>
     setForm((f) => ({
@@ -1326,7 +1329,11 @@ export default function RegisterPage({
       try {
         const checkEmail = httpsCallable<
           { email: string },
-          { exists: boolean }
+          {
+            exists: boolean;
+            pending?: boolean;
+            registration?: Partial<RegistrationForm>;
+          }
         >(functions, "checkEmailRegistered");
         const result = await checkEmail({ email: form.email });
         if (result.data.exists) {
@@ -1338,6 +1345,22 @@ export default function RegisterPage({
           setShowDuplicateEmailModal(true);
           setCheckingEmail(false);
           return;
+        }
+        if (result.data.pending && result.data.registration) {
+          // A record exists for this email but was never paid for — resume
+          // it (pre-fill the rest of the form, keeping whatever email the
+          // participant just typed) instead of blocking, so they aren't
+          // locked out of their own email address.
+          setForm((f) => ({
+            ...f,
+            ...result.data.registration,
+            email: f.email,
+          }));
+          setResumeNotice(
+            "We found an incomplete registration associated with this email address. You may continue and complete your payment.",
+          );
+        } else {
+          setResumeNotice("");
         }
       } catch (e) {
         console.warn("Could not verify email uniqueness:", e);
@@ -1793,6 +1816,20 @@ export default function RegisterPage({
             {step === 0 && (
               <div>
                 <h3 className="mb-6">Personal Details</h3>
+                {resumeNotice && (
+                  <div
+                    className="mb-6 text-[13px] leading-[1.6]"
+                    style={{
+                      background: "#eaf7ec",
+                      color: "#155724",
+                      border: "1px solid #c3e6cb",
+                      borderRadius: 8,
+                      padding: "10px 14px",
+                    }}
+                  >
+                    {resumeNotice}
+                  </div>
+                )}
                 <div className="form-group">
                   <label>
                     Title<span className="req">*</span>
@@ -2019,7 +2056,9 @@ export default function RegisterPage({
                 )}
                 <div className="form-group">
                   <label>
-                    Are you submitting an abstract?
+                    Are you submitting an abstract ( NB: All MPhil /MSc.
+                    offering Computer Science & Data Science cohort MUST SUBMIT
+                    an abstract individually for assessment )
                     <span className="req">*</span>
                   </label>
                   <select
@@ -2391,7 +2430,7 @@ export default function RegisterPage({
                             <li style={{ marginBottom: 4 }}>
                               √ Results (100 word count paragraph)
                             </li>
-                            <li>√ Significance (100 word count paragraph)</li>
+                            <li>√ Significance (60 word count paragraph)</li>
                           </ul>
                         </li>
                         <li>

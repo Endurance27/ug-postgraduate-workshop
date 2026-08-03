@@ -56,9 +56,9 @@ export default function ContactPage({
   const location =
     contact.location ||
     "Department of Computer Science, University of Ghana, Legon, P.O. Box LG 25, Accra, Ghana";
-  const phone = contact.phone || "+233 (0) 24 725 2010";
+  const phone = contact.phone || "+233 (0) 541542262";
   const hours = contact.hours || "Mon–Fri · 8:00 AM – 5:00 PM GMT";
-  const whatsapp = contact.whatsapp || "+233 24 725 2010";
+  const whatsapp = contact.whatsapp || "+233 541542262";
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",

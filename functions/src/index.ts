@@ -853,7 +853,8 @@ function buildEmailHtml(d: EmailData): string {
 
   const steps = [
     'Your registration is fully confirmed. Keep your confirmation email for your reference to join sessions during the workshop dates (27–29 August 2026).',
-    'The full workshop programme, venue details, and daily schedule will be shared closer to the event day.',
+    'The full workshop programme, venue details, and daily schedule will be shared closer to the event day. We look forward to welcoming you in August!',
+    'If you encounter any challenge during this registration process, MOMO payment challenges, general questions or enquiries and for sponsorships as well, please send a WhatsApp message and an email to the contact below for immediate support:',
   ];
 
   const stepsHtml = steps
@@ -1013,10 +1014,6 @@ function buildEmailHtml(d: EmailData): string {
               </table>
 
               <!-- Sign-off -->
-              <p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 20px;">
-                If you have any questions, please reply to this email.
-                We look forward to welcoming you in August!
-              </p>
               <p style="color:#555;font-size:13px;line-height:1.7;margin:0 0 20px;">
                 For further information contact:<br/>
                 Esther +233 54 145 2262<br/>

@@ -34,7 +34,7 @@ export default function MainLayout({ footer, contentStatus }: MainLayoutProps) {
 
       <ChatBot />
       <a
-        href="https://wa.me/233536909471?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
+        href="https://wa.me/233247252010?text=Hello%2C%20I%20have%20a%20question%20about%20the%20DCS%20Postgraduate%20Workshop%202026"
         target="_blank"
         rel="noreferrer"
         title="Chat on WhatsApp"

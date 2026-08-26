@@ -42,6 +42,7 @@ interface Participant {
   registeredAt?: string;
   updatedAt?: string;
   registrationCode?: string;
+  sessionPreference?: string;
   emailSent?: boolean;
   emailSentAt?: string | null;
   emailDeliveryStatus?: "processing" | "delivered" | "failed" | null;
@@ -145,6 +146,13 @@ function payStyle(status = "Pending") {
   return PAYMENT_COLOURS[status] ?? PAYMENT_COLOURS.Pending;
 }
 
+function fmtSession(pref?: string) {
+  if (!pref) return "—";
+  const [day, time] = pref.split("_");
+  if (!day || !time) return pref;
+  return `${day} — ${time}`;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ParticipantsPanel() {
   const { siteContent, updateContent } = useAdminContext();
@@ -216,6 +224,7 @@ export default function ParticipantsPanel() {
       "Payment Status",
       "Payment Method",
       "Payment Ref",
+      "Session",
       "Registered At",
       "Updated At",
     ];
@@ -248,6 +257,7 @@ export default function ParticipantsPanel() {
         p.payment,
         p.paymentMethod,
         p.payRef,
+        fmtSession(p.sessionPreference),
         p.registeredAt,
         p.updatedAt,
       ]
@@ -255,8 +265,8 @@ export default function ParticipantsPanel() {
         .join(","),
     );
 
-    const blob = new Blob([[cols.join(","), ...rows].join("\n")], {
-      type: "text/csv",
+    const blob = new Blob(["\uFEFF", [cols.join(","), ...rows].join("\n")], {
+      type: "text/csv;charset=utf-8",
     });
     const a = Object.assign(document.createElement("a"), {
       href: URL.createObjectURL(blob),
@@ -611,6 +621,7 @@ export default function ParticipantsPanel() {
                               ],
                               ["Nationality", fmt(p.nationality)],
                               ["Attendance", fmt(p.attendanceMode || p.mode)],
+                              ["Session", fmtSession(p.sessionPreference)],
                               [
                                 "Submitting Abstract",
                                 fmt(p.isSubmittingAbstract),

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   CheckCircle2,
   AlertTriangle,
+  Wallet,
 } from "lucide-react";
 import { useAdminContext } from "../../../context/AdminContext";
 
@@ -48,6 +49,10 @@ export default function PaymentTrackingPanel() {
     0,
   );
   const pendingAmt = pending.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+  const paystackCharge = confirmedAmt * 0.0195;
+  const momoCharge = confirmedAmt * 0.01;
+  const netRevenue = confirmedAmt - paystackCharge - momoCharge;
 
   const fmt = (n) => n.toLocaleString("en-GH");
 
@@ -221,6 +226,28 @@ export default function PaymentTrackingPanel() {
       subColor: "#b5700a",
       icon: <AlertTriangle size={22} color="#b5700a" />,
       iconBg: "#fdf3e0",
+    },
+    {
+      label: "Paystack Charges (1.95%)",
+      value: `GH₵ ${fmt(paystackCharge)}`,
+      sub: null,
+      icon: <CreditCard size={22} color="#c0392b" />,
+      iconBg: "#fdecea",
+    },
+    {
+      label: "MoMo Charges (1%)",
+      value: `GH₵ ${fmt(momoCharge)}`,
+      sub: null,
+      icon: <TrendingUp size={22} color="#b5700a" />,
+      iconBg: "#fdf3e0",
+    },
+    {
+      label: "Net Revenue",
+      value: `GH₵ ${fmt(netRevenue)}`,
+      sub: `After fees`,
+      subColor: "#1B6B3A",
+      icon: <Wallet size={22} color="#1B6B3A" />,
+      iconBg: "#e8f5ee",
     },
   ];
 

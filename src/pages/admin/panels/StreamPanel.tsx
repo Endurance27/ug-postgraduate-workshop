@@ -10,6 +10,7 @@ export default function StreamPanel() {
   const [form, setForm] = useState({
     live: stream.live || false,
     note: stream.note || "",
+    youtubeUrl: stream.youtubeUrl || "",
     day1Id: stream.day1Id || "",
     day2Id: stream.day2Id || "",
     day3Id: stream.day3Id || "",
@@ -51,6 +52,14 @@ export default function StreamPanel() {
             onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
             placeholder="e.g. Stream begins at 9:00 AM GMT on 27 August 2026. Please refresh if buffering."
             className="min-h-[70px]"
+          />
+        </div>
+        <div className="form-group mt-4">
+          <label>YouTube Live Link</label>
+          <input
+            value={form.youtubeUrl}
+            onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))}
+            placeholder="https://www.youtube.com/watch?v=..."
           />
         </div>
       </div>

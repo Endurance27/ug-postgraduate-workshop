@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Radio, Video, MessageCircle, RefreshCw, ArrowRight, Megaphone } from "lucide-react";
+import {
+  Radio,
+  Video,
+  MessageCircle,
+  RefreshCw,
+  ArrowRight,
+  Megaphone,
+} from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface StreamScheduleItem {
@@ -19,6 +26,7 @@ interface StreamDay {
 interface StreamData {
   live?: boolean;
   note?: string;
+  youtubeUrl?: string;
   day1Id?: string;
   day2Id?: string;
   day3Id?: string;
@@ -38,53 +46,108 @@ interface LiveStreamPageProps {
 
 const BASE_DAYS = [
   {
-    day: "Day 1", date: "Thursday, 27 August 2026", color: "#1B3A6B",
+    day: "Day 1",
+    date: "Thursday, 27 August 2026",
+    color: "#1B3A6B",
     idKey: "day1Id",
     schedule: [
-      { time: "8:00 AM",  title: "Registration & Check-in"                   },
-      { time: "9:00 AM",  title: "Opening Ceremony & Welcome Address"         },
-      { time: "9:45 AM",  title: "Keynote Address"                            },
-      { time: "11:00 AM", title: "Coffee Break & Networking"                  },
-      { time: "11:30 AM", title: "Parallel Track Sessions — Morning Block"    },
-      { time: "1:00 PM",  title: "Lunch Break"                                },
-      { time: "2:00 PM",  title: "Parallel Track Sessions — Afternoon Block"  },
-      { time: "4:00 PM",  title: "Day 1 Wrap-up & Announcements"              },
+      { time: "8:00 AM", title: "Registration & Check-in" },
+      { time: "9:00 AM", title: "Opening Ceremony & Welcome Address" },
+      { time: "9:45 AM", title: "Keynote Address" },
+      { time: "11:00 AM", title: "Coffee Break & Networking" },
+      { time: "11:30 AM", title: "Parallel Track Sessions — Morning Block" },
+      { time: "1:00 PM", title: "Lunch Break" },
+      { time: "2:00 PM", title: "Parallel Track Sessions — Afternoon Block" },
+      { time: "4:00 PM", title: "Day 1 Wrap-up & Announcements" },
     ],
   },
   {
-    day: "Day 2", date: "Friday, 28 August 2026", color: "#C9A84C",
+    day: "Day 2",
+    date: "Friday, 28 August 2026",
+    color: "#C9A84C",
     idKey: "day2Id",
     schedule: [
-      { time: "8:30 AM",  title: "Morning Briefing"                           },
-      { time: "9:00 AM",  title: "Poster Presentation Session"                },
-      { time: "10:30 AM", title: "Technical Paper Session"                    },
-      { time: "11:00 AM", title: "Coffee Break"                               },
-      { time: "11:30 AM", title: "Panel Discussion: Research & Industry"      },
-      { time: "1:00 PM",  title: "Lunch Break"                                },
-      { time: "2:00 PM",  title: "Short Paper Session — CS & Data Science"    },
-      { time: "4:00 PM",  title: "IT for Business Observation Sessions"        },
+      { time: "8:30 AM", title: "Morning Briefing" },
+      { time: "9:00 AM", title: "Poster Presentation Session" },
+      { time: "10:30 AM", title: "Technical Paper Session" },
+      { time: "11:00 AM", title: "Coffee Break" },
+      { time: "11:30 AM", title: "Panel Discussion: Research & Industry" },
+      { time: "1:00 PM", title: "Lunch Break" },
+      { time: "2:00 PM", title: "Short Paper Session — CS & Data Science" },
+      { time: "4:00 PM", title: "IT for Business Observation Sessions" },
     ],
   },
   {
-    day: "Day 3", date: "Saturday, 29 August 2026", color: "#7b1fa2",
+    day: "Day 3",
+    date: "Saturday, 29 August 2026",
+    color: "#7b1fa2",
     idKey: "day3Id",
     schedule: [
-      { time: "8:30 AM",  title: "Morning Briefing & Final Day Orientation"   },
-      { time: "9:00 AM",  title: "Regular Paper Session — Final Presentations"},
-      { time: "10:30 AM", title: "Coffee Break"                               },
-      { time: "11:00 AM", title: "Judges' Deliberation (Closed)"              },
-      { time: "12:00 PM", title: "Lunch Break"                                },
-      { time: "1:30 PM",  title: "Awards Ceremony & Announcement"             },
-      { time: "3:00 PM",  title: "Closing Ceremony & Group Photo"             },
+      { time: "8:30 AM", title: "Morning Briefing & Final Day Orientation" },
+      { time: "9:00 AM", title: "Regular Paper Session — Final Presentations" },
+      { time: "10:30 AM", title: "Coffee Break" },
+      { time: "11:00 AM", title: "Judges' Deliberation (Closed)" },
+      { time: "12:00 PM", title: "Lunch Break" },
+      { time: "1:30 PM", title: "Awards Ceremony & Announcement" },
+      { time: "3:00 PM", title: "Closing Ceremony & Group Photo" },
     ],
   },
 ];
 
-export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStreamPageProps) {
+function getYouTubeVideoId(value?: string): string {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.replace(/^\//, "").slice(0, 11);
+    }
+    const liveMatch = url.pathname.match(/\/live\/([a-zA-Z0-9_-]{11})/);
+    if (liveMatch) return liveMatch[1];
+    const embedMatch = url.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) return embedMatch[1];
+    return url.searchParams.get("v") || "";
+  } catch {
+    const shortMatch = trimmed.match(
+      /(?:v=|youtu\.be\/|embed\/|live\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return shortMatch?.[1] || "";
+  }
+}
+
+function getYouTubeWatchUrl(value?: string, fallbackId?: string): string {
+  const trimmed = value?.trim();
+  if (trimmed) {
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return `https://www.youtube.com/watch?v=${trimmed}`;
+    }
+    return trimmed;
+  }
+  return fallbackId ? `https://www.youtube.com/watch?v=${fallbackId}` : "";
+}
+
+export default function LiveStreamPage({
+  event,
+  navigate,
+  stream = {},
+}: LiveStreamPageProps) {
   const isLive = stream.live || false;
-  const [activeDay, setActiveDay] = useState<number>(0);
-  const STREAM_DAYS: StreamDay[] = BASE_DAYS.map(d => ({ ...d, youtubeId: (stream[d.idKey] as string) || "" }));
-  const current = STREAM_DAYS[activeDay];
+  const primaryYouTubeUrl =
+    typeof stream.youtubeUrl === "string" ? stream.youtubeUrl : "";
+  const primaryVideoId = getYouTubeVideoId(primaryYouTubeUrl);
+  const DAY1_YOUTUBE_ID = "EQ8TFOnHU_g";
+  const STREAM_DAYS: StreamDay[] = BASE_DAYS.map((d, i) => ({
+    ...d,
+    youtubeId: i === 0
+      ? (stream[d.idKey] as string) || DAY1_YOUTUBE_ID
+      : (stream[d.idKey] as string) || "",
+  }));
+  const current = STREAM_DAYS[0];
+  const videoId = primaryVideoId || current.youtubeId || "";
+  const videoUrl = getYouTubeWatchUrl(primaryYouTubeUrl, videoId);
 
   return (
     <main>
@@ -95,25 +158,36 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
       >
         <div
           className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: `url('${import.meta.env.BASE_URL}images/workshop-sessions.jpg')` }}
+          style={{
+            backgroundImage: `url('${import.meta.env.BASE_URL}images/workshop-sessions.jpg')`,
+          }}
         />
         <div className="container relative z-10">
           <span
             className="badge inline-flex items-center gap-[7px] mb-[14px]"
             style={{
-              background: isLive ? "rgba(220,50,50,0.35)" : "rgba(201,168,76,0.25)",
+              background:
+                isLive ? "rgba(220,50,50,0.35)" : "rgba(201,168,76,0.25)",
               color: isLive ? "#ff6b6b" : "#C9A84C",
             }}
           >
-            {isLive
-              ? <><span className="w-2 h-2 rounded-full bg-[#ff4444] inline-block animate-pulse" />LIVE NOW</>
-              : <><Radio size={14} className="mr-[5px]" />Live Stream · Aug 2026</>}
+            {isLive ?
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#ff4444] inline-block animate-pulse" />
+                LIVE NOW
+              </>
+            : <>
+                <Radio size={14} className="mr-[5px]" />
+                Live Stream · Aug 2026
+              </>
+            }
           </span>
           <h1 className="text-white font-serif text-[clamp(2rem,4.5vw,3rem)] mb-3">
             Live Stream
           </h1>
           <p className="text-white/75 text-base">
-            Watch the {event?.edition || "2nd DCS Postgraduate Workshop"} live online · {event?.dates || "27–29 August 2026"}
+            Watch the {event?.edition || "2nd DCS Postgraduate Workshop"} live
+            online · {event?.dates || "27–29 August 2026"}
           </p>
         </div>
       </section>
@@ -122,7 +196,9 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <h2 className="font-serif mb-1">2026 Workshop Live Stream</h2>
-            <p className="text-[#666] text-sm">Stream links will be activated when each day goes live</p>
+            <p className="text-[#666] text-sm">
+              Stream links will be activated when each day goes live
+            </p>
           </div>
           {isLive && (
             <span className="inline-flex items-center gap-2 bg-[#fdecea] text-[#c0392b] border-[1.5px] border-[#f5b7b1] rounded-lg px-4 py-[7px] text-[13px] font-bold">
@@ -137,14 +213,18 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
           {STREAM_DAYS.map((d, i) => (
             <button
               key={i}
-              onClick={() => setActiveDay(i)}
+              type="button"
               className="rounded-lg px-[22px] py-2 text-[13px] font-semibold cursor-pointer transition-all duration-150"
               style={{
-                background: activeDay === i ? d.color : "#fff",
-                color: activeDay === i ? "#fff" : "#555",
-                border: `2px solid ${activeDay === i ? d.color : "#ddd"}`,
+                background: i === 0 ? d.color : "#fff",
+                color: i === 0 ? "#fff" : "#555",
+                border: `2px solid ${i === 0 ? d.color : "#ddd"}`,
+                cursor: i === 0 ? "default" : "not-allowed",
               }}
-            >{d.day}</button>
+              disabled={i !== 0}
+            >
+              {d.day}
+            </button>
           ))}
         </div>
 
@@ -152,10 +232,10 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
           {/* Player */}
           <div>
             <div className="bg-[#0d1117] rounded-2xl overflow-hidden relative shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-              {current.youtubeId && isLive ? (
+              {videoId ?
                 <div className="relative pb-[56.25%] h-0">
                   <iframe
-                    src={`https://www.youtube.com/embed/${current.youtubeId}?autoplay=1`}
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
                     title={`Live Stream ${current.day}`}
                     className="absolute top-0 left-0 w-full h-full"
                     frameBorder="0"
@@ -163,51 +243,98 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
                     allowFullScreen
                   />
                 </div>
-              ) : (
-                <div className="aspect-video flex flex-col items-center justify-center p-10">
-                  <div className="mb-4 text-ug-gold"><Radio size={52} /></div>
+              : <div className="aspect-video flex flex-col items-center justify-center p-10">
+                  <div className="mb-4 text-ug-gold">
+                    <Radio size={52} />
+                  </div>
                   <h3 className="text-white font-serif mb-2 text-center">
                     {current.day} Stream
                   </h3>
                   <p className="text-white/50 text-sm text-center max-w-[360px] leading-[1.75] mb-5">
-                    Goes live on <strong className="text-ug-gold">{current.date}</strong>.<br />
+                    Goes live on{" "}
+                    <strong className="text-ug-gold">{current.date}</strong>.
+                    <br />
                     Register to receive the stream link by email.
                   </p>
-                  <div className="inline-flex items-center gap-2 rounded-lg px-[18px] py-[9px]"
-                    style={{ background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)" }}
+                  <div
+                    className="inline-flex items-center gap-2 rounded-lg px-[18px] py-[9px]"
+                    style={{
+                      background: "rgba(201,168,76,0.12)",
+                      border: "1px solid rgba(201,168,76,0.3)",
+                    }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#555]" />
-                    <span className="text-white/50 text-[13px]">Offline · Goes live {current.date}</span>
+                    <span className="text-white/50 text-[13px]">
+                      Offline · Goes live {current.date}
+                    </span>
                   </div>
+                  {videoUrl && (
+                    <a
+                      href={videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 text-sm font-semibold text-ug-gold underline underline-offset-4"
+                    >
+                      Open YouTube stream
+                    </a>
+                  )}
                 </div>
-              )}
+              }
               {/* Day label badge — dynamic color from data */}
               <div
                 className="absolute top-3 left-3 rounded-md px-3 py-1 text-xs font-bold text-white pointer-events-none"
                 style={{ background: current.color }}
-              >{current.day}</div>
+              >
+                {current.day}
+              </div>
             </div>
             <div className="mt-3 px-4 py-3 bg-ug-surface rounded-[10px] text-[13px] text-[#666]">
-              <strong className="text-ug-blue">{current.date}</strong> · Stream link sent to registered virtual participants before the event.
+              <strong className="text-ug-blue">{current.date}</strong> · Stream
+              link sent to registered virtual participants before the event.
             </div>
+            {videoUrl && (
+              <div className="mt-[10px] px-[18px] py-3 rounded-[10px] bg-[#f4f8ff] border-[1.5px] border-[#cfdcf5] text-[13px] text-[#23406f] leading-relaxed break-all">
+                <strong>Watch link:</strong>{" "}
+                <a
+                  href={videoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-4"
+                >
+                  {videoUrl}
+                </a>
+              </div>
+            )}
             {stream.note && (
               <div className="mt-[10px] px-[18px] py-3 rounded-[10px] bg-[#fffbf0] border-[1.5px] border-[#e8c96e] text-[13px] text-[#7a5800] leading-relaxed">
-                <span className="inline-flex items-center gap-1.5"><Megaphone size={16} /><strong>Notice:</strong></span> {stream.note}
+                <span className="inline-flex items-center gap-1.5">
+                  <Megaphone size={16} />
+                  <strong>Notice:</strong>
+                </span>{" "}
+                {stream.note}
               </div>
             )}
           </div>
 
           {/* Schedule sidebar — dynamic heading color from data */}
           <div className="card px-5 py-[18px]">
-            <h4 className="font-serif mb-[14px] text-base" style={{ color: current.color }}>
+            <h4
+              className="font-serif mb-[14px] text-base"
+              style={{ color: current.color }}
+            >
               {current.day} Schedule
             </h4>
             {current.schedule.map((s, i) => (
-              <div key={i}
+              <div
+                key={i}
                 className={`flex gap-[10px] py-[9px] ${i < current.schedule.length - 1 ? "border-b border-[#f5f5f5]" : ""}`}
               >
-                <span className="text-[11px] font-semibold text-[#888] whitespace-nowrap mt-0.5 min-w-[58px]">{s.time}</span>
-                <span className="text-[13px] text-[#333] leading-snug">{s.title}</span>
+                <span className="text-[11px] font-semibold text-[#888] whitespace-nowrap mt-0.5 min-w-[58px]">
+                  {s.time}
+                </span>
+                <span className="text-[13px] text-[#333] leading-snug">
+                  {s.title}
+                </span>
               </div>
             ))}
           </div>
@@ -216,26 +343,50 @@ export default function LiveStreamPage({ event, navigate, stream = {} }: LiveStr
         {/* Info cards */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mt-8">
           {[
-            { icon: <Radio size={24} />,          title: "Stream Link",  body: "Emailed to all registered virtual and hybrid participants before each day." },
-            { icon: <Video size={24} />,          title: "YouTube Live", body: "No login required. Watch directly in your browser or on the YouTube app."   },
-            { icon: <MessageCircle size={24} />,  title: "Live Q&A",     body: "Submit questions via YouTube chat during panel sessions and Q&A blocks."    },
-            { icon: <RefreshCw size={24} />,      title: "Recordings",   body: "Session recordings made available to registered participants after each day."},
+            {
+              icon: <Radio size={24} />,
+              title: "Stream Link",
+              body: "Emailed to all registered virtual and hybrid participants before each day.",
+            },
+            {
+              icon: <Video size={24} />,
+              title: "YouTube Live",
+              body: "No login required. Watch directly in your browser or on the YouTube app.",
+            },
+            {
+              icon: <MessageCircle size={24} />,
+              title: "Live Q&A",
+              body: "Submit questions via YouTube chat during panel sessions and Q&A blocks.",
+            },
+            {
+              icon: <RefreshCw size={24} />,
+              title: "Recordings",
+              body: "Session recordings made available to registered participants after each day.",
+            },
           ].map((c, i) => (
             <div key={i} className="card flex gap-[14px]">
               <span className="flex-shrink-0 text-ug-blue">{c.icon}</span>
               <div>
                 <div className="font-semibold text-sm mb-1">{c.title}</div>
-                <p className="text-[13px] text-[#666] leading-relaxed m-0">{c.body}</p>
+                <p className="text-[13px] text-[#666] leading-relaxed m-0">
+                  {c.body}
+                </p>
               </div>
             </div>
           ))}
         </div>
 
         <div className="alert alert-info mt-6 text-sm">
-          <strong>Registration required:</strong> You must register as a virtual or hybrid participant to receive the stream link.{" "}
+          <strong>Registration required:</strong> You must register as a virtual
+          or hybrid participant to receive the stream link.{" "}
           {navigate && (
-            <button onClick={() => navigate("register")} className="bg-transparent border-0 text-ug-blue font-semibold cursor-pointer p-0 text-sm">
-              <span className="inline-flex items-center gap-1.5">Register now <ArrowRight size={14} /></span>
+            <button
+              onClick={() => navigate("register")}
+              className="bg-transparent border-0 text-ug-blue font-semibold cursor-pointer p-0 text-sm"
+            >
+              <span className="inline-flex items-center gap-1.5">
+                Register now <ArrowRight size={14} />
+              </span>
             </button>
           )}
         </div>

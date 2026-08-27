@@ -590,6 +590,7 @@ const INIT_CONTENT = {
   stream: {
     live: false,
     note: "",
+    youtubeUrl: "https://www.youtube.com/live/EQ8TFOnHU_g?si=TEwnKVlmk8fhHpTg",
     day1Id: "",
     day2Id: "1KWiyZnJFmw",
     day3Id: "NUAZDcQ_lJs",

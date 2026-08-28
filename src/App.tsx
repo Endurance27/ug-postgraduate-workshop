@@ -588,12 +588,13 @@ const INIT_CONTENT = {
     students: `${B}images/dcs-research.jpg`,
   },
   stream: {
-    live: false,
-    note: "",
-    youtubeUrl: "https://www.youtube.com/live/EQ8TFOnHU_g?si=TEwnKVlmk8fhHpTg",
-    day1Id: "",
-    day2Id: "1KWiyZnJFmw",
+    live: true,
+    note: "Day 2 is now live — join via YouTube or Zoom.",
+    youtubeUrl: "https://www.youtube.com/embed/ierLvzZoh00?si=SnDKBf01jBzNSvrz",
+    day1Id: "EQ8TFOnHU_g",
+    day2Id: "ierLvzZoh00",
     day3Id: "NUAZDcQ_lJs",
+    zoomUrl: "https://wacren.zoom.us/j/64855713600",
   },
   gallery: [
     {
@@ -1062,7 +1063,6 @@ export default function App() {
     } catch (e) {
       console.warn("localStorage quota exceeded:", e.message);
     }
-
     // Only admins can write to workshop/siteContent — skip for public visitors
     if (!isAdmin || !db || !doc || !setDoc) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);

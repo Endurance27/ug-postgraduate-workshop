@@ -84,7 +84,7 @@ export interface SiteContent {
   speakers: Speaker[];
   sponsors: Record<string, unknown>;
   registration: Record<string, unknown>;
-  livestream: Record<string, unknown>;
+  stream: Record<string, unknown>;
   gallery: Record<string, unknown>;
   contact: Record<string, unknown>;
   payments: Payment[];

@@ -3,6 +3,30 @@ import { Check, ArrowRight } from "lucide-react";
 import { ToggleRow } from "./shared";
 import { useAdminContext } from "../../../context/AdminContext";
 
+function getYouTubeVideoId(value?: string): string {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.replace(/^\//, "").slice(0, 11);
+    }
+    const liveMatch = url.pathname.match(/\/live\/([a-zA-Z0-9_-]{11})/);
+    if (liveMatch) return liveMatch[1];
+    const embedMatch = url.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) return embedMatch[1];
+    return url.searchParams.get("v") || "";
+  } catch {
+    const shortMatch = trimmed.match(
+      /(?:v=|youtu\.be\/|embed\/|live\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return shortMatch?.[1] || "";
+  }
+}
+
 export default function StreamPanel() {
   const { siteContent, updateContent } = useAdminContext();
   const stream = (siteContent.stream as Record<string, any>) || {};
@@ -11,13 +35,20 @@ export default function StreamPanel() {
     live: stream.live || false,
     note: stream.note || "",
     youtubeUrl: stream.youtubeUrl || "",
+    zoomUrl: stream.zoomUrl || "",
     day1Id: stream.day1Id || "",
     day2Id: stream.day2Id || "",
     day3Id: stream.day3Id || "",
   });
   const [saved, setSaved] = useState(false);
   const save = () => {
-    onChange(form);
+    const normalized = {
+      ...form,
+      day1Id: getYouTubeVideoId(form.day1Id) || form.day1Id,
+      day2Id: getYouTubeVideoId(form.day2Id) || form.day2Id,
+      day3Id: getYouTubeVideoId(form.day3Id) || form.day3Id,
+    };
+    onChange(normalized);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -62,55 +93,73 @@ export default function StreamPanel() {
             placeholder="https://www.youtube.com/watch?v=..."
           />
         </div>
+        <div className="form-group mt-4">
+          <label>Zoom Meeting Link</label>
+          <input
+            value={form.zoomUrl}
+            onChange={(e) => setForm((f) => ({ ...f, zoomUrl: e.target.value }))}
+            placeholder="https://zoom.us/j/..."
+          />
+        </div>
       </div>
 
       <div className="card">
-        <h4 className="mb-4 font-serif">YouTube Video IDs — Per Day</h4>
+        <h4 className="mb-4 font-serif">YouTube Video — Per Day</h4>
         <p className="text-[13px] text-[#666] mb-4">
-          Paste only the video ID (e.g. <code>1KWiyZnJFmw</code>), not the full
-          URL. Leave blank if not yet available.
+          Paste a YouTube URL or video ID (e.g. <code>https://www.youtube.com/watch?v=1KWiyZnJFmw</code>).
+          Leave blank if not yet available.
         </p>
         {[
           {
             key: "day1Id",
             label: "Day 1 — Thursday 27 Aug",
-            placeholder: "e.g. dQw4w9WgXcQ",
+            placeholder: "https://www.youtube.com/watch?v=...",
           },
           {
             key: "day2Id",
             label: "Day 2 — Friday 28 Aug",
-            placeholder: "e.g. 1KWiyZnJFmw",
+            placeholder: "https://www.youtube.com/watch?v=...",
           },
           {
             key: "day3Id",
             label: "Day 3 — Saturday 29 Aug",
-            placeholder: "e.g. NUAZDcQ_lJs",
+            placeholder: "https://www.youtube.com/watch?v=...",
           },
-        ].map((d) => (
-          <div key={d.key} className="form-group">
-            <label>{d.label}</label>
-            <div className="flex gap-2.5 items-center">
-              <input
-                value={form[d.key as keyof typeof form] as string}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, [d.key]: e.target.value }))
-                }
-                placeholder={d.placeholder}
-                className="flex-1"
-              />
-              {form[d.key as keyof typeof form] && (
-                <a
-                  href={`https://youtube.com/watch?v=${form[d.key as keyof typeof form]}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-ug-blue whitespace-nowrap"
-                >
-                  ▶ Preview
-                </a>
+        ].map((d) => {
+          const raw = (form[d.key as keyof typeof form] as string) || "";
+          const extractedId = getYouTubeVideoId(raw);
+          const displayId = extractedId || raw;
+          return (
+            <div key={d.key} className="form-group">
+              <label>{d.label}</label>
+              <div className="flex gap-2.5 items-center">
+                <input
+                  value={raw}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, [d.key]: e.target.value }))
+                  }
+                  placeholder={d.placeholder}
+                  className="flex-1"
+                />
+                {displayId && (
+                  <a
+                    href={`https://youtube.com/watch?v=${displayId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-ug-blue whitespace-nowrap"
+                  >
+                    ▶ Preview
+                  </a>
+                )}
+              </div>
+              {raw && extractedId && raw !== extractedId && (
+                <p className="text-[11px] text-[#888] mt-1">
+                  Extracted ID: <code>{extractedId}</code>
+                </p>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         <button className="btn-primary" onClick={save}>
           <span className="inline-flex items-center gap-1.5">
             Save Livestream Settings <ArrowRight size={14} />

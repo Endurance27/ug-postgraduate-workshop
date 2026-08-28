@@ -27,6 +27,7 @@ interface StreamData {
   live?: boolean;
   note?: string;
   youtubeUrl?: string;
+  zoomUrl?: string;
   day1Id?: string;
   day2Id?: string;
   day3Id?: string;
@@ -135,19 +136,16 @@ export default function LiveStreamPage({
   stream = {},
 }: LiveStreamPageProps) {
   const isLive = stream.live || false;
-  const primaryYouTubeUrl =
-    typeof stream.youtubeUrl === "string" ? stream.youtubeUrl : "";
-  const primaryVideoId = getYouTubeVideoId(primaryYouTubeUrl);
-  const DAY1_YOUTUBE_ID = "EQ8TFOnHU_g";
+  const DEFAULT_ZOOM_URL = "https://wacren.zoom.us/j/64855713600";
+  const zoomUrl = (typeof stream.zoomUrl === "string" ? stream.zoomUrl : "") || DEFAULT_ZOOM_URL;
   const STREAM_DAYS: StreamDay[] = BASE_DAYS.map((d, i) => ({
     ...d,
-    youtubeId: i === 0
-      ? (stream[d.idKey] as string) || DAY1_YOUTUBE_ID
-      : (stream[d.idKey] as string) || "",
+    youtubeId: (stream[d.idKey] as string) || "",
   }));
-  const current = STREAM_DAYS[0];
-  const videoId = primaryVideoId || current.youtubeId || "";
-  const videoUrl = getYouTubeWatchUrl(primaryYouTubeUrl, videoId);
+  const [selectedDay, setSelectedDay] = useState(0);
+  const current = STREAM_DAYS[selectedDay];
+  const videoId = current.youtubeId || "";
+  const videoUrl = getYouTubeWatchUrl(videoId || "");
 
   return (
     <main>
@@ -210,22 +208,28 @@ export default function LiveStreamPage({
 
         {/* Day tabs — active bg/border are dynamic per-day color */}
         <div className="flex gap-2 mb-5 flex-wrap">
-          {STREAM_DAYS.map((d, i) => (
-            <button
-              key={i}
-              type="button"
-              className="rounded-lg px-[22px] py-2 text-[13px] font-semibold cursor-pointer transition-all duration-150"
-              style={{
-                background: i === 0 ? d.color : "#fff",
-                color: i === 0 ? "#fff" : "#555",
-                border: `2px solid ${i === 0 ? d.color : "#ddd"}`,
-                cursor: i === 0 ? "default" : "not-allowed",
-              }}
-              disabled={i !== 0}
-            >
-              {d.day}
-            </button>
-          ))}
+          {STREAM_DAYS.map((d, i) => {
+            const isActive = i === selectedDay;
+            const isAvailable = i <= 1;
+            return (
+              <button
+                key={i}
+                type="button"
+                className="rounded-lg px-[22px] py-2 text-[13px] font-semibold cursor-pointer transition-all duration-150"
+                style={{
+                  background: isActive ? d.color : "#fff",
+                  color: isActive ? "#fff" : isAvailable ? "#333" : "#aaa",
+                  border: `2px solid ${isActive ? d.color : isAvailable ? "#ddd" : "#eee"}`,
+                  cursor: isAvailable ? "pointer" : "not-allowed",
+                  opacity: isAvailable ? 1 : 0.6,
+                }}
+                disabled={!isAvailable}
+                onClick={() => isAvailable && setSelectedDay(i)}
+              >
+                {d.day}
+              </button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-[1fr_280px] gap-6 items-start stream-grid">
@@ -302,6 +306,19 @@ export default function LiveStreamPage({
                   className="underline underline-offset-4"
                 >
                   {videoUrl}
+                </a>
+              </div>
+            )}
+            {zoomUrl && (
+              <div className="mt-[10px] px-[18px] py-3 rounded-[10px] bg-[#f0fdf4] border-[1.5px] border-[#a8d5b8] text-[13px] text-[#1B6B3A] leading-relaxed break-all">
+                <strong>Zoom link:</strong>{" "}
+                <a
+                  href={zoomUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-4"
+                >
+                  {zoomUrl}
                 </a>
               </div>
             )}

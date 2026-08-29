@@ -136,8 +136,10 @@ export default function LiveStreamPage({
   stream = {},
 }: LiveStreamPageProps) {
   const isLive = stream.live || false;
-  const DEFAULT_ZOOM_URL = "https://wacren.zoom.us/j/64855713600";
-  const zoomUrl = (typeof stream.zoomUrl === "string" ? stream.zoomUrl : "") || DEFAULT_ZOOM_URL;
+  const DEFAULT_ZOOM_URL = "https://wacren.zoom.us/j/65846460400";
+  const zoomUrl =
+    (typeof stream.zoomUrl === "string" ? stream.zoomUrl : "") ||
+    DEFAULT_ZOOM_URL;
   const STREAM_DAYS: StreamDay[] = BASE_DAYS.map((d, i) => ({
     ...d,
     youtubeId: (stream[d.idKey] as string) || "",
@@ -218,8 +220,15 @@ export default function LiveStreamPage({
                 className="rounded-lg px-[22px] py-2 text-[13px] font-semibold cursor-pointer transition-all duration-150"
                 style={{
                   background: isActive ? d.color : "#fff",
-                  color: isActive ? "#fff" : isAvailable ? "#333" : "#aaa",
-                  border: `2px solid ${isActive ? d.color : isAvailable ? "#ddd" : "#eee"}`,
+                  color:
+                    isActive ? "#fff"
+                    : isAvailable ? "#333"
+                    : "#aaa",
+                  border: `2px solid ${
+                    isActive ? d.color
+                    : isAvailable ? "#ddd"
+                    : "#eee"
+                  }`,
                   cursor: isAvailable ? "pointer" : "not-allowed",
                   opacity: isAvailable ? 1 : 0.6,
                 }}

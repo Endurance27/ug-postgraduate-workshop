@@ -50,7 +50,7 @@ export default function PaymentTrackingPanel() {
   );
   const pendingAmt = pending.reduce((s, p) => s + (Number(p.amount) || 0), 0);
 
-  const paystackCharge = confirmedAmt * 0.0195;
+  const paystackCharge = confirmedAmt * 0.02;
   const momoCharge = confirmedAmt * 0.01;
   const netRevenue = confirmedAmt - paystackCharge - momoCharge;
 
@@ -88,7 +88,14 @@ export default function PaymentTrackingPanel() {
         va = Number(va);
         vb = Number(vb);
       }
-      return sortDir === "asc" ? (va > vb ? 1 : -1) : va < vb ? 1 : -1;
+      return (
+        sortDir === "asc" ?
+          va > vb ?
+            1
+          : -1
+        : va < vb ? 1
+        : -1
+      );
     });
 
   /* ── helpers ── */
@@ -164,19 +171,17 @@ export default function PaymentTrackingPanel() {
   const SortIcon = ({ k }) => {
     if (sortKey !== k)
       return <span className="text-[#ccc] text-[11px]">↕</span>;
-    return sortDir === "asc" ? (
-      <ChevronUp size={13} color="#1B3A6B" />
-    ) : (
-      <ChevronDown size={13} color="#1B3A6B" />
-    );
+    return sortDir === "asc" ?
+        <ChevronUp size={13} color="#1B3A6B" />
+      : <ChevronDown size={13} color="#1B3A6B" />;
   };
 
   const methodBadge = (m) => (
     <span
       className={`inline-flex items-center justify-center text-[11px] font-semibold px-[10px] py-1 rounded-[20px] whitespace-nowrap min-w-[100px] text-center ${
-        m === "card"
-          ? "bg-ug-blue-light text-ug-blue"
-          : "bg-[#e8f5ee] text-[#1B6B3A]"
+        m === "card" ?
+          "bg-ug-blue-light text-ug-blue"
+        : "bg-[#e8f5ee] text-[#1B6B3A]"
       }`}
     >
       {m === "card" ? "Card" : "Mobile Money"}
@@ -186,9 +191,9 @@ export default function PaymentTrackingPanel() {
   const statusBadge = (s) => (
     <span
       className={`text-[11px] font-bold px-[10px] py-[3px] rounded-[20px] ${
-        s === "Confirmed"
-          ? "bg-[#e8f5ee] text-[#1B6B3A]"
-          : "bg-[#fdf3e0] text-[#b5700a]"
+        s === "Confirmed" ?
+          "bg-[#e8f5ee] text-[#1B6B3A]"
+        : "bg-[#fdf3e0] text-[#b5700a]"
       }`}
     >
       {s}
@@ -228,7 +233,7 @@ export default function PaymentTrackingPanel() {
       iconBg: "#fdf3e0",
     },
     {
-      label: "Paystack Charges (1.95%)",
+      label: "Paystack Charges (2%)",
       value: `GH₵ ${fmt(paystackCharge)}`,
       sub: null,
       icon: <CreditCard size={22} color="#c0392b" />,
@@ -256,9 +261,7 @@ export default function PaymentTrackingPanel() {
       {/* Header */}
       <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="mb-1 font-serif">
-            Payment Tracking
-          </h2>
+          <h2 className="mb-1 font-serif">Payment Tracking</h2>
           <p className="text-[#666] text-sm">
             Monitor and manage all transaction records
           </p>
@@ -287,9 +290,7 @@ export default function PaymentTrackingPanel() {
             className="bg-white border border-[#e8eaf0] rounded-[14px] p-[20px_22px] flex justify-between items-start"
           >
             <div>
-              <div className="text-[13px] text-[#888] mb-2">
-                {c.label}
-              </div>
+              <div className="text-[13px] text-[#888] mb-2">{c.label}</div>
               <div className="text-[26px] font-extrabold text-ug-navy font-serif">
                 {c.value}
               </div>
@@ -315,9 +316,7 @@ export default function PaymentTrackingPanel() {
       {/* Add payment form */}
       {showAdd && (
         <div className="card mb-5 border-2 border-ug-gold">
-          <h4 className="mb-4 font-serif">
-            Add Manual Payment Record
-          </h4>
+          <h4 className="mb-4 font-serif">Add Manual Payment Record</h4>
           <div className="form-row">
             <div className="form-group">
               <label>Full Name *</label>
@@ -437,9 +436,9 @@ export default function PaymentTrackingPanel() {
               key={f}
               onClick={() => setFilter(f)}
               className={`border-[1.5px] border-[#ddd] rounded-[20px] px-4 py-[6px] text-[13px] cursor-pointer ${
-                filter === f
-                  ? "bg-ug-blue text-white font-semibold"
-                  : "bg-white text-[#555] font-normal"
+                filter === f ?
+                  "bg-ug-blue text-white font-semibold"
+                : "bg-white text-[#555] font-normal"
               }`}
             >
               {f}
@@ -479,10 +478,7 @@ export default function PaymentTrackingPanel() {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center p-[40px] text-[#888]"
-                  >
+                  <td colSpan={8} className="text-center p-[40px] text-[#888]">
                     No payment records found.
                   </td>
                 </tr>
@@ -510,21 +506,21 @@ export default function PaymentTrackingPanel() {
                   </td>
                   <td className="px-4 py-[13px] text-[#555] whitespace-nowrap">
                     <div>
-                      {p.date
-                        ? new Date(p.date).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "—"}
+                      {p.date ?
+                        new Date(p.date).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "—"}
                     </div>
                     <div className="text-[11px] text-[#aaa]">
-                      {p.date
-                        ? new Date(p.date).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
+                      {p.date ?
+                        new Date(p.date).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
                     </div>
                   </td>
                   <td className="px-4 py-[13px] font-bold text-ug-navy">
@@ -533,9 +529,7 @@ export default function PaymentTrackingPanel() {
                   <td className="px-4 py-[13px] whitespace-nowrap">
                     {methodBadge(p.method)}
                   </td>
-                  <td className="px-4 py-[13px]">
-                    {statusBadge(p.status)}
-                  </td>
+                  <td className="px-4 py-[13px]">{statusBadge(p.status)}</td>
                   <td className="px-4 py-[13px]">
                     <button
                       onClick={() => setSelected(p)}
@@ -565,9 +559,7 @@ export default function PaymentTrackingPanel() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-serif m-0">
-                Payment Details
-              </h3>
+              <h3 className="font-serif m-0">Payment Details</h3>
               <button
                 onClick={() => setSelected(null)}
                 className="bg-transparent border-none cursor-pointer text-[#888]"
@@ -590,9 +582,9 @@ export default function PaymentTrackingPanel() {
               ["Amount", `GH₵ ${fmt(Number(selected.amount) || 0)}`],
               [
                 "Payment Method",
-                selected.method === "card"
-                  ? "Debit / Credit Card"
-                  : "Mobile Money",
+                selected.method === "card" ?
+                  "Debit / Credit Card"
+                : "Mobile Money",
               ],
               ["Date & Time", fmtDate(selected.date)],
             ].map(([label, val]) => (
@@ -600,12 +592,8 @@ export default function PaymentTrackingPanel() {
                 key={label}
                 className="flex justify-between py-[10px] border-b border-[#f0f0f0] text-sm"
               >
-                <span className="text-[#666] shrink-0 mr-4">
-                  {label}
-                </span>
-                <span className="font-medium text-right">
-                  {val}
-                </span>
+                <span className="text-[#666] shrink-0 mr-4">{label}</span>
+                <span className="font-medium text-right">{val}</span>
               </div>
             ))}
 
@@ -620,9 +608,9 @@ export default function PaymentTrackingPanel() {
                     setSelected((p) => ({ ...p, status: "Confirmed" }));
                   }}
                   className={`flex-1 border-[1.5px] rounded-lg p-[9px] text-[13px] font-semibold cursor-pointer ${
-                    selected.status === "Confirmed"
-                      ? "bg-[#e8f5ee] text-[#1B6B3A] border-[#a8d5b8]"
-                      : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
+                    selected.status === "Confirmed" ?
+                      "bg-[#e8f5ee] text-[#1B6B3A] border-[#a8d5b8]"
+                    : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
                   }`}
                 >
                   <span className="inline-flex items-center gap-[5px]">
@@ -635,9 +623,9 @@ export default function PaymentTrackingPanel() {
                     setSelected((p) => ({ ...p, status: "Pending" }));
                   }}
                   className={`flex-1 border-[1.5px] rounded-lg p-[9px] text-[13px] font-semibold cursor-pointer ${
-                    selected.status === "Pending"
-                      ? "bg-[#fdf3e0] text-[#b5700a] border-[#e8d5a0]"
-                      : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
+                    selected.status === "Pending" ?
+                      "bg-[#fdf3e0] text-[#b5700a] border-[#e8d5a0]"
+                    : "bg-[#f5f5f5] text-[#555] border-[#ddd]"
                   }`}
                 >
                   <span className="inline-flex items-center gap-[5px]">

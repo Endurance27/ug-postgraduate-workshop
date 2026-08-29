@@ -210,7 +210,7 @@ export default function LiveStreamPage({
         <div className="flex gap-2 mb-5 flex-wrap">
           {STREAM_DAYS.map((d, i) => {
             const isActive = i === selectedDay;
-            const isAvailable = i <= 1;
+            const isAvailable = i <= 2;
             return (
               <button
                 key={i}
